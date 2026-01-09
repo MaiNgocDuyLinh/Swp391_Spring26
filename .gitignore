@@ -1,0 +1,16 @@
+# Visual Studio
+.vs/
+
+# Build
+bin/
+obj/
+
+# Java
+target/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
