@@ -14,3 +14,7 @@ target/
 # OS
 .DS_Store
 Thumbs.db
+
+# App settings (secrets, env-specific)
+appsettings.Development.json
+appsettings.Production.json
