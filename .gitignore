@@ -16,5 +16,9 @@ target/
 Thumbs.db
 
 # App settings (secrets, env-specific)
+appsettings.json
 appsettings.Development.json
 appsettings.Production.json
+Group3_SWP391_PetMedical/appsettings.json
+Group3_SWP391_PetMedical/appsettings.Development.json
+Group3_SWP391_PetMedical/appsettings.Production.json

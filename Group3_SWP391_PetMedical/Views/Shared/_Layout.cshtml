@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html class="no-js" lang="zxx">
 <head>
 	<meta charset="utf-8">
@@ -21,6 +21,23 @@
 	<link rel="stylesheet" href="~/assets/css/slick.css">
 	<link rel="stylesheet" href="~/assets/css/nice-select.css">
 	<link rel="stylesheet" href="~/assets/css/style.css">
+	<style>
+		.dropdown-toggle::after {
+			margin-left: 8px;
+			vertical-align: middle;
+		}
+		.dropdown-menu {
+			min-width: 200px;
+			border-radius: 8px;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+		}
+		.dropdown-item:hover {
+			background-color: #f8f9fa;
+		}
+		.dropdown-item button:hover {
+			background-color: #f8f9fa !important;
+		}
+	</style>
 </head>
 
 <body>
@@ -44,8 +61,8 @@
 					<div class="row align-items-center">
 						<!-- Logo -->
 						<div class="col-xl-2 col-lg-2 col-md-1">
-							<div class="logo">
-								<a href="index.html"><img src="~/assets/img/logo/logo.png" alt=""></a>
+								<div class="logo">
+								<a href="@Url.Action("Index", "Home")"><img src="~/assets/img/logo/logo.png" alt=""></a>
 							</div>
 						</div>
 						<div class="col-xl-10 col-lg-10 col-md-10">
@@ -54,9 +71,9 @@
 								<div class="main-menu f-right d-none d-lg-block">
 									<nav>
 										<ul id="navigation">
-											<li><a href="index.html">Home</a></li>
-											<li><a href="about.html">About</a></li>
-											<li><a href="services.html">Services</a></li>
+											<li><a href="@Url.Action("Index", "Home")">Home</a></li>
+											<li><a href="@Url.Action("About", "Home")">About</a></li>
+											<li><a href="@Url.Action("Service", "Service")">Services</a></li>
 											<li>
 												<a href="blog.html">Blog</a>
 												<ul class="submenu">
@@ -70,7 +87,29 @@
 									</nav>
 								</div>
 								<div class="header-right-btn f-right d-none d-lg-block ml-30">
-									<a href="#" class="header-btn">01654.066.456</a>
+									@if (User.Identity.IsAuthenticated)
+									{
+										<div class="dropdown" style="display: inline-block;">
+											<button class="header-btn dropdown-toggle" type="button" id="userDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: white; text-decoration: none;">
+												Xin chào, @User.Identity.Name
+											</button>
+											<div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown" style="margin-top: 10px;">
+												<a class="dropdown-item" href="#" style="cursor: default; color: #666;">
+													<i class="fas fa-user"></i> @User.Identity.Name
+												</a>
+												<div class="dropdown-divider"></div>
+												<form asp-controller="Login" asp-action="Logout" method="post" style="margin: 0;">
+													<button type="submit" class="dropdown-item" style="border: none; background: none; width: 100%; text-align: left; cursor: pointer; padding: 0.5rem 1rem;">
+														<i class="fas fa-sign-out-alt"></i> Logout
+													</button>
+												</form>
+											</div>
+										</div>
+									}
+									else
+									{
+										<a href="@Url.Action("Login", "Login")" class="header-btn">Login</a>
+									}
 								</div>
 							</div>
 						</div>
@@ -97,7 +136,7 @@
 							<div class="single-footer-caption mb-30">
 								<!-- logo -->
 								<div class="footer-logo mb-25">
-									<a href="index.html"><img src="~/assets/img/logo/logo2_footer.png" alt=""></a>
+									<a href="@Url.Action("Index", "Home")"><img src="~/assets/img/logo/logo2_footer.png" alt=""></a>
 								</div>
 								<div class="footer-tittle">
 									<div class="footer-pera">
@@ -119,11 +158,11 @@
 							<div class="footer-tittle">
 								<h4>Company</h4>
 								<ul>
-									<li><a href="index.html">Home</a></li>
-									<li><a href="about.html">About Us</a></li>
-									<li><a href="single-blog.html">Services</a></li>
+									<li><a href="@Url.Action("Index", "Home")">Home</a></li>
+									<li><a href="@Url.Action("About", "Home")">About Us</a></li>
+									<li><a href="@Url.Action("Service", "Service")">Services</a></li>
 									<li><a href="#">Cases</a></li>
-									<li><a href="contact.html">  Contact Us</a></li>
+									<li><a href="@Url.Action("Contact", "Home")">  Contact Us</a></li>
 								</ul>
 							</div>
 						</div>

@@ -1,3 +1,6 @@
+using Group3_SWP391_PetMedical.Models;
+using Microsoft.EntityFrameworkCore;
+
 namespace Group3_SWP391_PetMedical
 {
     public class Program
@@ -6,7 +9,18 @@ namespace Group3_SWP391_PetMedical
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // Đăng ký DbContext với SQL Server
+            builder.Services.AddDbContext<PetClinicContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            builder.Services.AddAuthentication("MyCookieAuth")
+            .AddCookie("MyCookieAuth", options =>
+            {
+            options.Cookie.Name = "MyLoginCookie";
+            options.LoginPath = "/Login/Login"; // Đường dẫn trả về nếu chưa đăng nhập
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // Hết hạn sau 30 phút
+            });
+
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
@@ -24,7 +38,15 @@ namespace Group3_SWP391_PetMedical
 
             app.UseRouting();
 
+            // Phải đặt UseAuthentication() trước UseAuthorization()
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            app.MapGet("/", context =>
+            {
+                context.Response.Redirect("/Home");
+                return Task.CompletedTask;
+            });
 
             app.MapControllerRoute(
                 name: "default",

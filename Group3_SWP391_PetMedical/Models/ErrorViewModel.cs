@@ -1,4 +1,4 @@
-namespace Group3_SWP391_PetMedical.Models
+﻿namespace Group3_SWP391_PetMedical.Models
 {
     public class ErrorViewModel
     {
