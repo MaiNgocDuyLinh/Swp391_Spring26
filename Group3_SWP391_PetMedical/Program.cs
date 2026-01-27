@@ -8,7 +8,7 @@ namespace Group3_SWP391_PetMedical
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            //heheh
             // Đăng ký DbContext với SQL Server
             builder.Services.AddDbContext<PetClinicContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
