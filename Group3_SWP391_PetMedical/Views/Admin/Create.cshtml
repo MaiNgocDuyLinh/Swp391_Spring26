@@ -1,0 +1,81 @@
+@using Group3_SWP391_PetMedical.ViewModels
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model CreateAccountViewModel
+@{
+    ViewData["Title"] = "Tạo Tài khoản";
+    var roleList = new List<SelectListItem> { new SelectListItem("-- Chọn vai trò --", "") };
+    foreach (var r in Model.AvailableRoles)
+        roleList.Add(new SelectListItem(r.RoleName, r.RoleId.ToString()));
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" />
+}
+
+<div class="admin-page">
+    <div class="container">
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle mr-2"></i>@ViewBag.Error
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+        }
+
+        <div class="admin-title-bar">
+            <h1><i class="fas fa-user-plus"></i> Tạo Tài khoản Mới</h1>
+            <a href="@Url.Action("Index", "Admin")" class="btn btn-secondary"><i class="fas fa-arrow-left mr-1"></i> Quay lại</a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="admin-card card">
+                    <div class="card-header">Thông tin tài khoản</div>
+                    <div class="card-body">
+                        <form asp-action="Create" method="post" class="admin-form">
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label asp-for="Email">Email <span class="text-danger">*</span></label>
+                                    <input asp-for="Email" class="form-control" placeholder="email@example.com" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label asp-for="Password">Mật khẩu <span class="text-danger">*</span></label>
+                                    <input asp-for="Password" type="password" class="form-control" placeholder="Tối thiểu 6 ký tự" />
+                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label asp-for="FullName">Họ và tên <span class="text-danger">*</span></label>
+                                    <input asp-for="FullName" class="form-control" placeholder="Nguyễn Văn A" />
+                                    <span asp-validation-for="FullName" class="text-danger"></span>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label asp-for="Phone">Số điện thoại</label>
+                                    <input asp-for="Phone" class="form-control" placeholder="0123456789" />
+                                    <span asp-validation-for="Phone" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="RoleId">Vai trò <span class="text-danger">*</span></label>
+                                <select asp-for="RoleId" class="form-control" asp-items="roleList"></select>
+                                <span asp-validation-for="RoleId" class="text-danger"></span>
+                                <small class="form-text text-muted">Chỉ Staff hoặc Doctor.</small>
+                            </div>
+                            <hr class="my-4" />
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Tạo tài khoản</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

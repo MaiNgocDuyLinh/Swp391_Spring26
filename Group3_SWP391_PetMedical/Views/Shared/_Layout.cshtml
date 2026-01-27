@@ -38,6 +38,7 @@
 			background-color: #f8f9fa !important;
 		}
 	</style>
+	@RenderSection("Styles", required: false)
 </head>
 
 <body>
@@ -74,6 +75,16 @@
 											<li><a href="@Url.Action("Index", "Home")">Home</a></li>
 											<li><a href="@Url.Action("About", "Home")">About</a></li>
 											<li><a href="@Url.Action("Service", "Service")">Services</a></li>
+											@if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Admin")))
+											{
+												<li>
+													<a href="@Url.Action("Index", "Admin")">Admin</a>
+													<ul class="submenu">
+														<li><a href="@Url.Action("Index", "Admin")">Quản lý Tài khoản</a></li>
+														<li><a href="@Url.Action("Create", "Admin")">Tạo Tài khoản</a></li>
+													</ul>
+												</li>
+											}
 											<li>
 												<a href="blog.html">Blog</a>
 												<ul class="submenu">
@@ -87,7 +98,7 @@
 									</nav>
 								</div>
 								<div class="header-right-btn f-right d-none d-lg-block ml-30">
-									@if (User.Identity.IsAuthenticated)
+									@if (User.Identity?.IsAuthenticated == true)
 									{
 										<div class="dropdown" style="display: inline-block;">
 											<button class="header-btn dropdown-toggle" type="button" id="userDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: white; text-decoration: none;">
@@ -97,6 +108,12 @@
 												<a class="dropdown-item" href="#" style="cursor: default; color: #666;">
 													<i class="fas fa-user"></i> @User.Identity.Name
 												</a>
+												@if (User.IsInRole("Admin") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Admin"))
+												{
+													<div class="dropdown-divider"></div>
+													<a class="dropdown-item" href="@Url.Action("Index", "Admin")" style="padding: 0.5rem 1rem;"><i class="fas fa-cog"></i> Quản lý Tài khoản</a>
+													<a class="dropdown-item" href="@Url.Action("Create", "Admin")" style="padding: 0.5rem 1rem;"><i class="fas fa-user-plus"></i> Tạo Tài khoản</a>
+												}
 												<div class="dropdown-divider"></div>
 												<form asp-controller="Login" asp-action="Logout" method="post" style="margin: 0;">
 													<button type="submit" class="dropdown-item" style="border: none; background: none; width: 100%; text-align: left; cursor: pointer; padding: 0.5rem 1rem;">
@@ -254,5 +271,6 @@
 	<script src="~/assets/js/plugins.js"></script>
 	<script src="~/assets/js/main.js"></script>
 
+	@RenderSection("Scripts", required: false)
 </body>
 </html>
