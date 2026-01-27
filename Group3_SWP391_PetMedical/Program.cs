@@ -13,6 +13,9 @@ namespace Group3_SWP391_PetMedical
             builder.Services.AddDbContext<PetClinicContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
+            builder.Services.AddScoped<IServiceService, ServiceService>();
+
             builder.Services.AddAuthentication("MyCookieAuth")
             .AddCookie("MyCookieAuth", options =>
             {

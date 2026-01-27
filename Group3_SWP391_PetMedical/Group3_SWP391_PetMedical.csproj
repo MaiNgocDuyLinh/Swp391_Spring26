@@ -7,14 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Repository\Implementations\" />
-    <Folder Include="Repository\Interfaces\" />
-    <Folder Include="Services\Implementations\" />
-    <Folder Include="Services\Interfaces\" />
-    <Folder Include="ViewModels\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="wwwroot\login\css\.DS_Store" />
     <None Include="wwwroot\login\fonts\.DS_Store" />
     <None Include="wwwroot\login\images\.DS_Store" />

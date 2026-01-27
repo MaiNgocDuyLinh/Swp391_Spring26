@@ -1,0 +1,243 @@
+﻿@* Service Detail Modal - đồng bộ tone web (Bootstrap 4) *@
+<style>
+    :root {
+        --pc-pink: #ff3e6c;
+        --pc-pink-hover: #e8345e;
+        --pc-soft: #fff3f5;
+        --pc-text: #1f1f1f;
+        --pc-muted: #7a7a7a;
+        --pc-border: rgba(0,0,0,0.06);
+    }
+
+    .service-modal {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 0;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.18);
+    }
+
+    .service-modal__header {
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--pc-border);
+        background: #fff;
+    }
+
+        .service-modal__header .modal-title {
+            font-weight: 800;
+            color: var(--pc-text);
+            margin-bottom: 2px;
+        }
+
+    .service-modal__sub {
+        color: var(--pc-muted);
+    }
+
+    .service-modal__close {
+        font-size: 28px;
+        opacity: .55;
+    }
+
+    .service-modal__body {
+        padding: 20px 22px 10px 22px;
+    }
+
+    .service-modal__top {
+        display: flex;
+        gap: 18px;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: nowrap; /* KHÔNG xuống dòng để giá luôn nằm bên phải */
+    }
+
+        .service-modal__top > div:first-child {
+            flex: 1; /* phần tên + mô tả chiếm hết phần còn lại */
+            min-width: 0; /* tránh bị tràn */
+        }
+
+
+    .service-modal__name {
+        font-size: 22px;
+        font-weight: 900;
+        color: var(--pc-text);
+        line-height: 1.25;
+    }
+
+    .service-modal__desc {
+        margin-top: 8px;
+        color: #555;
+        line-height: 1.7;
+        max-width: 650px;
+    }
+
+    .service-modal__price-box {
+        min-width: 230px;
+        padding: 14px 14px;
+        border-radius: 14px;
+        background: var(--pc-soft);
+        border: 1px solid rgba(255, 62, 108, 0.18);
+        text-align: right;
+    }
+
+    .service-modal__price-label {
+        color: var(--pc-muted);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .service-modal__price {
+        font-size: 20px;
+        font-weight: 900;
+        margin-top: 6px;
+        color: var(--pc-text);
+    }
+
+    .service-modal__divider {
+        margin: 16px 0;
+        opacity: .7;
+    }
+
+    .service-modal__grid .col-md-6 {
+        margin-bottom: 12px;
+    }
+
+    .service-modal__item {
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--pc-border);
+        background: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .service-modal__k {
+        color: #777;
+        font-weight: 700;
+    }
+
+    .service-modal__v {
+        color: #222;
+        font-weight: 900;
+    }
+
+    .service-modal__footer {
+        padding: 16px 22px;
+        border-top: 1px solid var(--pc-border);
+        background: #fff;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    /* Nút đồng bộ */
+    .service-modal__btn {
+        border-radius: 999px !important;
+        padding: 12px 28px !important;
+        font-weight: 900 !important;
+        border: 0 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 50px;
+    }
+
+    .service-modal__btn--primary {
+        background: var(--pc-pink) !important;
+        color: #fff !important;
+        box-shadow: 0 10px 20px rgba(255, 62, 108, 0.20);
+        transition: .2s ease;
+    }
+
+        .service-modal__btn--primary:hover {
+            background: var(--pc-pink-hover) !important;
+            transform: translateY(-1px);
+        }
+
+    .service-modal__btn--ghost {
+        background: #f5f5f5 !important;
+        color: #222 !important;
+        border: 1px solid rgba(0,0,0,0.08) !important;
+        transition: .2s ease;
+    }
+
+        .service-modal__btn--ghost:hover {
+            background: #ececec !important;
+        }
+
+    @@media (max-width: 576px) {
+        .service-modal__price-box
+
+    {
+        width: 100%;
+        text-align: left;
+    }
+
+    .service-modal__footer {
+        justify-content: center;
+    }
+
+    }
+</style>
+
+<div class="modal fade" id="serviceDetailModal" tabindex="-1" role="dialog"
+     aria-labelledby="serviceDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content service-modal">
+
+            <div class="modal-header service-modal__header">
+                <div>
+                    <h5 class="modal-title" id="serviceDetailModalLabel">Chi tiết dịch vụ</h5>
+                    <small class="service-modal__sub">Thông tin đầy đủ về dịch vụ bạn đã chọn</small>
+                </div>
+                <button type="button" class="close service-modal__close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body service-modal__body">
+                <div class="service-modal__top">
+                    <div>
+                        <div class="service-modal__name" id="md_service_name"></div>
+                        <div class="service-modal__desc" id="md_description"></div>
+                    </div>
+
+                    <div class="service-modal__price-box">
+                        <div class="service-modal__price-label">Giá cơ bản</div>
+                        <div class="service-modal__price" id="md_base_price"></div>
+                    </div>
+                </div>
+
+                <hr class="service-modal__divider" />
+
+                <div class="row service-modal__grid">
+                    <div class="col-md-6">
+                        <div class="service-modal__item">
+                            <div class="service-modal__k">Mã dịch vụ</div>
+                            <div class="service-modal__v" id="md_service_id"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="service-modal__item">
+                            <div class="service-modal__k">Thời lượng</div>
+                            <div class="service-modal__v"><span id="md_duration"></span> phút</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="service-modal__item">
+                            <div class="service-modal__k">Dịch vụ tại nhà</div>
+                            <div class="service-modal__v" id="md_is_home_service"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer service-modal__footer">
+                <a id="md_book_now" class="btn service-modal__btn service-modal__btn--primary" href="#">Đặt ngay</a>
+                <button type="button" class="btn service-modal__btn service-modal__btn--ghost" data-dismiss="modal">Đóng</button>
+            </div>
+
+        </div>
+    </div>
+</div>

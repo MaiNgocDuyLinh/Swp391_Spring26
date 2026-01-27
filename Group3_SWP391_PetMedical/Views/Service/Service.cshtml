@@ -1,6 +1,160 @@
+﻿@* @model IEnumerable<Group3_SWP391_PetMedical.Models.Service> *@
+@using Group3_SWP391_PetMedical.ViewModels.Common
+@using Group3_SWP391_PetMedical.Models.Common
+@model ListPageVM<Group3_SWP391_PetMedical.Models.Service>
+
 @{
     ViewData["Title"] = "Services";
+    string[] icons = new[] { "flaticon-animal-kingdom", "flaticon-animals", "flaticon-animals-1" };
+    int i = 0;
 }
+
+<!-- CSS -->
+<style>
+    :root {
+        --btn-bg: #7EB6FF; 
+        --btn-bg-hover: #ff3e6c;
+        --btn-text: #ffffff;
+    }
+
+    /* Fix chiều cao đồng đều cho service card */
+    .single-services {
+        height: 520px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+        /* Nội dung + căn giữa nút */
+        .single-services .services-cap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: center; /* căn giữa nút */
+        }
+
+            .single-services .services-cap h5 a {
+                display: block;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            /* Giới hạn mô tả tối đa 3 dòng */
+            .single-services .services-cap p {
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                min-height: 72px;
+            }
+
+            /* Nút Đặt ngay trong card: to hơn + ngắn theo chữ */
+            .single-services .services-cap .btn {
+                margin-top: auto;
+                background: var(--btn-bg) !important;
+                color: var(--btn-text) !important;
+                border: none !important;
+                display: inline-flex !important;
+                width: auto !important;
+                height: 54px; /* to ra */
+                padding: 0 30px !important;
+                font-size: 16px;
+                font-weight: 800 !important;
+                border-radius: 999px !important;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 10px 20px rgba(255, 62, 108, 0.18);
+                transition: .2s ease;
+            }
+
+                .single-services .services-cap .btn:hover {
+                    background: var(--btn-bg-hover) !important;
+                    transform: translateY(-1px);
+                }
+
+    /* ===== Search bar ===== */
+.pc-searchbar .form-control {
+    height: 52px;
+    border-radius: 999px !important;
+    padding: 0 18px;
+    min-width: 320px;
+    border: 1px solid rgba(0,0,0,0.10);
+}
+
+.pc-searchbar .pc-btn {
+    height: 52px;
+    border-radius: 999px !important;
+    padding: 0 22px;
+    background: var(--btn-bg) !important;
+    color: var(--btn-text) !important;
+    border: none !important;
+    font-weight: 800;
+}
+
+.pc-searchbar .pc-btn:hover {
+    background: var(--btn-bg-hover) !important;
+}
+
+    .pc-searchbar .pc-btn--reset {
+        background: #f5f5f5 !important;
+        color: #222 !important;
+        border: 1px solid rgba(0,0,0,0.10) !important;
+        font-weight: 800;
+    }
+
+        .pc-searchbar .pc-btn--reset:hover {
+            background: #ececec !important;
+            color: #222 !important;
+        }
+/* nút làm mới*/
+    /* icon-only buttons: center perfectly */
+    .pc-searchbar .pc-btn--icon {
+        width: 70px;
+        height: 52px;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 1 !important;
+    }
+
+        .pc-searchbar .pc-btn--icon i {
+            display: block;
+            font-size: 18px;
+            line-height: 1;
+            
+        }
+
+
+/* ===== Pager ===== */
+.pc-pager .page-link {
+    border-radius: 999px !important;
+    margin: 0 6px;
+    min-width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0,0,0,0.10) !important;
+    color: #222 !important;
+    font-weight: 800;
+}
+
+.pc-pager .page-item.active .page-link {
+    background: var(--btn-bg) !important;
+    border-color: var(--btn-bg) !important;
+    color: #fff !important;
+}
+
+.pc-pager .page-item.disabled .page-link {
+    opacity: .45;
+}
+
+
+</style>
+
 
 <!-- Hero Area Start -->
 <div class="slider-area2 slider-height2 d-flex align-items-center">
@@ -8,7 +162,7 @@
         <div class="row">
             <div class="col-xl-12">
                 <div class="hero-cap text-center pt-50">
-                    <h2>Services</h2>
+                    <h2>Dịch Vụ</h2>
                 </div>
             </div>
         </div>
@@ -16,105 +170,112 @@
 </div>
 <!-- Hero Area End -->
 <!--? Our Services Start -->
+
+<div id="servicesArea"></div>
+
 <div class="our-services section-padding30">
     <div class="container">
         <div class="row justify-content-sm-center">
             <div class="cl-xl-7 col-lg-8 col-md-10">
-                <!-- Section Tittle -->
                 <div class="section-tittle text-center mb-70">
-                    <span>Our Professional Services</span>
-                    <h2>Best Pet Care Services</h2>
+                    <span>Dịch vụ chuyên nghiệp của chúng tôi</span>
+                    <h2>Dịch vụ chăm sóc thú cưng tốt nhất</h2>
                 </div>
             </div>
         </div>
+
+
+
+        @{
+            var pagerObj = new PagedResult<object>
+            {
+                Items = Model.Data.Items.Cast<object>().ToList(),
+                Page = Model.Data.Page,
+                PageSize = Model.Data.PageSize,
+                TotalItems = Model.Data.TotalItems
+            };
+        }
+
+
+        <div class="d-flex justify-content-center mb-4">
+            @await Html.PartialAsync("_SearchBar", ("Service", "Service", Model.Q, Model.Data.PageSize))
+        </div>
+
+
         <div class="row">
-            <div class=" col-lg-4 col-md-6 col-sm-6">
-                <div class="single-services text-center mb-30">
-                    <div class="services-ion">
-                        <span class="flaticon-animal-kingdom"></span>
-                    </div>
-                    <div class="services-cap">
-                        <h5><a href="#">Pet Boarding</a></h5>
-                        <p>consectetur adipiscing elit, serfd dgo eiusmod tempor incididunt ut ore et dolore magna aliqua.</p>
-                    </div>
-                </div>
-            </div>
-            <div class=" col-lg-4 col-md-6 col-sm-6">
-                <div class="single-services text-center mb-30">
-                    <div class="services-ion">
-                        <span class="flaticon-animals"></span>
-                    </div>
-                    <div class="services-cap">
-                        <h5><a href="#">Pet Treatment</a></h5>
-                        <p>consectetur adipiscing elit, serfd dgo eiusmod tempor incididunt ut ore et dolore magna aliqua.</p>
-                    </div>
-                </div>
-            </div>
-            <div class=" col-lg-4 col-md-6 col-sm-6">
-                <div class="single-services text-center mb-30">
-                    <div class="services-ion">
-                        <span class="flaticon-animals-1"></span>
-                    </div>
-                    <div class="services-cap">
-                        <h5><a href="#">Vaccinations</a></h5>
-                        <p>consectetur adipiscing elit, serfd dgo eiusmod tempor incididunt ut ore et dolore magna aliqua.</p>
-                    </div>
-                </div>
-            </div>
-            <div class=" col-lg-4 col-md-6 col-sm-6">
-                <div class="single-services text-center mb-30">
-                    <div class="services-ion">
-                        <span class="flaticon-animals"></span>
-                    </div>
-                    <div class="services-cap">
-                        <h5><a href="#">Pet Treatment</a></h5>
-                        <p>consectetur adipiscing elit, serfd dgo eiusmod tempor incididunt ut ore et dolore magna aliqua.</p>
+            @foreach (var s in Model.Data.Items)
+            {
+                var iconClass = icons[i % icons.Length];
+                i++;
+
+                <div class=" col-lg-4 col-md-6 col-sm-6">
+                    <div class="single-services text-center mb-30 service-card"
+                         style="cursor:pointer;"
+                         data-service-id="@s.service_id"
+                         data-service-name="@s.service_name"
+                         data-description="@(s.description ?? "")"
+                         data-base-price="@s.base_price"
+                         data-duration="@(s.duration ?? 0)"
+                         data-is-home-service="@(s.is_home_service == true ? "Có" : "Không")">
+
+                        <div class="services-ion">
+                            <span class="@iconClass"></span>
+                        </div>
+
+                        <div class="services-cap">
+                            <h5><a href="javascript:void(0)">@s.service_name</a></h5>
+                            <p>@(string.IsNullOrWhiteSpace(s.description) ? "Chưa có mô tả cho dịch vụ này." : s.description)</p>
+
+                            <a href="@Url.Action("Create", "Appointment", new { serviceId = s.service_id })"
+                               class="btn btn-sm mt-2"
+                               onclick="event.stopPropagation();">
+                                Đặt ngay
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class=" col-lg-4 col-md-6 col-sm-6">
-                <div class="single-services text-center mb-30">
-                    <div class="services-ion">
-                        <span class="flaticon-animals-1"></span>
-                    </div>
-                    <div class="services-cap">
-                        <h5><a href="#">Vaccinations</a></h5>
-                        <p>consectetur adipiscing elit, serfd dgo eiusmod tempor incididunt ut ore et dolore magna aliqua.</p>
-                    </div>
-                </div>
-            </div>
-            <div class=" col-lg-4 col-md-6 col-sm-6">
-                <div class="single-services text-center mb-30">
-                    <div class="services-ion">
-                        <span class="flaticon-animal-kingdom"></span>
-                    </div>
-                    <div class="services-cap">
-                        <h5><a href="#">Pet Boarding</a></h5>
-                        <p>consectetur adipiscing elit, serfd dgo eiusmod tempor incididunt ut ore et dolore magna aliqua.</p>
-                    </div>
-                </div>
-            </div>
+            }
         </div>
+
+        <div class="mt-4">
+            @await Html.PartialAsync("_Pager", ("Service", "Service", Model.Q, pagerObj))
+        </div>
+
+
     </div>
 </div>
 <!-- Our Services End -->
-<!--? contact-animal-owner Start -->
-<div class="contact-animal-owner section-bg" data-background="~/assets/img/gallery/section_bg04.png">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="contact_text text-center">
-                    <div class="section_title text-center">
-                        <h3>Any time you can call us!</h3>
-                        <p>Because we know that even the best technology is only as good as the people behind it. 24/7 tech support.</p>
-                    </div>
-                    <div class="contact_btn d-flex align-items-center justify-content-center">
-                        <a href="@Url.Action("Contact", "Home")" class="btn white-btn">Contact Us</a>
-                        <p>Or<a href="#"> +880 4664 216</a></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- contact-animal-owner End -->
+@await Html.PartialAsync("~/Views/Service/ServiceDetailModal.cshtml")
+
+@section Scripts {
+    <script>
+        $(document).on('click', '.service-card', function () {
+            var id = $(this).data('service-id');
+            var name = $(this).data('service-name');
+            var desc = $(this).data('description');
+            var basePrice = $(this).data('base-price');
+            var duration = $(this).data('duration');
+            var isHome = $(this).data('is-home-service');
+
+            $('#md_service_id').text(id);
+            $('#md_service_name').text(name);
+            $('#md_description').text(desc || 'Chưa có mô tả.');
+            $('#md_base_price').text(Number(basePrice).toLocaleString('vi-VN') + ' VND');
+            $('#md_duration').text(duration);
+            $('#md_is_home_service').text(isHome);
+
+            $('#md_book_now').attr('href', '@Url.Action("Create", "Appointment")' + '?serviceId=' + id);
+
+            $('#serviceDetailModal').modal('show');
+        });
+
+             $(function () {
+            var params = new URLSearchParams(window.location.search);
+            if (params.has('q') || params.has('page')) {
+                var el = document.getElementById('servicesArea');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    </script>
+
+}

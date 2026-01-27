@@ -1,0 +1,39 @@
+﻿@using Group3_SWP391_PetMedical.Models.Common
+@model (string action, string controller, string? q, PagedResult<object> pager)
+
+@{
+    var actionName = Model.action;
+    var controllerName = Model.controller;
+    var q = Model.q ?? "";
+    var pager = Model.pager;
+
+    int start = Math.Max(1, pager.Page - 2);
+    int end = Math.Min(pager.TotalPages, pager.Page + 2);
+}
+
+@if (pager.TotalPages >= 1)
+{
+    <nav aria-label="Pagination">
+        <ul class="pagination pc-pager justify-content-center">
+
+            <li class="page-item @(pager.HasPrev ? "" : "disabled")">
+                <a class="page-link"
+                   href="@Url.Action(actionName, controllerName, new { q = q, page = pager.Page - 1, pageSize = pager.PageSize })">«</a>
+            </li>
+
+            @for (int p = start; p <= end; p++)
+            {
+                <li class="page-item @(p == pager.Page ? "active" : "")">
+                    <a class="page-link"
+                       href="@Url.Action(actionName, controllerName, new { q = q, page = p, pageSize = pager.PageSize })">@p</a>
+                </li>
+            }
+
+            <li class="page-item @(pager.HasNext ? "" : "disabled")">
+                <a class="page-link"
+                   href="@Url.Action(actionName, controllerName, new { q = q, page = pager.Page + 1, pageSize = pager.PageSize })#servicesArea">»</a>
+            </li>
+
+        </ul>
+    </nav>
+}

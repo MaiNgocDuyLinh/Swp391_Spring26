@@ -40,6 +40,7 @@
 	</style>
 </head>
 
+
 <body>
 	<!-- Preloader Start -->
 	<div id="preloader-active">
@@ -97,7 +98,10 @@
 												<a class="dropdown-item" href="#" style="cursor: default; color: #666;">
 													<i class="fas fa-user"></i> @User.Identity.Name
 												</a>
-												<div class="dropdown-divider"></div>
+											<div class="dropdown-divider"></div>
+
+
+
 												<form asp-controller="Login" asp-action="Logout" method="post" style="margin: 0;">
 													<button type="submit" class="dropdown-item" style="border: none; background: none; width: 100%; text-align: left; cursor: pointer; padding: 0.5rem 1rem;">
 														<i class="fas fa-sign-out-alt"></i> Logout
@@ -253,6 +257,6 @@
 	<!-- Jquery Plugins, main Jquery -->
 	<script src="~/assets/js/plugins.js"></script>
 	<script src="~/assets/js/main.js"></script>
-
+	@RenderSection("Scripts", required: false)
 </body>
 </html>
