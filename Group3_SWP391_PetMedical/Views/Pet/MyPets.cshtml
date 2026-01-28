@@ -1,0 +1,405 @@
+﻿@using Group3_SWP391_PetMedical.ViewModels.Pet
+@model MyPetsVm
+
+@{
+    ViewData["Title"] = "Thú cưng của tôi";
+    var q = Model.Query.Q ?? "";
+    var pageSize = Model.Query.PageSize;
+    var defaultImg = Url.Content("~/assets/img/Avt/AvtPetDefault.png");
+}
+
+<style>
+    /* ====== PAGE SPACING (header sticky) ====== */
+    .mypets-page {
+        padding-top: 140px;
+    }
+
+    @@media (max-width: 991.98px) {
+        .mypets-page {
+            padding-top: 160px;
+        }
+    }
+
+    /* ====== OUTER ROUNDED FRAME ====== */
+    .mypets-frame {
+        background: #ffffff;
+        border: 1px solid #eef0f4;
+        border-radius: 26px;
+        padding: 44px 34px;
+        box-shadow: 0 18px 40px rgba(0,0,0,.06);
+    }
+
+    @@media (max-width: 575.98px) {
+        .mypets-frame {
+            padding: 28px 18px;
+            border-radius: 20px;
+        }
+    }
+
+    /* ====== HERO ====== */
+    .mypets-hero {
+        text-align: center;
+        margin-bottom: 22px;
+    }
+
+        .mypets-hero .title {
+            font-size: 52px;
+            line-height: 1.15;
+            font-weight: 900;
+            color: #0b1c39;
+            margin: 0;
+        }
+
+    @@media (max-width: 991.98px) {
+        .mypets-hero .title {
+            font-size: 38px;
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .mypets-hero .title {
+            font-size: 30px;
+        }
+    }
+
+    /* ====== SEARCH + ADD ROW ====== */
+    .mypets-search-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px; /* giống mypets-actions */
+        margin: 20px 0 30px;
+    }
+
+    .mypets-search-left {
+        flex: 1;
+        width: 100%;
+        max-width: 560px;
+    }
+
+    .mypets-search-right {
+        flex: 0 0 auto;
+    }
+
+    .mypets-search-left form.pc-searchbar {
+        width: 100%;
+        justify-content: center;
+        gap: 14px !important;
+        flex-wrap: nowrap;
+    }
+
+    @@media (max-width: 575.98px) {
+        .mypets-search-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .mypets-search-left {
+            max-width: 100%;
+        }
+
+            .mypets-search-left form.pc-searchbar {
+                flex-wrap: wrap;
+            }
+    }
+
+    .mypets-search-left form.pc-searchbar input.form-control {
+        height: 52px;
+        border-radius: 999px;
+        border: 1px solid #eef0f4;
+        padding: 12px 18px;
+        box-shadow: none;
+    }
+
+        .mypets-search-left form.pc-searchbar input.form-control:focus {
+            border-color: rgba(255,61,28,.35);
+            box-shadow: 0 0 0 .2rem rgba(255,61,28,.10);
+        }
+
+    .mypets-search-left .pc-btn {
+        height: 52px;
+        border-radius: 999px;
+        padding: 0 22px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        transition: .2s ease;
+    }
+
+    /* nút giống service (xanh) */
+    .mypets-search-left .pc-btn--primary,
+    .mypets-search-left .pc-btn--ghost {
+        background: #5aa9ff;
+        border: 1px solid #5aa9ff;
+        color: #fff;
+    }
+
+        .mypets-search-left .pc-btn--primary:hover,
+        .mypets-search-left .pc-btn--ghost:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 30px rgba(0,0,0,.08);
+            color: #fff;
+        }
+
+    /* ====== ADD PET BUTTON (đều như btn Edit/Delete) ====== */
+    .mypets-add-btn {
+        height: 52px;
+        border-radius: 999px;
+        padding: 0 22px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px; /* giống icon-text */
+        background: #ff3d1c;
+        border: 1px solid #ff3d1c;
+        color: #fff;
+        text-decoration: none;
+        transition: .2s ease;
+        white-space: nowrap;
+    }
+
+        .mypets-add-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 30px rgba(0,0,0,.08);
+            color: #fff;
+            text-decoration: none;
+        }
+
+    @@media (max-width: 575.98px) {
+        .mypets-add-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* ====== PET CARD (service-like) ====== */
+    .mypets-card {
+        background: #fff5f7;
+        border-radius: 18px;
+        padding: 28px 22px 20px;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        transition: .2s ease;
+        border: 1px solid rgba(255, 61, 28, .10);
+        text-align: center;
+    }
+
+        .mypets-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 40px rgba(0,0,0,.10);
+        }
+
+    .mypets-avatar {
+        width: 92px;
+        height: 92px;
+        border-radius: 999px;
+        background: rgba(255,61,28,.10);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 14px;
+        overflow: hidden;
+    }
+
+        .mypets-avatar img {
+            width: 76px;
+            height: 76px;
+            border-radius: 999px;
+            object-fit: cover;
+            display: block;
+            background: #fff;
+        }
+
+    .mypets-name {
+        font-size: 20px;
+        font-weight: 900;
+        color: #0b1c39;
+        margin: 0 0 14px;
+    }
+
+    .mypets-meta {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        color: #5d6b82;
+        font-size: 15px;
+        line-height: 1.9;
+        text-align: left;
+        max-width: 320px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+        .mypets-meta b {
+            color: #0b1c39;
+            font-weight: 800;
+        }
+
+    /* ====== ACTION BUTTONS (Edit/Delete) ====== */
+    .mypets-actions {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+        .mypets-actions .btn {
+            border-radius: 999px;
+            font-weight: 800;
+            padding: 10px 14px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mypets-actions .btn-edit {
+            background: #ffffff;
+            border: 1px solid rgba(90,169,255,.45);
+            color: #2b6cb0;
+        }
+
+            .mypets-actions .btn-edit:hover {
+                background: rgba(90,169,255,.10);
+            }
+
+        .mypets-actions .btn-delete {
+            background: #ffffff;
+            border: 1px solid rgba(255,61,28,.35);
+            color: #ff3d1c;
+        }
+
+            .mypets-actions .btn-delete:hover {
+                background: rgba(255,61,28,.10);
+            }
+
+    /* ====== PAGER ====== */
+    .mypets-page .pc-pager .page-link {
+        border: 1px solid #eef0f4;
+        color: #0b1c39;
+        margin: 0 4px;
+        border-radius: 999px;
+        min-width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mypets-page .pc-pager .page-item.active .page-link {
+        background: #5aa9ff;
+        border-color: #5aa9ff;
+        color: #fff;
+    }
+</style>
+
+<section class="services-area section-padding40 mypets-page">
+    <div class="container">
+
+        <!-- KHUNG BO TRÒN BAO TẤT CẢ -->
+        <div class="mypets-frame">
+
+            <div class="mypets-hero">
+                <h1 class="title">Thú cưng của tôi</h1>
+            </div>
+
+            @* IMPORTANT: SearchBar + Pager đang dùng #servicesArea *@
+            <div id="servicesArea">
+
+                <!-- SEARCH + ADD -->
+                <div class="mypets-search-row">
+                    <div class="mypets-search-left">
+                        @await Html.PartialAsync("_SearchBar", ("MyPets", "Pet", q, pageSize))
+                    </div>
+
+                    <div class="mypets-search-right">
+                        <a class="mypets-add-btn" href="@Url.Action("Create", "Pet")">
+                            <i class="fas fa-plus"></i> Thêm thú cưng
+                        </a>
+                    </div>
+                </div>
+
+                @* list pet *@
+                @if (!Model.Result.Items.Any())
+                {
+                    <div class="alert alert-info text-center" style="border-radius:16px;">
+                        Không tìm thấy thú cưng nào.
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        @foreach (var pet in Model.Result.Items)
+                        {
+                            string imgUrl;
+                            if (string.IsNullOrWhiteSpace(pet.PetImg))
+                            {
+                                imgUrl = defaultImg;
+                            }
+                            else if (pet.PetImg.StartsWith("http", StringComparison.OrdinalIgnoreCase) || pet.PetImg.StartsWith("/"))
+                            {
+                                imgUrl = pet.PetImg;
+                            }
+                            else
+                            {
+                                imgUrl = Url.Content("~/uploads/pets/" + pet.PetImg);
+                            }
+
+                            <div class="col-xl-4 col-lg-4 col-md-6 mb-4">
+                                <div class="mypets-card">
+
+                                    <div class="mypets-avatar">
+                                        <img src="@imgUrl"
+                                             alt="@pet.Name"
+                                             onerror="this.onerror=null;this.src='@defaultImg';" />
+                                    </div>
+
+                                    <h3 class="mypets-name">@pet.Name</h3>
+
+                                    <ul class="mypets-meta">
+                                        <li><b>Loài:</b> @(pet.Species ?? "—")</li>
+                                        <li><b>Giống:</b> @(pet.Breed ?? "—")</li>
+                                        <li><b>Tuổi:</b> @(pet.Age?.ToString() ?? "—") <i>(năm)</i></li>
+                                        <li><b>Cân nặng:</b> @(pet.Weight?.ToString("0.##") ?? "—") <i>(kg)</i></li>
+                                    </ul>
+
+                                    <!-- 2 nút Sửa / Xóa -->
+                                    <div class="mypets-actions">
+                                        <a class="btn btn-edit"
+                                           href="@Url.Action("Edit", "Pet", new { id = pet.PetId })">
+                                            <i class="fas fa-edit"></i> Sửa
+                                        </a>
+
+                                        <form asp-controller="Pet"
+                                              asp-action="Delete"
+                                              asp-route-id="@pet.PetId"
+                                              method="post"
+                                              style="margin:0;"
+                                              onsubmit="return confirm('Bạn chắc chắn muốn xóa thú cưng này không?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-delete">
+                                                <i class="fas fa-trash"></i> Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            @await Html.PartialAsync("_Pager", ("MyPets", "Pet", q, Model.Pager))
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</section>

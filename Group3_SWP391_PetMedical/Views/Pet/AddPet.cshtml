@@ -1,0 +1,273 @@
+﻿@model Group3_SWP391_PetMedical.ViewModels.Pet.CreatePetVm
+
+@{
+    ViewData["Title"] = "Thêm thú cưng";
+    var defaultImg = Url.Content("~/assets/img/Avt/AvtPetDefault.png");
+}
+
+<style>
+    .petform-page {
+        padding-top: 140px;
+    }
+
+    @@media (max-width: 991.98px) {
+        .petform-page {
+            padding-top: 160px;
+        }
+    }
+
+    .petform-frame {
+        background: #ffffff;
+        border: 1px solid #eef0f4;
+        border-radius: 26px;
+        padding: 38px 34px;
+        box-shadow: 0 18px 40px rgba(0,0,0,.06);
+        max-width: 920px;
+        margin: 0 auto;
+    }
+
+    @@media (max-width: 575.98px) {
+        .petform-frame {
+            padding: 26px 16px;
+            border-radius: 20px;
+        }
+    }
+
+    .petform-title {
+        text-align: center;
+        margin-bottom: 18px;
+    }
+
+        .petform-title h1 {
+            font-size: 44px;
+            font-weight: 900;
+            color: #0b1c39;
+            margin: 0;
+        }
+
+    @@media (max-width: 575.98px) {
+        .petform-title h1 {
+            font-size: 30px;
+        }
+    }
+
+    .petform-card {
+        background: #fff5f7;
+        border: 1px solid rgba(255, 61, 28, .10);
+        border-radius: 18px;
+        padding: 22px;
+    }
+
+    .petform-label {
+        font-weight: 800;
+        color: #0b1c39;
+    }
+
+    .petform-input {
+        height: 52px;
+        border-radius: 14px;
+        border: 1px solid #eef0f4;
+        box-shadow: none;
+    }
+
+        .petform-input:focus {
+            border-color: rgba(255,61,28,.35);
+            box-shadow: 0 0 0 .2rem rgba(255,61,28,.10);
+        }
+
+    .petform-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+    }
+
+    .btn-main {
+        height: 52px;
+        border-radius: 999px;
+        padding: 0 22px;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border: none;
+        transition: .2s ease;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .btn-save {
+        background: #ff3d1c;
+        color: #fff;
+    }
+
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 30px rgba(0,0,0,.08);
+            color: #fff;
+            text-decoration: none;
+        }
+
+    .btn-back {
+        background: #5aa9ff;
+        color: #fff;
+    }
+
+        .btn-back:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 30px rgba(0,0,0,.08);
+            color: #fff;
+            text-decoration: none;
+        }
+
+    /* ===== Preview box ===== */
+    .pet-preview-wrap {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+
+    .pet-preview {
+        width: 96px;
+        height: 96px;
+        border-radius: 999px;
+        object-fit: cover;
+        background: #fff;
+        border: 1px solid #eef0f4;
+    }
+
+    .pet-preview-hint {
+        color: #5d6b82;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+</style>
+
+<section class="services-area section-padding40 petform-page">
+    <div class="container">
+        <div class="petform-frame">
+            <div class="petform-title">
+                <h1>Thêm thú cưng</h1>
+            </div>
+
+            <div class="petform-card">
+                <form asp-controller="Pet" asp-action="Create" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom:12px;"></div>
+
+                    <div class="row">
+                        <!-- Ảnh preview + upload -->
+                        <div class="col-12 mb-3">
+                            <label class="petform-label">Ảnh thú cưng</label>
+
+                            <div class="pet-preview-wrap">
+                                <img id="petPreview"
+                                     class="pet-preview"
+                                     src="@defaultImg"
+                                     alt="Preview"
+                                     onerror="this.onerror=null;this.src='@defaultImg';" />
+
+                                <div class="pet-preview-hint">
+                                    Chọn ảnh để xem trước.<br />
+                                    (Hỗ trợ jpg/png/webp, dung lượng vừa phải)
+                                </div>
+                            </div>
+
+                            <input asp-for="PetImage"
+                                   id="petImageInput"
+                                   type="file"
+                                   class="form-control petform-input"
+                                   accept="image/*"
+                                   style="padding-top:12px;height:auto;" />
+                            <span asp-validation-for="PetImage" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="petform-label">Tên thú cưng</label>
+                            <input asp-for="Name" class="form-control petform-input" placeholder="VD: Miu, Lucky..." />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="petform-label">Loài</label>
+                            <input asp-for="Species" class="form-control petform-input" placeholder="VD: Chó, Mèo, Thỏ..." />
+                            <span asp-validation-for="Species" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="petform-label">Giống</label>
+                            <input asp-for="Breed" class="form-control petform-input" placeholder="VD: Poodle, Alaska..." />
+                            <span asp-validation-for="Breed" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="petform-label">Cân nặng (kg)</label>
+                            <input asp-for="Weight" class="form-control petform-input" step="0.01" />
+                            <span asp-validation-for="Weight" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3"> 
+                            <label class="petform-label">Tuổi (năm)</label>
+                            @* <input asp-for="Age" type="number" class="form-control petform-input" placeholder="Nhập tuổi..." />
+                            <span asp-validation-for="Age" class="text-danger"></span> *@
+                            <input asp-for="Age"
+                                   type="number"
+                                   step="0.1"
+                                   min="0"
+                                   class="form-control petform-input"
+                                   placeholder="VD:1,2,3 ...." />
+                            <span asp-validation-for="Age" class="text-danger"></span>
+
+                        </div>
+                    </div>
+
+                    <div class="petform-actions">
+                        <button type="submit" class="btn-main btn-save">
+                            <i class="fas fa-save"></i> Lưu
+                        </button>
+                        <a class="btn-main btn-back" href="@Url.Action("MyPets", "Pet")">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        (function () {
+            const input = document.getElementById('petImageInput');
+            const preview = document.getElementById('petPreview');
+            const defaultSrc = preview.getAttribute('src');
+
+            if (!input || !preview) return;
+
+            input.addEventListener('change', function () {
+                const file = this.files && this.files[0];
+                if (!file) {
+                    preview.src = defaultSrc;
+                    return;
+                }
+
+                if (!file.type.startsWith('image/')) {
+                    alert('File bạn chọn không phải ảnh.');
+                    this.value = '';
+                    preview.src = defaultSrc;
+                    return;
+                }
+
+                const url = URL.createObjectURL(file);
+                preview.src = url;
+
+                // giải phóng memory sau khi load xong
+                preview.onload = () => URL.revokeObjectURL(url);
+            });
+        })();
+    </script>
+}

@@ -4,6 +4,6 @@
     {
         public string? Q { get; set; }          // keyword
         public int Page { get; set; } = 1;
-        public int PageSize { get; set; } = 9;  // default
+        public int PageSize { get; set; } = 6;  // default
     }
 }
