@@ -1,0 +1,217 @@
+@model List<Group3_SWP391_PetMedical.Models.Appointment>
+@{
+    ViewData["Title"] = "Lịch khám theo ngày";
+    var selectedDate = (DateTime)ViewBag.SelectedDate;
+    int currentPage = ViewBag.CurrentPage;
+    int totalPages = ViewBag.TotalPages;
+    int totalItems = ViewBag.TotalItems;
+    string? search = ViewBag.Search;
+}
+
+<!-- Hero Area Start -->
+<div class="slider-area2 slider-height2 d-flex align-items-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="hero-cap text-center pt-50">
+                    <h2>Lịch khám theo ngày</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Hero Area End -->
+
+<div class="container" style="padding: 50px 0;">
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="get" asp-action="AppointmentList" asp-controller="Staff" class="form-row align-items-center">
+                        <div class="col-auto">
+                            <label for="date" class="font-weight-bold">
+                                <i class="fas fa-calendar-alt"></i> Ngày:
+                            </label>
+                        </div>
+                        <div class="col-auto">
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="@selectedDate.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="search" value="@search"
+                                   placeholder="Tìm khách hàng, thú cưng, bác sĩ..." />
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-search"></i> Tìm
+                            </button>
+                        </div>
+                        @if (!string.IsNullOrEmpty(search))
+                        {
+                            <div class="col-auto">
+                                <a href="@Url.Action("AppointmentList", "Staff", new { date = selectedDate.ToString("yyyy-MM-dd") })" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Xóa lọc
+                                </a>
+                            </div>
+                        }
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointment List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-check"></i> 
+                        Lịch khám ngày @selectedDate.ToString("dd/MM/yyyy")
+                        @if (selectedDate.Date == DateTime.Today)
+                        {
+                            <span class="badge badge-light ml-2">Hôm nay</span>
+                        }
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Giờ khám</th>
+                                    <th>Khách hàng</th>
+                                    <th>Thú cưng</th>
+                                    <th>Bác sĩ</th>
+                                    <th>Dịch vụ</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    int index = (currentPage - 1) * 5 + 1;
+                                    @foreach (var appointment in Model)
+                                    {
+                                        <tr>
+                                            <td>@index</td>
+                                            <td><strong>@appointment.appointment_date.ToString("HH:mm")</strong></td>
+                                            <td>@(appointment.customer?.full_name ?? "N/A")</td>
+                                            <td>
+                                                @if (appointment.pet != null)
+                                                {
+                                                    <span>@appointment.pet.name</span>
+                                                    <small class="text-muted">(@(appointment.pet.species ?? ""))</small>
+                                                }
+                                                else
+                                                {
+                                                    <span>N/A</span>
+                                                }
+                                            </td>
+                                            <td>@(appointment.doctor?.full_name ?? "Chưa phân công")</td>
+                                            <td>
+                                                @if (appointment.AppointmentDetails != null && appointment.AppointmentDetails.Any())
+                                                {
+                                                    <ul class="list-unstyled mb-0">
+                                                        @foreach (var detail in appointment.AppointmentDetails)
+                                                        {
+                                                            <li><small>• @(detail.service?.service_name ?? "N/A")</small></li>
+                                                        }
+                                                    </ul>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Chưa có dịch vụ</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @switch (appointment.status)
+                                                {
+                                                    case "Pending":
+                                                        <span class="badge badge-warning">Chờ xử lý</span>
+                                                        break;
+                                                    case "Confirmed":
+                                                        <span class="badge badge-info">Đã xác nhận</span>
+                                                        break;
+                                                    case "Completed":
+                                                        <span class="badge badge-success">Hoàn thành</span>
+                                                        break;
+                                                    case "Cancelled":
+                                                        <span class="badge badge-danger">Đã hủy</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge badge-secondary">@appointment.status</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td><small>@(appointment.notes ?? "-")</small></td>
+                                        </tr>
+                                        index++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4">
+                                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted mb-0">Không tìm thấy lịch khám nào</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    @if (totalPages > 1)
+                    {
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("AppointmentList", "Staff", new { date = selectedDate.ToString("yyyy-MM-dd"), search = search, page = currentPage - 1 })">
+                                        <i class="fas fa-chevron-left"></i> Trước
+                                    </a>
+                                </li>
+                                @for (int i = 1; i <= totalPages; i++)
+                                {
+                                    <li class="page-item @(i == currentPage ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("AppointmentList", "Staff", new { date = selectedDate.ToString("yyyy-MM-dd"), search = search, page = i })">@i</a>
+                                    </li>
+                                }
+                                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("AppointmentList", "Staff", new { date = selectedDate.ToString("yyyy-MM-dd"), search = search, page = currentPage + 1 })">
+                                        Sau <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
+
+                    <!-- Stats -->
+                    <div class="text-muted text-center">
+                        <small>Hiển thị @Model?.Count mục trên tổng @totalItems | Trang @currentPage / @(totalPages == 0 ? 1 : totalPages)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card { border-radius: 10px; }
+    .card-header { border-radius: 10px 10px 0 0; }
+    .table th, .table td { vertical-align: middle; }
+    .badge { padding: 6px 10px; font-size: 0.85em; }
+    .pagination .page-link { color: #28a745; }
+    .pagination .page-item.active .page-link { background-color: #28a745; border-color: #28a745; }
+    .form-control { height: 45px; }
+    .form-row .btn { 
+        height: 45px; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
