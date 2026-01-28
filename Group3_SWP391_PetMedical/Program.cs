@@ -16,6 +16,14 @@ namespace Group3_SWP391_PetMedical
             builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
             builder.Services.AddScoped<IServiceService, ServiceService>();
 
+            // Staff Module DI
+            builder.Services.AddScoped<Group3_SWP391_PetMedical.Repository.Interfaces.IUserRepository,
+                                       Group3_SWP391_PetMedical.Repository.Implementations.UserRepository>();
+            builder.Services.AddScoped<Group3_SWP391_PetMedical.Repository.Interfaces.IAppointmentRepository,
+                                       Group3_SWP391_PetMedical.Repository.Implementations.AppointmentRepository>();
+            builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IStaffService,
+                                       Group3_SWP391_PetMedical.Services.Implementations.StaffService>();
+
             builder.Services.AddAuthentication("MyCookieAuth")
             .AddCookie("MyCookieAuth", options =>
             {
