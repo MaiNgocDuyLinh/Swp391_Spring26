@@ -20,7 +20,7 @@ public partial class Pet
     public double? weight { get; set; }
 
     public DateTime? created_at { get; set; }
-
+    public string? PetImg { get; set; }
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
     public virtual User owner { get; set; } = null!;

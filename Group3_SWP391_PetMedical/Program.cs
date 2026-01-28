@@ -1,5 +1,9 @@
 using Group3_SWP391_PetMedical.Models;
 using Microsoft.EntityFrameworkCore;
+using Group3_SWP391_PetMedical.Repository.Interfaces;
+using Group3_SWP391_PetMedical.Repository.Implementations;
+using Group3_SWP391_PetMedical.Services.Interfaces;
+using Group3_SWP391_PetMedical.Services.Implementations;
 
 namespace Group3_SWP391_PetMedical
 {
@@ -15,6 +19,14 @@ namespace Group3_SWP391_PetMedical
 
             builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
             builder.Services.AddScoped<IServiceService, ServiceService>();
+
+            //list pet
+            builder.Services.AddScoped<IPetRepository, PetRepository>();
+            builder.Services.AddScoped<IPetService, PetService>();
+
+            //edit pet
+            builder.Services.AddScoped<IPetRepository, PetRepository>();
+            builder.Services.AddScoped<IPetService, PetService>();
 
             builder.Services.AddAuthentication("MyCookieAuth")
             .AddCookie("MyCookieAuth", options =>
@@ -44,6 +56,8 @@ namespace Group3_SWP391_PetMedical
             // Phải đặt UseAuthentication() trước UseAuthorization()
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseStaticFiles();
 
             app.MapGet("/", context =>
             {

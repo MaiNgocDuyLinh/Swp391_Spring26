@@ -163,10 +163,15 @@ public partial class PetClinicContext : DbContext
             entity.Property(e => e.name).HasMaxLength(100);
             entity.Property(e => e.species).HasMaxLength(50);
 
+            // NEW:
+            entity.Property(e => e.PetImg).HasMaxLength(255).IsUnicode(false);
+
             entity.HasOne(d => d.owner).WithMany(p => p.Pets)
                 .HasForeignKey(d => d.owner_id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Pet_Owner");
+
+
         });
 
         modelBuilder.Entity<Prescription>(entity =>
