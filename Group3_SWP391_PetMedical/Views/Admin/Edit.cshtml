@@ -1,0 +1,98 @@
+@using Group3_SWP391_PetMedical.ViewModels
+@model EditAccountViewModel
+@{
+    ViewData["Title"] = "Sửa Tài khoản";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" />
+}
+
+<div class="admin-page">
+    <div class="container">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+        }
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @ViewBag.Error
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+        }
+
+        <div class="admin-title-bar">
+            <h1><i class="fas fa-user-edit"></i> Sửa Tài khoản</h1>
+            <a href="@Url.Action("Index", "Admin")" class="btn btn-secondary"><i class="fas fa-arrow-left mr-1"></i> Quay lại</a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="admin-card card">
+                    <div class="card-header">Thông tin tài khoản</div>
+                    <div class="card-body">
+                        <form asp-action="Edit" method="post" class="admin-form">
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                            <input type="hidden" asp-for="UserId" />
+                            <input type="hidden" asp-for="Email" />
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="text" class="form-control" value="@Model.Email" disabled />
+                                <small class="form-text text-muted">Email không thể thay đổi.</small>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="FullName">Họ và tên <span class="text-danger">*</span></label>
+                                <input asp-for="FullName" class="form-control" placeholder="Nguyễn Văn A" />
+                                <span asp-validation-for="FullName" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Phone">Số điện thoại</label>
+                                <input asp-for="Phone" class="form-control" placeholder="0123456789" />
+                                <span asp-validation-for="Phone" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="RoleId">Vai trò <span class="text-danger">*</span></label>
+                                <select name="RoleId" id="RoleId" class="form-control" required>
+                                    @foreach (var r in Model.AvailableRoles)
+                                    {
+                                        if (Model.RoleId == r.RoleId)
+                                        { <option value="@r.RoleId" selected>@r.RoleName</option> }
+                                        else
+                                        { <option value="@r.RoleId">@r.RoleName</option> }
+                                    }
+                                </select>
+                                <span asp-validation-for="RoleId" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="Status">Trạng thái <span class="text-danger">*</span></label>
+                                <select name="Status" id="Status" class="form-control" required>
+                                    @if (Model.Status == "Active")
+                                    { <option value="Active" selected>Hoạt động</option> }
+                                    else
+                                    { <option value="Active">Hoạt động</option> }
+                                    @if (Model.Status == "Inactive")
+                                    { <option value="Inactive" selected>Đã khóa</option> }
+                                    else
+                                    { <option value="Inactive">Đã khóa</option> }
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                            <hr class="my-4" />
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Lưu thay đổi</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

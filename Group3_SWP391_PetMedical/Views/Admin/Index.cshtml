@@ -1,0 +1,191 @@
+@using Group3_SWP391_PetMedical.ViewModels
+@model AccountListViewModel
+@{
+    ViewData["Title"] = "Quản lý Tài khoản";
+    string BadgeRole(string name) =>
+        name == "Admin" ? "badge-role badge-role-admin" :
+        name == "Staff" ? "badge-role badge-role-staff" :
+        name == "Doctor" ? "badge-role badge-role-doctor" :
+        "badge-role badge-role-customer";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" />
+}
+
+<div class="admin-page">
+    <div class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle mr-2"></i>@TempData["SuccessMessage"]
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+        }
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle mr-2"></i>@ViewBag.Error
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+        }
+
+        <div class="admin-title-bar">
+            <h1><i class="fas fa-users"></i> Quản lý Tài khoản</h1>
+            <a href="@Url.Action("Create", "Admin")" class="btn btn-primary">
+                <i class="fas fa-plus mr-1"></i> Tạo tài khoản mới
+            </a>
+        </div>
+
+        <div class="admin-filter">
+            <form method="get" action="@Url.Action("Index", "Admin")">
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label>Tìm kiếm</label>
+                        <input type="text" class="form-control" name="searchTerm" value="@Model.SearchTerm" placeholder="Email, tên, SĐT..." />
+                    </div>
+                    <div class="filter-item">
+                        <label>Vai trò</label>
+                        <select class="form-control" name="roleFilter">
+                            <option value="">Tất cả</option>
+                            @foreach (var r in Model.AvailableRoles)
+                            {
+                                if (Model.RoleFilter == r.RoleId.ToString())
+                                { <option value="@r.RoleId" selected>@r.RoleName</option> }
+                                else
+                                { <option value="@r.RoleId">@r.RoleName</option> }
+                            }
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Trạng thái</label>
+                        <select class="form-control" name="statusFilter">
+                            <option value="">Tất cả</option>
+                            @if (Model.StatusFilter == "Active")
+                            { <option value="Active" selected>Hoạt động</option> }
+                            else
+                            { <option value="Active">Hoạt động</option> }
+                            @if (Model.StatusFilter == "Inactive")
+                            { <option value="Inactive" selected>Đã khóa</option> }
+                            else
+                            { <option value="Inactive">Đã khóa</option> }
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn btn-primary btn-search btn-block"><i class="fas fa-search mr-1"></i> Tìm kiếm</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="admin-card card">
+            <div class="card-body">
+                @if (Model.Accounts != null && Model.Accounts.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Email</th>
+                                    <th>Họ tên</th>
+                                    <th>SĐT</th>
+                                    <th>Vai trò</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày tạo</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var a in Model.Accounts)
+                                {
+                                    <tr>
+                                        <td><strong>@a.UserId</strong></td>
+                                        <td>@a.Email</td>
+                                        <td>@a.FullName</td>
+                                        <td>@(a.Phone ?? "—")</td>
+                                        <td><span class="badge @BadgeRole(a.RoleName)">@a.RoleName</span></td>
+                                        <td>
+                                            @if (a.Status == "Active")
+                                            { <span class="badge badge-status badge-status-active">Hoạt động</span> }
+                                            else
+                                            { <span class="badge badge-status badge-status-inactive">Đã khóa</span> }
+                                        </td>
+                                        <td>@(a.CreatedAt?.ToString("dd/MM/yyyy"))</td>
+                                        <td class="text-center">
+                                            <div class="admin-btn-group btn-group btn-group-sm">
+                                                <a href="@Url.Action("Details", "Admin", new { id = a.UserId })" class="btn btn-outline-info" title="Chi tiết"><i class="fas fa-eye"></i></a>
+                                                @if (a.RoleName != "Admin")
+                                                {
+                                                    <a href="@Url.Action("Edit", "Admin", new { id = a.UserId })" class="btn btn-outline-primary" title="Sửa vai trò"><i class="fas fa-edit"></i></a>
+                                                    <button type="button" class="btn @(a.Status == "Active" ? "btn-outline-warning" : "btn-outline-success") btn-toggle-lock" data-id="@a.UserId" data-status="@a.Status" title="@(a.Status == "Active" ? "Khóa" : "Mở khóa")">
+                                                        <i class="fas @(a.Status == "Active" ? "fa-lock" : "fa-unlock")"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (Model.TotalPages > 1)
+                    {
+                        <nav class="mt-3">
+                            <ul class="pagination justify-content-center flex-wrap mb-0">
+                                @if (Model.CurrentPage > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", "Admin", new { page = Model.CurrentPage - 1, searchTerm = Model.SearchTerm, roleFilter = Model.RoleFilter, statusFilter = Model.StatusFilter })"><i class="fas fa-chevron-left"></i> Trước</a>
+                                    </li>
+                                }
+                                @for (var i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                                {
+                                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("Index", "Admin", new { page = i, searchTerm = Model.SearchTerm, roleFilter = Model.RoleFilter, statusFilter = Model.StatusFilter })">@i</a>
+                                    </li>
+                                }
+                                @if (Model.CurrentPage < Model.TotalPages)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", "Admin", new { page = Model.CurrentPage + 1, searchTerm = Model.SearchTerm, roleFilter = Model.RoleFilter, statusFilter = Model.StatusFilter })">Sau <i class="fas fa-chevron-right"></i></a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+                    <p class="text-center text-muted small mt-2 mb-0">
+                        Hiển thị @((Model.CurrentPage - 1) * Model.PageSize + 1)–@(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalRecords)) / @Model.TotalRecords tài khoản
+                    </p>
+                }
+                else
+                {
+                    <div class="admin-empty">
+                        <i class="fas fa-inbox d-block"></i>
+                        <p class="mb-0">Chưa có tài khoản nào.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(function () {
+    $('.btn-toggle-lock').on('click', function () {
+        var btn = $(this), id = btn.data('id'), status = btn.data('status');
+        var msg = status === 'Active' ? 'Khóa tài khoản này?' : 'Mở khóa tài khoản này?';
+        if (!confirm(msg)) return;
+        $.post('@Url.Action("ToggleLock", "Admin")', { id: id })
+            .done(function (r) {
+                if (r.success) location.reload();
+                else alert(r.message || 'Lỗi.');
+            })
+            .fail(function () { alert('Có lỗi xảy ra.'); });
+    });
+});
+</script>
+}

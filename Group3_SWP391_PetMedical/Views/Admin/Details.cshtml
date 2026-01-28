@@ -1,0 +1,83 @@
+@using Group3_SWP391_PetMedical.ViewModels
+@model AccountViewModel
+@{
+    ViewData["Title"] = "Chi tiết Tài khoản";
+    string BadgeRole(string name) =>
+        name == "Admin" ? "badge-role badge-role-admin" :
+        name == "Staff" ? "badge-role badge-role-staff" :
+        name == "Doctor" ? "badge-role badge-role-doctor" :
+        "badge-role badge-role-customer";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" />
+}
+
+<div class="admin-page">
+    <div class="container">
+        <div class="admin-title-bar">
+            <h1><i class="fas fa-user"></i> Chi tiết Tài khoản</h1>
+            <a href="@Url.Action("Index", "Admin")" class="btn btn-secondary"><i class="fas fa-arrow-left mr-1"></i> Quay lại</a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="admin-card card">
+                    <div class="card-header">Thông tin</div>
+                    <div class="card-body">
+                        <dl class="row admin-dl">
+                            <dt class="col-sm-4">ID</dt>
+                            <dd class="col-sm-8"><strong>@Model.UserId</strong></dd>
+                            <dt class="col-sm-4">Email</dt>
+                            <dd class="col-sm-8">@Model.Email</dd>
+                            <dt class="col-sm-4">Họ và tên</dt>
+                            <dd class="col-sm-8">@Model.FullName</dd>
+                            <dt class="col-sm-4">Số điện thoại</dt>
+                            <dd class="col-sm-8">@(Model.Phone ?? "—")</dd>
+                            <dt class="col-sm-4">Vai trò</dt>
+                            <dd class="col-sm-8"><span class="badge @BadgeRole(Model.RoleName)">@Model.RoleName</span></dd>
+                            <dt class="col-sm-4">Trạng thái</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.Status == "Active")
+                                { <span class="badge badge-status badge-status-active">Hoạt động</span> }
+                                else
+                                { <span class="badge badge-status badge-status-inactive">Đã khóa</span> }
+                            </dd>
+                            <dt class="col-sm-4">Ngày tạo</dt>
+                            <dd class="col-sm-8">@(Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "—")</dd>
+                        </dl>
+                        @if (Model.RoleName != "Admin")
+                        {
+                            <hr class="my-4" />
+                            <div class="admin-actions">
+                                <a href="@Url.Action("Edit", "Admin", new { id = Model.UserId })" class="btn btn-primary mr-2"><i class="fas fa-edit"></i> Sửa vai trò</a>
+                                <button type="button" class="btn @(Model.Status == "Active" ? "btn-warning" : "btn-success") btn-toggle-lock" data-id="@Model.UserId" data-status="@Model.Status">
+                                    <i class="fas @(Model.Status == "Active" ? "fa-lock" : "fa-unlock")"></i>
+                                    @(Model.Status == "Active" ? "Khóa tài khoản" : "Mở khóa")
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(function () {
+    $('.btn-toggle-lock').on('click', function () {
+        var btn = $(this), id = btn.data('id'), status = btn.data('status');
+        var msg = status === 'Active' ? 'Khóa tài khoản này?' : 'Mở khóa tài khoản này?';
+        if (!confirm(msg)) return;
+        $.post('@Url.Action("ToggleLock", "Admin")', { id: id })
+            .done(function (r) {
+                if (r.success) location.reload();
+                else alert(r.message || 'Lỗi.');
+            })
+            .fail(function () { alert('Có lỗi xảy ra.'); });
+    });
+});
+</script>
+}
