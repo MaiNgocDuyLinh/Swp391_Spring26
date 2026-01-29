@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Group3_SWP391_PetMedical.Controllers
 {
-    [Authorize]
+    [Authorize(Roles ="Customer")]
+    
     public class PetController : Controller
     {
         private readonly IPetService _petService;
