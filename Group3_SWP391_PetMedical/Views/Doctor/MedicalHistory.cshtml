@@ -1,0 +1,47 @@
+﻿@model IEnumerable<Group3_SWP391_PetMedical.Models.MedicalRecord>
+
+<div class="container mt-5">
+    <div class="mb-4">
+        <a asp-action="Index" class="btn btn-outline-secondary mb-2">&larr; Quay lại lịch khám</a>
+        <h3>Hồ sơ bệnh án: <span class="text-primary fw-bold">@ViewBag.PetName</span></h3>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning text-center">
+            🚧 Chưa có hồ sơ bệnh án nào được ghi nhận cho thú cưng này.
+        </div>
+    }
+    else
+    {
+        <div class="list-group shadow-sm">
+            @foreach (var item in Model)
+            {
+                <div class="list-group-item list-group-item-action flex-column align-items-start mb-3 border rounded">
+                    <div class="d-flex w-100 justify-content-between border-bottom pb-2 mb-2 bg-light p-2">
+                        <h5 class="mb-1 text-primary">
+                            📅 Ngày khám: @(item.created_at.HasValue ? item.created_at.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")
+                        </h5>
+                    </div>
+                    
+                    <div class="p-2">
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">🩺 Chẩn đoán:</div>
+                            <div class="col-md-9 text-danger">@(item.diagnosis ?? "Chưa ghi nhận")</div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">💪 Sức khỏe:</div>
+                            <div class="col-md-9">@(item.health_status ?? "Bình thường")</div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">🧪 Kết quả test:</div>
+                            <div class="col-md-9 fst-italic">@(item.test_results ?? "Không có xét nghiệm")</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

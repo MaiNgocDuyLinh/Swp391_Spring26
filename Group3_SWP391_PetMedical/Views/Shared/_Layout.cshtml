@@ -110,6 +110,28 @@
                                                 </ul>
                                             </li>
                                         }
+                                        @* ===== DOCTOR (MỚI THÊM) ===== *@
+    @if (User.IsInRole("Doctor"))
+    {
+        <li>
+            <a href="#">Bác sĩ</a>
+            <ul class="submenu">
+                <li><a href="@Url.Action("Index", "Doctor")">🩺 Lịch khám bệnh</a></li>
+                <li><a href="@Url.Action("RequestChangeShift", "Doctor")">📅 Xin đổi lịch</a></li>
+            </ul>
+        </li>
+    }
+
+    <li>
+        <a href="blog.html">Blog</a>
+        <ul class="submenu">
+            <li><a href="blog.html">Blog</a></li>
+            <li><a href="blog_details.html">Blog Details</a></li>
+            <li><a href="elements.html">Element</a></li>
+        </ul>
+    </li>
+    <li><a href="contact.html">Contact</a></li>
+</ul>
                                     </ul>
                                 </nav>
                             </div>

@@ -1,0 +1,75 @@
+﻿@model Group3_SWP391_PetMedical.Models.Appointment
+
+@{
+    ViewData["Title"] = "Khám Bệnh";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <a asp-action="Index" class="btn btn-outline-secondary mb-3">
+        <i class="fas fa-arrow-left"></i> Quay lại danh sách
+    </a>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-paw"></i> Thông Tin Thú Cưng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="bg-light rounded-circle d-inline-flex justify-content-center align-items-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-dog fa-3x text-secondary"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-center fw-bold">@Model.pet.name</h4>
+                    <p class="text-center text-muted">@Model.pet.breed</p>
+                    <hr>
+                    <p><strong><i class="fas fa-user"></i> Chủ nuôi:</strong> @Model.customer.full_name</p>
+                    <p><strong><i class="fas fa-phone"></i> SĐT:</strong> @Model.customer.phone</p> <p><strong><i class="fas fa-clock"></i> Giờ hẹn:</strong> @Model.appointment_date.ToString("HH:mm dd/MM/yyyy")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-md"></i> Kết Quả Khám & Điều Trị</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="SaveExamination" method="post">
+                        <input type="hidden" name="appointment_id" value="@Model.appointment_id" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-danger">1. Triệu chứng lâm sàng:</label>
+                            <textarea name="symptoms" class="form-control" rows="3" placeholder="Ví dụ: Ho, sốt, bỏ ăn..." required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-primary">2. Chẩn đoán của bác sĩ:</label>
+                            <textarea name="diagnosis" class="form-control" rows="3" placeholder="Ví dụ: Viêm phổi nhẹ..." required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-success">3. Hướng điều trị / Đơn thuốc:</label>
+                            <textarea name="treatment" class="form-control" rows="4" placeholder="Ví dụ: Tiêm kháng sinh, uống thuốc A (2 viên/ngày)..." required></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Lưu Kết Quả & Hoàn Thành
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger mt-3">
+                    <i class="fas fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                </div>
+            }
+        </div>
+    </div>
+</div>

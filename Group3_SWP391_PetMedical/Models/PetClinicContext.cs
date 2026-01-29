@@ -35,6 +35,7 @@ public partial class PetClinicContext : DbContext
     public virtual DbSet<Service> Services { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<ShiftChangeRequest> ShiftChangeRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

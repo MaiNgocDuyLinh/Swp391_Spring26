@@ -1,0 +1,84 @@
+﻿@{
+    ViewData["Title"] = "Gửi Yêu Cầu Đổi Lịch";
+}
+
+<style>
+    /* FIX: Tăng khoảng cách để không bị Header đè lên nội dung */
+    .main-wrapper { 
+        padding-top: 150px !important; 
+        padding-bottom: 100px;
+        min-height: 100vh; 
+        background-color: #f8f9fa; 
+    }
+    .form-card { 
+        border: none; border-radius: 16px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+        background: #fff; padding: 40px; 
+    }
+    .form-control, .form-select { 
+        border-radius: 10px; padding: 12px 15px; border: 1px solid #dee2e6; 
+        height: 50px !important; line-height: 1.5; 
+    }
+    .btn-submit { 
+        background: #ff3333; border: none; color: white; 
+        padding: 15px; border-radius: 50px; font-weight: 600; width: 100%; margin-top: 20px;
+    }
+    .btn-submit:disabled { background: #ccc; }
+</style>
+
+<div class="container main-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="form-card">
+                <h3 class="fw-bold text-center mb-4">Yêu Cầu Đổi Lịch</h3>
+                
+                @if (TempData["ErrorMessage"] != null) {
+                    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                }
+
+                <form method="post" action="/Doctor/SubmitShiftRequest">
+                    <div class="mb-3">
+                        <label class="fw-bold mb-1">Ngày muốn đổi sang (Trước 24h)</label>
+                        <input type="date" id="requestDate" name="requestDate" class="form-control" required onchange="onDateSelected(this.value)">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-bold mb-1">Bác sĩ trực cùng ngày (Nếu có)</label>
+                        <select name="targetDoctorId" id="targetDoctorId" class="form-select">
+                            <option value="">-- Đổi lịch tự do (Admin xếp) --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-bold mb-1">Lý do</label>
+                        <textarea name="reason" class="form-control" rows="3" style="height:auto !important;" required placeholder="Lý do bận..."></textarea>
+                    </div>
+
+                    <button type="submit" id="btnSubmit" class="btn-submit">Xác Nhận Gửi Đơn</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('requestDate').min = tomorrow.toISOString().split('T')[0];
+    });
+
+    function onDateSelected(val) {
+        const select = document.getElementById('targetDoctorId');
+        fetch(`/Doctor/GetDoctorsByDate?date=${val}`)
+            .then(r => r.json())
+            .then(data => {
+                select.innerHTML = '<option value="">-- Đổi lịch tự do (Admin xếp) --</option>';
+                if(data && data.length > 0) {
+                    data.forEach(d => {
+                        select.innerHTML += `<option value="${d.id}">Bác sĩ: ${d.name}</option>`;
+                    });
+                }
+            });
+    }
+</script>

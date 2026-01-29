@@ -1,0 +1,187 @@
+﻿@model List<Group3_SWP391_PetMedical.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Lịch Làm Việc Bác Sĩ";
+}
+
+<style>
+    .main-wrapper {
+        margin-top: 110px;
+        padding-bottom: 50px;
+        min-height: 85vh;
+        background-color: #fcfcfc;
+    }
+
+    .appointment-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        background: #fff;
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+    
+    .date-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: white;
+        padding: 12px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* --- PHẦN QUAN TRỌNG: ĐỊNH DẠNG CỘT CHO THẲNG HÀNG --- */
+    /* Quy định độ rộng cứng cho từng cột để các bảng khớp nhau */
+    .col-time { width: 10%; }      /* Cột Giờ */
+    .col-pet { width: 20%; }       /* Cột Thú Cưng */
+    .col-owner { width: 20%; }     /* Cột Chủ */
+    .col-note { width: 25%; }      /* Cột Ghi chú */
+    .col-status { width: 15%; }    /* Cột Trạng thái */
+    .col-action { width: 10%; }    /* Cột Nút bấm */
+
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        color: #6c757d;
+        padding: 15px 10px;
+        border-bottom: 2px solid #edf2f9;
+    }
+    
+    .table td {
+        padding: 15px 10px;
+        vertical-align: middle;
+    }
+
+    /* Button styles */
+    .btn-action-primary {
+        background: #0d6efd;
+        border: none;
+        color: white;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: 0.2s;
+        white-space: nowrap; /* Giữ chữ không bị xuống dòng */
+    }
+    .btn-action-primary:hover {
+        background: #0b5ed7;
+        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+        color: white;
+    }
+    
+    .avatar-circle {
+        width: 45px; height: 45px;
+        background: #f0f7ff; color: #0d6efd;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 1.1rem;
+        flex-shrink: 0; /* Không cho avatar bị bóp méo */
+    }
+</style>
+
+<div class="container main-wrapper">
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <h6 class="text-primary fw-bold text-uppercase mb-1">Dashboard Bác Sĩ</h6>
+            <h2 class="fw-bold text-dark">Lịch trình khám bệnh</h2>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 p-3 d-flex flex-row align-items-center gap-3">
+        <form method="get" class="d-flex align-items-center gap-2 w-100">
+            <label class="fw-bold text-secondary">Xem ngày:</label>
+            <input type="date" name="date" class="form-control border-secondary bg-light" 
+                   value="@ViewBag.CurrentDate" onchange="this.form.submit()" 
+                   style="width: auto; max-width: 200px;">
+            
+            <a href="/Doctor/Index" class="btn btn-outline-primary ms-auto rounded-pill px-4">
+                <i class="fas fa-list"></i> Xem Tất Cả Lịch Tới
+            </a>
+        </form>
+    </div>
+
+    @if (Model == null || Model.Count == 0)
+    {
+        <div class="text-center py-5 bg-white rounded-3 shadow-sm">
+            <h5 class="text-muted">Không có lịch hẹn nào.</h5>
+        </div>
+    }
+    else
+    {
+        @foreach (var group in Model.GroupBy(x => x.appointment_date.Date))
+        {
+            <div class="appointment-card">
+                <div class="date-header">
+                    <span class="fw-bold fs-5"><i class="far fa-calendar-alt me-2"></i> Ngày @group.Key.ToString("dd/MM/yyyy")</span>
+                    <span class="badge bg-white text-primary rounded-pill text-dark fw-bold px-3">@group.Count() Ca</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th class="col-time ps-4">Giờ</th>
+                                <th class="col-pet">Thú Cưng</th>
+                                <th class="col-owner">Chủ Sở Hữu</th>
+                                <th class="col-note">Ghi chú</th>
+                                <th class="col-status">Trạng thái</th>
+                                <th class="col-action text-end pe-4">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in group)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-primary">@item.appointment_date.ToString("HH:mm")</td>
+                                    
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar-circle">@item.pet.name.Substring(0,1).ToUpper()</div>
+                                            <div>
+                                                <div class="fw-bold text-dark">@item.pet.name</div>
+                                                <small class="text-muted">@item.pet.species</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    
+                                    <td>
+                                        @if(item.pet.owner != null) {
+                                            <div class="fw-bold text-dark">@item.pet.owner.full_name</div>
+                                            <small class="text-muted">@item.pet.owner.phone</small>
+                                        }
+                                    </td>
+
+                                    <td class="text-secondary small">@(string.IsNullOrEmpty(item.notes) ? "-" : item.notes)</td>
+                                    
+                                    <td>
+                                        @if (item.status == "Pending") {
+                                            <span class="badge bg-warning text-dark border border-warning rounded-pill">Chờ khám</span>
+                                        } else if (item.status == "Done") {
+                                            <span class="badge bg-success rounded-pill">Hoàn thành</span>
+                                        } else {
+                                            <span class="badge bg-secondary rounded-pill">@item.status</span>
+                                        }
+                                    </td>
+                                    
+                                    <td class="text-end pe-4">
+                                        @if (item.status != "Done") {
+                                            <a asp-controller="Doctor" asp-action="MedicalHistory" asp-route-id="@item.appointment_id" 
+                                               class="btn btn-action-primary shadow-sm">
+                                                <i class="fas fa-stethoscope me-1"></i> Khám
+                                            </a>
+                                        } else {
+                                            <button class="btn btn-light text-muted border px-3" disabled>Xong</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+</div>
