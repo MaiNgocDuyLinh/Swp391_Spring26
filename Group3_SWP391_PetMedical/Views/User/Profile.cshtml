@@ -1,0 +1,158 @@
+@model Group3_SWP391_PetMedical.Models.User
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<style type="text/css">
+    .profile-container {
+        background: #f7f7ff;
+        margin-top: 100px;
+        padding: 40px 0;
+        min-height: calc(100vh - 200px);
+    }
+
+    .card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        word-wrap: break-word;
+        background-color: #fff;
+        background-clip: border-box;
+        border: 0 solid transparent;
+        border-radius: .25rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 6px 0 rgb(218 218 253 / 65%), 0 2px 6px 0 rgb(206 206 238 / 54%);
+    }
+
+    .me-2 {
+        margin-right: .5rem !important;
+    }
+
+    .avatar-img {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+</style>
+
+<div class="profile-container">
+    <div class="container">
+        <div class="main-body">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex flex-column align-items-center text-center">
+                                @if (!string.IsNullOrEmpty(Model.avatar))
+                                {
+                                    <img src="@Model.avatar" alt="@Model.full_name" class="avatar-img p-1 bg-primary">
+                                }
+                                else
+                                {
+                                    <img src="https://bootdey.com/img/Content/avatar/avatar6.png" alt="@Model.full_name" class="avatar-img p-1 bg-primary">
+                                }
+                                <div class="mt-3">
+                                    <h4>@Model.full_name</h4>
+                                    <p class="text-secondary mb-1">@Model.role.role_name</p>
+                                    <p class="text-muted font-size-sm">@Model.email</p>
+                                    @if (!string.IsNullOrEmpty(Model.phone))
+                                    {
+                                        <p class="text-muted font-size-sm">@Model.phone</p>
+                                    }
+                                    <span class="badge @(Model.status == "Active" ? "badge-success" : "badge-warning")">
+                                        @Model.status
+                                    </span>
+                                </div>
+                            </div>
+                            <hr class="my-4">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                                    <h6 class="mb-0"><i class="fas fa-envelope me-2"></i>Email</h6>
+                                    <span class="text-secondary">@Model.email</span>
+                                </li>
+                                @if (!string.IsNullOrEmpty(Model.phone))
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                                        <h6 class="mb-0"><i class="fas fa-phone me-2"></i>Phone</h6>
+                                        <span class="text-secondary">@Model.phone</span>
+                                    </li>
+                                }
+                                <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                                    <h6 class="mb-0"><i class="fas fa-user-tag me-2"></i>Role</h6>
+                                    <span class="text-secondary">@Model.role.role_name</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                                    <h6 class="mb-0"><i class="fas fa-calendar me-2"></i>Created</h6>
+                                    <span class="text-secondary">@(Model.created_at?.ToString("dd/MM/yyyy") ?? "N/A")</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4">Thông tin cá nhân</h5>
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Họ và tên</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <input type="text" class="form-control" value="@Model.full_name" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Email</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <input type="text" class="form-control" value="@Model.email" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Số điện thoại</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <input type="text" class="form-control" value="@(Model.phone ?? "")" placeholder="Chưa cập nhật" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Vai trò</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <input type="text" class="form-control" value="@Model.role.role_name" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Trạng thái</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <span class="badge @(Model.status == "Active" ? "badge-success" : Model.status == "Unactive" ? "badge-warning" : "badge-danger")">
+                                        @Model.status
+                                    </span>
+                                </div>
+                            </div>
+                            @if (Model.status == "Unactive")
+                            {
+                                <div class="alert alert-warning" role="alert">
+                                    <i class="fas fa-exclamation-triangle"></i> Tài khoản của bạn chưa được kích hoạt đầy đủ. Vui lòng cập nhật thông tin để sử dụng các dịch vụ.
+                                </div>
+                            }
+                            <div class="row">
+                                <div class="col-sm-3"></div>
+                                <div class="col-sm-9 text-secondary">
+                                    <a href="#" class="btn btn-primary px-4">Cập nhật thông tin</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
