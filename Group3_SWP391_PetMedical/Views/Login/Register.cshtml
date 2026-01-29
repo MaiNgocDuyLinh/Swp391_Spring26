@@ -1,0 +1,80 @@
+@model Group3_SWP391_PetMedical.ViewModels.Account.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sign Up Form by Colorlib</title>
+
+    <!-- Font Icon -->
+    <link rel="stylesheet" href="~/Register/fonts/material-icon/css/material-design-iconic-font.min.css">
+
+    <!-- Main css -->
+    <link rel="stylesheet" href="~/Register/css/style.css">
+</head>
+<body>
+
+    <div class="main">
+
+        <section class="signup">
+            <!-- <img src="~/Register/images/signup-bg.jpg" alt=""> -->
+            <div class="container">
+                <div class="signup-content">
+                    <form asp-action="Register" asp-controller="Login" method="POST" id="signup-form" class="signup-form">
+                        @Html.AntiForgeryToken()
+                        <h2 class="form-title">Create account</h2>
+                        
+                        @if (ViewBag.Error != null)
+                        {
+                            <div class="alert alert-danger" style="color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                                @ViewBag.Error
+                            </div>
+                        }
+                        
+                        <div class="form-group">
+                            <input asp-for="Name" type="text" class="form-input" placeholder="Your Name" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <input asp-for="Email" type="email" class="form-input" placeholder="Your Email" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <input asp-for="Password" type="password" id="password" class="form-input" placeholder="Password" />
+                            <span toggle="#password" class="zmdi zmdi-eye field-icon toggle-password"></span>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <input asp-for="RePassword" type="password" class="form-input" placeholder="Repeat your password" />
+                            <span asp-validation-for="RePassword" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <input asp-for="AgreeTerm" type="checkbox" id="agree-term" class="agree-term" />
+                            <label for="agree-term" class="label-agree-term">
+                                <span><span></span></span>I agree all statements in  <a href="#" class="term-service">Terms of service</a>
+                            </label>
+                            <span asp-validation-for="AgreeTerm" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" name="submit" id="submit" class="form-submit" value="Sign up" />
+                        </div>
+                    </form>
+                    <p class="loginhere">
+                        Have already an account ? <a href="@Url.Action("Login", "Login")" class="loginhere-link">Login here</a>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- JS -->
+    <script src="~/Register/vendor/jquery/jquery.min.js"></script>
+    <script src="~/Register/js/main.js"></script>
+</body><!-- This templates was made by Colorlib (https://colorlib.com) -->
+</html>

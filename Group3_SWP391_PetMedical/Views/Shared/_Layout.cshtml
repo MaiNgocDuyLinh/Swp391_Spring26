@@ -9,251 +9,93 @@
     <link rel="manifest" href="site.webmanifest">
     <link rel="shortcut icon" type="image/x-icon" href="~/assets/img/favicon.ico">
 
-	<!-- CSS here -->
-	<link rel="stylesheet" href="~/assets/css/bootstrap.min.css">
-	<link rel="stylesheet" href="~/assets/css/owl.carousel.min.css">
-	<link rel="stylesheet" href="~/assets/css/slicknav.css">
-	<link rel="stylesheet" href="~/assets/css/flaticon.css">
-	<link rel="stylesheet" href="~/assets/css/animate.min.css">
-	<link rel="stylesheet" href="~/assets/css/magnific-popup.css">
-	<link rel="stylesheet" href="~/assets/css/fontawesome-all.min.css">
-	<link rel="stylesheet" href="~/assets/css/themify-icons.css">
-	<link rel="stylesheet" href="~/assets/css/slick.css">
-	<link rel="stylesheet" href="~/assets/css/nice-select.css">
-	<link rel="stylesheet" href="~/assets/css/style.css">
-	<style>
-		.dropdown-toggle::after {
-			margin-left: 8px;
-			vertical-align: middle;
-		}
-		.dropdown-menu {
-			min-width: 200px;
-			border-radius: 8px;
-			box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-		}
-		.dropdown-item:hover {
-			background-color: #f8f9fa;
-		}
-		.dropdown-item button:hover {
-			background-color: #f8f9fa !important;
-		}
-	</style>
-	@RenderSection("Styles", required: false)
+    <!-- CSS here -->
+    <link rel="stylesheet" href="~/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/assets/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="~/assets/css/slicknav.css">
+    <link rel="stylesheet" href="~/assets/css/flaticon.css">
+    <link rel="stylesheet" href="~/assets/css/animate.min.css">
+    <link rel="stylesheet" href="~/assets/css/magnific-popup.css">
+    <link rel="stylesheet" href="~/assets/css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="~/assets/css/themify-icons.css">
+    <link rel="stylesheet" href="~/assets/css/slick.css">
+    <link rel="stylesheet" href="~/assets/css/nice-select.css">
+    <link rel="stylesheet" href="~/assets/css/style.css">
+    <style>
+        .dropdown-toggle::after {
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .dropdown-menu {
+            min-width: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dropdown-item button:hover {
+            background-color: #f8f9fa !important;
+        }
+    </style>
+    @RenderSection("Styles", required: false)
 </head>
 
 
 
 
 <body>
-<!-- Preloader Start -->
-<div id="preloader-active">
-    <div class="preloader d-flex align-items-center justify-content-center">
-        <div class="preloader-inner position-relative">
-            <div class="preloader-circle"></div>
-            <div class="preloader-img pere-text">
-                <img src="~/assets/img/logo/logo.png" alt="">
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Preloader End -->
-
-<header>
-    <div class="header-area header-transparent">
-        <div class="main-header header-sticky">
-            <div class="container-fluid">
-                <div class="row align-items-center">
-
-                    <!-- Logo -->
-                    <div class="col-xl-2 col-lg-2 col-md-1">
-                        <div class="logo">
-                            <a href="@Url.Action("Index", "Home")">
-                                <img src="~/assets/img/logo/logo.png" alt="">
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-10 col-lg-10 col-md-10">
-                        <div class="menu-main d-flex align-items-center justify-content-end">
-
-                            <!-- Main Menu -->
-                            <div class="main-menu f-right d-none d-lg-block">
-                                <nav>
-                                    <ul id="navigation">
-                                        <li><a href="@Url.Action("Index", "Home")">Home</a></li>
-                                        <li><a href="@Url.Action("About", "Home")">About</a></li>
-                                        <li><a href="@Url.Action("Service", "Service")">Services</a></li>
-
-                                        @* ===== ADMIN ===== *@
-                                        @if (User.Identity?.IsAuthenticated == true &&
-                                             (User.IsInRole("Admin") ||
-                                              User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Admin")))
-                                        {
-                                            <li>
-                                                <a href="#">Admin</a>
-                                                <ul class="submenu">
-                                                    <li><a href="@Url.Action("Index", "Admin")">Quản lý tài khoản</a></li>
-                                                    <li><a href="@Url.Action("Create", "Admin")">Tạo tài khoản</a></li>
-                                                </ul>
-                                            </li>
-                                        }
-
-                                        @* ===== STAFF ===== *@
-                                        @if (User.IsInRole("Staff"))
-                                        {
-                                            <li>
-                                                <a href="#">Staff</a>
-                                                <ul class="submenu">
-                                                    <li><a href="@Url.Action("ListServices", "Staff")">Danh sách dịch vụ</a></li>
-                                                    <li><a href="@Url.Action("ListCustomers", "Staff")">Danh sách khách hàng</a></li>
-                                                    <li><a href="@Url.Action("AppointmentList", "Staff")">Lịch theo ngày</a></li>
-                                                </ul>
-                                            </li>
-                                        }
-                                    </ul>
-                                </nav>
-                            </div>
-
-                            <!-- User / Login -->
-                            <div class="header-right-btn f-right d-none d-lg-block ml-30">
-                                @if (User.Identity.IsAuthenticated)
-                                {
-                                    <div class="dropdown">
-                                        <button class="header-btn dropdown-toggle"
-                                                data-toggle="dropdown"
-                                                style="color:white;">
-                                            Xin chào, @User.Identity.Name
-                                        </button>
-                                        <div class="dropdown-menu dropdown-menu-right">
-                                            <a class="dropdown-item text-muted">
-                                                <i class="fas fa-user"></i> @User.Identity.Name
-                                            </a>
-                                            <div class="dropdown-divider"></div>
-                                            <form asp-controller="Login" asp-action="Logout" method="post">
-                                                <button type="submit" class="dropdown-item">
-                                                    <i class="fas fa-sign-out-alt"></i> Logout
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <a href="@Url.Action("Login", "Login")" class="header-btn">Login</a>
-                                }
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Mobile Menu -->
-                    <div class="col-12">
-                        <div class="mobile_menu d-block d-lg-none"></div>
-                    </div>
-
+    <!-- Preloader Start -->
+    <div id="preloader-active">
+        <div class="preloader d-flex align-items-center justify-content-center">
+            <div class="preloader-inner position-relative">
+                <div class="preloader-circle"></div>
+                <div class="preloader-img pere-text">
+                    <img src="~/assets/img/logo/logo.png" alt="">
                 </div>
             </div>
         </div>
     </div>
-</header>
+    <!-- Preloader Start -->
 
-<main>
-    @RenderBody()
-</main>
-	<footer>
-		<!-- Footer Start-->
-		<div class="footer-area footer-padding">
-			<div class="container">
-				<div class="row d-flex justify-content-between">
-					<div class="col-xl-4 col-lg-4 col-md-4 col-sm-6">
-						<div class="single-footer-caption mb-50">
-							<div class="single-footer-caption mb-30">
-								<!-- logo -->
-								<div class="footer-logo mb-25">
-									<a href="@Url.Action("Index", "Home")"><img src="~/assets/img/logo/logo2_footer.png" alt=""></a>
-								</div>
-								<div class="footer-tittle">
-									<div class="footer-pera">
-										<p>Lorem ipsum dolor sit amet, adipiscing elit, sed do eiusmod tempor elit. </p>
-									</div>
-								</div>
-								<!-- social -->
-								<div class="footer-social">
-									<a href="https://www.facebook.com/sai4ull"><i class="fab fa-facebook-square"></i></a>
-									<a href="#"><i class="fab fa-twitter-square"></i></a>
-									<a href="#"><i class="fab fa-linkedin"></i></a>
-									<a href="#"><i class="fab fa-pinterest-square"></i></a>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="col-xl-2 col-lg-2 col-md-4 col-sm-5">
-						<div class="single-footer-caption mb-50">
-							<div class="footer-tittle">
-								<h4>Company</h4>
-								<ul>
-									<li><a href="@Url.Action("Index", "Home")">Home</a></li>
-									<li><a href="@Url.Action("About", "Home")">About Us</a></li>
-									<li><a href="@Url.Action("Service", "Service")">Services</a></li>
-									<li><a href="#">Cases</a></li>
-									<li><a href="@Url.Action("Contact", "Home")">  Contact Us</a></li>
-								</ul>
-							</div>
-						</div>
-					</div>
-					<div class="col-xl-3 col-lg-3 col-md-4 col-sm-7">
-						<div class="single-footer-caption mb-50">
-							<div class="footer-tittle">
-								<h4>Services</h4>
-								<ul>
-									<li><a href="#">Commercial Cleaning</a></li>
-									<li><a href="#">Office Cleaning</a></li>
-									<li><a href="#">Building Cleaning</a></li>
-									<li><a href="#">Floor Cleaning</a></li>
-									<li><a href="#">Apartment Cleaning</a></li>
-								</ul>
-							</div>
-						</div>
-					</div>
-					<div class="col-xl-3 col-lg-3 col-md-4 col-sm-5">
-						<div class="single-footer-caption mb-50">
-							<div class="footer-tittle">
-								<h4>Get in Touch</h4>
-								<ul>
-									<li><a href="#">152-515-6565</a></li>
-									<li><a href="#"> Demomail@gmail.com</a></li>
-									<li><a href="#">New Orleans, USA</a></li>
-								</ul>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<!-- footer-bottom area -->
-		<div class="footer-bottom-area">
-			<div class="container">
-				<div class="footer-border">
-					<div class="row d-flex align-items-center">
-						<div class="col-xl-12 ">
-							<div class="footer-copy-right text-center">
-								<p>
-									<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-									Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-									<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-								</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<!-- Footer End-->
-	</footer>
-	<!-- Scroll Up -->
-	<div id="back-top">
-		<a title="Go to Top" href="#"> <i class="fas fa-level-up-alt"></i></a>
-	</div>
->>>>>>> Cam
+    <header>
+        <!--? Header Start -->
+        <div class="header-area header-transparent">
+            <div class="main-header header-sticky">
+                <div class="container-fluid">
+                    <div class="row align-items-center">
+                        <!-- Logo -->
+                        <div class="col-xl-2 col-lg-2 col-md-1">
+                            <div class="logo">
+                                <a href="@Url.Action("Index", "Home")"><img src="~/assets/img/logo/logo.png" alt=""></a>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-10 col-lg-10 col-md-10">
+                            <div class="menu-main d-flex align-items-center justify-content-end">
+                                <!-- Main-menu -->
+                                <div class="main-menu f-right d-none d-lg-block">
+                                    <nav>
+                                        <ul id="navigation">
+                                            <li><a href="@Url.Action("Index", "Home")">Home</a></li>
+                                            <li><a href="@Url.Action("About", "Home")">About</a></li>
+                                            <li><a href="@Url.Action("Service", "Service")">Services</a></li>
+
+                                            @* Menu Admin trên navbar (tuỳ bạn muốn giữ hay bỏ) *@
+                                            @if (User.Identity?.IsAuthenticated == true &&
+                                            (User.IsInRole("Admin") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Admin")))
+                                            {
+                                                <li>
+                                                    <a href="@Url.Action("Index", "Admin")">Admin</a>
+                                                    <ul class="submenu">
+                                                        <li><a href="@Url.Action("Index", "Admin")">Quản lý Tài khoản</a></li>
+                                                        <li><a href="@Url.Action("Create", "Admin")">Tạo Tài khoản</a></li>
+                                                    </ul>
+                                                </li>
+                                            }
 
                                             <li>
                                                 <a href="blog.html">Blog</a>
@@ -277,15 +119,21 @@
                                                     style="color: white; text-decoration: none;">
                                                 Xin chào, @User.Identity.Name
                                             </button>
-
                                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown" style="margin-top: 10px;">
                                                 <a class="dropdown-item" href="#" style="cursor: default; color: #666;">
                                                     <i class="fas fa-user"></i> @User.Identity.Name
                                                 </a>
 
-                                                <a class="dropdown-item" href="@Url.Action("MyPets", "Pet")" style="padding: 0.5rem 1rem;">
-                                                    <i class="fas fa-paw"></i> Thú cưng của tôi
-                                                </a>
+                                                @* <a class="dropdown-item" href="@Url.Action("MyPets", "Pet")" style="padding: 0.5rem 1rem;"> *@
+                                                @*     <i class="fas fa-paw"></i> Thú cưng của tôi *@
+                                                @* </a> *@
+
+                                                @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Customer"))
+                                                {
+                                                    <a class="dropdown-item" href="@Url.Action("MyPets", "Pet")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-paw"></i> Thú cưng của tôi
+                                                    </a>
+                                                }
 
                                                 @if (User.IsInRole("Admin") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Admin"))
                                                 {
