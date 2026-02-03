@@ -60,7 +60,7 @@ namespace Group3_SWP391_PetMedical
 
             app.UseRouting();
 
-            // Phải đặt UseAuthentication() trước UseAuthorization()
+            // Phải đặt UseAuthentication() trước UseAuthorization() .
             app.UseAuthentication();
             app.UseAuthorization();
 
