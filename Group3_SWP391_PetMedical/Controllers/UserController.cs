@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Group3_SWP391_PetMedical.Models;
 using System.Security.Claims;
@@ -39,6 +39,17 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
 
             return View(user);
+        }
+
+        public int GetCurrentUserId()
+        {
+            var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            idStr ??= User.FindFirstValue("user_id");
+
+            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out int id))
+                throw new Exception("Không lấy được user_id từ Claims. Hãy kiểm tra Login tạo Claims.");
+
+            return id;
         }
     }
 }
