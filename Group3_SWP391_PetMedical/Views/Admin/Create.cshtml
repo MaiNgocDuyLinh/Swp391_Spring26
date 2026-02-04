@@ -3,6 +3,7 @@
 @model CreateAccountViewModel
 @{
     ViewData["Title"] = "Tạo Tài khoản";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
     var roleList = new List<SelectListItem> { new SelectListItem("-- Chọn vai trò --", "") };
     foreach (var r in Model.AvailableRoles)
         roleList.Add(new SelectListItem(r.RoleName, r.RoleId.ToString()));

@@ -2,6 +2,7 @@
 @model AccountViewModel
 @{
     ViewData["Title"] = "Chi tiết Tài khoản";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
     string BadgeRole(string name) =>
         name == "Admin" ? "badge-role badge-role-admin" :
         name == "Staff" ? "badge-role badge-role-staff" :
