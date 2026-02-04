@@ -1,6 +1,6 @@
 @model List<Group3_SWP391_PetMedical.Models.Service>
 @{
-    ViewData["Title"] = "Danh sách dịch vụ";
+    ViewData["Title"] = "Quản lý Dịch vụ";
     int currentPage = ViewBag.CurrentPage;
     int totalPages = ViewBag.TotalPages;
     int totalItems = ViewBag.TotalItems;
@@ -13,7 +13,7 @@
         <div class="row">
             <div class="col-xl-12">
                 <div class="hero-cap text-center pt-50">
-                    <h2>Quản lý Dịch vụ</h2>
+                    <h2>Quản lý Dịch vụ (Manager)</h2>
                 </div>
             </div>
         </div>
@@ -37,7 +37,7 @@
         <div class="col-md-8">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <form method="get" asp-action="ListServices" asp-controller="Staff" class="form-row align-items-center">
+                    <form method="get" asp-action="ListServices" asp-controller="Manager" class="form-row align-items-center">
                         <div class="col-auto">
                             <label class="font-weight-bold">
                                 <i class="fas fa-search"></i> Tìm kiếm:
@@ -55,7 +55,7 @@
                         @if (!string.IsNullOrEmpty(search))
                         {
                             <div class="col-auto">
-                                <a href="@Url.Action("ListServices", "Staff")" class="btn btn-secondary">
+                                <a href="@Url.Action("ListServices", "Manager")" class="btn btn-secondary">
                                     <i class="fas fa-times"></i> Xóa lọc
                                 </a>
                             </div>
@@ -69,8 +69,8 @@
     <div class="row">
         <div class="col-12">
             <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-list"></i> Danh sách Dịch vụ</h5>
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> Danh sách Dịch vụ (Manager)</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -84,6 +84,7 @@
                                     <th>Thời gian (phút)</th>
                                     <th>Dịch vụ tại nhà</th>
                                     <th>Trạng thái</th>
+                                    <th>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -118,6 +119,12 @@
                                                     <span class="badge badge-danger">Ngừng</span>
                                                 }
                                             </td>
+                                            <td>
+                                                <a href="@Url.Action("EditService", "Manager", new { id = service.service_id })" 
+                                                   class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i> Sửa
+                                                </a>
+                                            </td>
                                         </tr>
                                         index++;
                                     }
@@ -125,7 +132,7 @@
                                 else
                                 {
                                     <tr>
-                                        <td colspan="7" class="text-center">Không tìm thấy dịch vụ nào.</td>
+                                        <td colspan="8" class="text-center">Không tìm thấy dịch vụ nào.</td>
                                     </tr>
                                 }
                             </tbody>
@@ -138,18 +145,18 @@
                         <nav aria-label="Page navigation" class="mt-4">
                             <ul class="pagination justify-content-center">
                                 <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                                    <a class="page-link" href="@Url.Action("ListServices", "Staff", new { search = search, page = currentPage - 1 })">
+                                    <a class="page-link" href="@Url.Action("ListServices", "Manager", new { search = search, page = currentPage - 1 })">
                                         <i class="fas fa-chevron-left"></i> Trước
                                     </a>
                                 </li>
                                 @for (int i = 1; i <= totalPages; i++)
                                 {
                                     <li class="page-item @(i == currentPage ? "active" : "")">
-                                        <a class="page-link" href="@Url.Action("ListServices", "Staff", new { search = search, page = i })">@i</a>
+                                        <a class="page-link" href="@Url.Action("ListServices", "Manager", new { search = search, page = i })">@i</a>
                                     </li>
                                 }
                                 <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-                                    <a class="page-link" href="@Url.Action("ListServices", "Staff", new { search = search, page = currentPage + 1 })">
+                                    <a class="page-link" href="@Url.Action("ListServices", "Manager", new { search = search, page = currentPage + 1 })">
                                         Sau <i class="fas fa-chevron-right"></i>
                                     </a>
                                 </li>
@@ -172,8 +179,8 @@
     .card-header { border-radius: 10px 10px 0 0; }
     .table th, .table td { vertical-align: middle; }
     .badge { padding: 8px 12px; font-size: 0.9em; }
-    .pagination .page-link { color: #007bff; }
-    .pagination .page-item.active .page-link { background-color: #007bff; border-color: #007bff; }
+    .pagination .page-link { color: #28a745; }
+    .pagination .page-item.active .page-link { background-color: #28a745; border-color: #28a745; }
     .form-control { height: 45px; }
     .form-row .btn { 
         height: 45px; 
