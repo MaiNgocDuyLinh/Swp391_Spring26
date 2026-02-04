@@ -1,6 +1,6 @@
 using Group3_SWP391_PetMedical.Attributes;
 using Group3_SWP391_PetMedical.Models;
-using Group3_SWP391_PetMedical.ViewModels;
+using Group3_SWP391_PetMedical.ViewModels.Account;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

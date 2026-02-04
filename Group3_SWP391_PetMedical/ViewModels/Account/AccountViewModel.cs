@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Group3_SWP391_PetMedical.ViewModels
+namespace Group3_SWP391_PetMedical.ViewModels.Account
 {
     public class AccountViewModel
     {
@@ -82,5 +82,29 @@ namespace Group3_SWP391_PetMedical.ViewModels
     {
         public int RoleId { get; set; }
         public string RoleName { get; set; } = null!;
+    }
+
+    public class RegisterViewModel
+    {
+        [Required(ErrorMessage = "Vui lòng nhập họ tên.")]
+        [StringLength(100, ErrorMessage = "Họ tên không được vượt quá 100 ký tự.")]
+        public string Name { get; set; } = null!;
+
+        [Required(ErrorMessage = "Vui lòng nhập email.")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ.")]
+        [StringLength(100, ErrorMessage = "Email không được vượt quá 100 ký tự.")]
+        public string Email { get; set; } = null!;
+
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu.")]
+        [MinLength(6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự.")]
+        [StringLength(255, ErrorMessage = "Mật khẩu không được vượt quá 255 ký tự.")]
+        public string Password { get; set; } = null!;
+
+        [Required(ErrorMessage = "Vui lòng nhập lại mật khẩu.")]
+        [Compare("Password", ErrorMessage = "Mật khẩu xác nhận không khớp.")]
+        public string RePassword { get; set; } = null!;
+
+        [Required(ErrorMessage = "Vui lòng đồng ý với điều khoản.")]
+        public bool AgreeTerm { get; set; }
     }
 }

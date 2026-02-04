@@ -1,0 +1,33 @@
+﻿@model (string action, string controller, string? q, int pageSize)
+
+@{
+    var actionName = Model.action;
+    var controllerName = Model.controller;
+    var q = Model.q ?? "";
+    var pageSize = Model.pageSize;
+}
+<form method="get"
+      action="@Url.Action(actionName, controllerName)"
+      class="pc-searchbar d-flex align-items-center"
+      style="gap:10px;"
+      onsubmit="this.action = this.action.split('#')[0] + '#servicesArea';">
+
+    <input type="text"
+           name="q"
+           value="@q"
+           class="form-control"
+           placeholder="Tìm kiếm..."
+           autocomplete="off" />
+
+    <input type="hidden" name="page" value="1" />
+    <input type="hidden" name="pageSize" value="@pageSize" />
+
+    <button type="submit" class="pc-btn pc-btn--primary">Tìm</button>
+
+    <a class="pc-btn pc-btn--ghost pc-btn--icon"
+       title="Làm mới"
+       aria-label="Làm mới"
+       href="@Url.Action(actionName, controllerName)#servicesArea">
+        <i class="fas fa-undo-alt"></i>
+    </a>
+</form>
