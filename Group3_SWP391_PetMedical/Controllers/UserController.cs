@@ -40,5 +40,30 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             return View(user);
         }
+
+        public async Task<IActionResult> EditProfile()
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Login");
+            }
+
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                return RedirectToAction("Login", "Login");
+            }
+
+            var user = await _context.Users
+                .Include(u => u.role)
+                .FirstOrDefaultAsync(u => u.user_id == userId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
     }
 }

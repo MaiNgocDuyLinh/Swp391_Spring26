@@ -35,14 +35,15 @@ namespace Group3_SWP391_PetMedical.Controllers
         public async Task<IActionResult> Login(string username, string password)
         {
 
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            var loginName = username?.Trim();
+            if (string.IsNullOrEmpty(loginName) || string.IsNullOrEmpty(password))
             {
                 ViewBag.Error = "Vui lòng nhập đầy đủ thông tin!";
                 return View();
             }
 
-            var user = _context.Users
-                .FirstOrDefault(u => u.email == username || u.full_name == username);
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.username == loginName);
 
             if (user == null)
             {
