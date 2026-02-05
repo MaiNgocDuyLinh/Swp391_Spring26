@@ -163,8 +163,13 @@ public partial class PetClinicContext : DbContext
             entity.Property(e => e.name).HasMaxLength(100);
             entity.Property(e => e.species).HasMaxLength(50);
 
-            // NEW:
+            // ảnh 
             entity.Property(e => e.PetImg).HasMaxLength(255).IsUnicode(false);
+
+            // giới tính , tuổi tự tăng
+            entity.Property(e => e.pet_gender).HasMaxLength(10);
+            entity.Property(e => e.pet_birthdate).HasColumnType("date");
+
 
             entity.HasOne(d => d.owner).WithMany(p => p.Pets)
                 .HasForeignKey(d => d.owner_id)
