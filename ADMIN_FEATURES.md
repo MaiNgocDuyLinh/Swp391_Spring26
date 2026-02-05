@@ -144,14 +144,13 @@ Toàn bộ controller được bảo vệ bởi `[AuthorizeRole("Admin")]`
 
 ---
 
-### 4. **Views**
+### 4. **Views & Giao diện Admin**
 
 #### 4.1. Index.cshtml - Danh sách Tài khoản
 **File:** `Views/Admin/Index.cshtml`
 
 **Giao diện:**
-- Hero section với tiêu đề "Quản lý Tài khoản"
-- Nút "Tạo tài khoản mới" ở header
+- Thanh tiêu đề gọn (`admin-title-bar`) với tiêu đề "Quản lý Tài khoản" và nút "Tạo tài khoản mới"
 - Form search và filter:
   - Input tìm kiếm (email, tên, số điện thoại)
   - Dropdown lọc theo vai trò
@@ -170,7 +169,7 @@ Toàn bộ controller được bảo vệ bởi `[AuthorizeRole("Admin")]`
 **File:** `Views/Admin/Create.cshtml`
 
 **Giao diện:**
-- Hero section với tiêu đề "Tạo Tài khoản Mới"
+- Thanh tiêu đề gọn (`admin-title-bar`) với tiêu đề "Tạo Tài khoản Mới" và nút "Quay lại"
 - Form với các trường:
   - Email (required)
   - Mật khẩu (required, type password)
@@ -185,7 +184,7 @@ Toàn bộ controller được bảo vệ bởi `[AuthorizeRole("Admin")]`
 **File:** `Views/Admin/Edit.cshtml`
 
 **Giao diện:**
-- Hero section với tiêu đề "Sửa Tài khoản"
+- Thanh tiêu đề gọn (`admin-title-bar`) với tiêu đề "Sửa Tài khoản" và nút "Quay lại"
 - Form với các trường:
   - Email (readonly, disabled)
   - Họ và tên (required)
@@ -200,7 +199,7 @@ Toàn bộ controller được bảo vệ bởi `[AuthorizeRole("Admin")]`
 **File:** `Views/Admin/Details.cshtml`
 
 **Giao diện:**
-- Hero section với tiêu đề "Chi tiết Tài khoản"
+- Thanh tiêu đề gọn (`admin-title-bar`) với tiêu đề "Chi tiết Tài khoản" và nút "Quay lại"
 - Hiển thị thông tin dạng definition list:
   - ID, Email, Họ và tên, Số điện thoại, Vai trò (badge), Trạng thái (badge), Ngày tạo
 - Các nút thao tác (nếu không phải Admin):
@@ -210,24 +209,52 @@ Toàn bộ controller được bảo vệ bởi `[AuthorizeRole("Admin")]`
 
 ---
 
-### 5. **Menu Navigation**
+### 5. **Layout & Menu Navigation**
+
+#### 5.1. Layout chung
 **File:** `Views/Shared/_Layout.cshtml`
 
 **Thay đổi:**
-- Thêm menu "Admin" vào navigation bar (chỉ hiển thị cho Admin)
+- Thêm menu "Admin" vào navigation bar (chỉ hiển thị cho Admin).
 - Submenu:
   - "Quản lý Tài khoản" → `/Admin/Index`
   - "Tạo Tài khoản" → `/Admin/Create`
 - Thêm menu vào dropdown của user (bên phải header):
   - "Quản lý Tài khoản" (icon cog)
   - "Tạo Tài khoản" (icon user-plus)
-- Thêm `@RenderSection("Scripts", required: false)` vào cuối layout để hỗ trợ section Scripts từ các view
+- Thêm `@RenderSection("Styles", required: false)` trong `<head>` và `@RenderSection("Scripts", required: false)` trước `</body>` để các view có thể inject CSS/JS riêng.
 
-**Điều kiện hiển thị:**
+**Điều kiện hiển thị menu Admin:**
 ```csharp
-@if (User.Identity.IsAuthenticated && 
+@if (User.Identity?.IsAuthenticated == true && 
      (User.IsInRole("Admin") || 
       User.Claims.Any(c => c.Type == ClaimTypes.Role && c.Value == "Admin")))
+{
+    // Hiển thị menu Admin
+}
+```
+
+#### 5.2. Layout riêng cho Admin
+**File:** `Views/Shared/AdminLayout.cshtml`
+
+**Mục đích:**
+- Tách riêng layout cho khu vực Admin, tránh ảnh hưởng bởi hiệu ứng sticky header phức tạp của layout chính.
+- Vẫn tái sử dụng CSS/JS template (Bootstrap, jQuery, Font Awesome, v.v.).
+
+**Đặc điểm:**
+- Header riêng, vẫn có logo và menu cơ bản.
+- Dropdown user bên phải có thêm các link:
+  - "Quản lý Tài khoản"
+  - "Tạo Tài khoản"
+- Footer đơn giản hơn, ghi rõ "Pet Medical Admin".
+- Có `@RenderSection("Styles", required: false)` và `@RenderSection("Scripts", required: false)` giống layout chính.
+
+**Cách sử dụng trong các view Admin:**
+```csharp
+@{
+    ViewData["Title"] = "Quản lý Tài khoản";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
+}
 ```
 
 ---
@@ -268,14 +295,16 @@ Group3_SWP391_PetMedical/
 │   └── AdminController.cs                 [MỚI]
 ├── Views/
 │   ├── Admin/
-│   │   ├── Index.cshtml                    [MỚI]
+│   │   ├── Index.cshtml                   [MỚI]
 │   │   ├── Create.cshtml                  [MỚI]
 │   │   ├── Edit.cshtml                    [MỚI]
 │   │   └── Details.cshtml                 [MỚI]
 │   └── Shared/
-│       └── _Layout.cshtml                 [SỬA - thêm menu Admin]
-└── Views/
-    └── _ViewImports.cshtml                [KHÔNG SỬA - chỉ thêm @using trong views]
+│       ├── _Layout.cshtml                 [SỬA - thêm menu Admin, RenderSection Styles/Scripts]
+│       └── AdminLayout.cshtml             [MỚI - layout riêng cho Admin]
+└── wwwroot/
+    └── css/
+        └── admin.css                      [MỚI - CSS giao diện Admin]
 ```
 
 ---
@@ -339,10 +368,9 @@ Group3_SWP391_PetMedical/
    - Không thể khóa tài khoản Admin
    - Không thể sửa vai trò của tài khoản Admin
    - Các nút thao tác sẽ tự động ẩn đối với tài khoản Admin
-
-3. **Password:** Hiện tại password được lưu plain text. Trong production nên hash password bằng BCrypt hoặc các phương pháp bảo mật khác.
-
-4. **Email unique:** Email phải là duy nhất trong hệ thống.
+3. **Sticky header & layout Admin:** Các trang Admin sử dụng `AdminLayout.cshtml` và CSS `admin.css` để tránh xung đột với hiệu ứng header-sticky của template gốc (tránh che phần filter/tìm kiếm).
+4. **Password:** Hiện tại password được lưu plain text. Trong production nên hash password bằng BCrypt hoặc các phương pháp bảo mật khác.
+5. **Email unique:** Email phải là duy nhất trong hệ thống.
 
 ---
 

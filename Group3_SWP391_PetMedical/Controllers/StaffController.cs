@@ -15,7 +15,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             _staffService = staffService;
         }
 
-        // ========== 1. VIEW LIST SERVICE ==========
+        // ========== 1. VIEW LIST SERVICE (VIEW ONLY) ==========
         public async Task<IActionResult> ListServices(string? search, int page = 1)
         {
             var result = await _staffService.GetServicesPagedAsync(search, page, PageSize);
@@ -28,33 +28,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(result.Items.ToList());
         }
 
-        // ========== 2. EDIT SERVICE (GET) ==========
-        public async Task<IActionResult> EditService(int id)
-        {
-            var service = await _staffService.GetServiceByIdAsync(id);
-            if (service == null)
-            {
-                return NotFound();
-            }
-            return View(service);
-        }
-
-        // ========== 2. EDIT SERVICE (POST) ==========
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditService(int id, decimal base_price, string? description)
-        {
-            var success = await _staffService.UpdateServiceAsync(id, base_price, description);
-            if (!success)
-            {
-                return NotFound();
-            }
-
-            TempData["SuccessMessage"] = "Cập nhật dịch vụ thành công!";
-            return RedirectToAction("ListServices");
-        }
-
-        // ========== 3. VIEW LIST CUSTOMER ==========
+        // ========== 2. VIEW LIST CUSTOMER ==========
         public async Task<IActionResult> ListCustomers(string? search, int page = 1)
         {
             var result = await _staffService.GetCustomersPagedAsync(search, page, PageSize);
@@ -67,7 +41,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(result.Items.ToList());
         }
 
-        // ========== 4. STAFF APPOINTMENT LIST ==========
+        // ========== 3. STAFF APPOINTMENT LIST ==========
         public async Task<IActionResult> AppointmentList(DateTime? date, string? search, int page = 1)
         {
             var selectedDate = date ?? DateTime.Today;

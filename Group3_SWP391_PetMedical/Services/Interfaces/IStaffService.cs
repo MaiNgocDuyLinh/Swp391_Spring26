@@ -5,10 +5,8 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
 {
     public interface IStaffService
     {
-        // Services
+        // Services (view only - Staff chỉ xem, không sửa)
         Task<PagedResult<Service>> GetServicesPagedAsync(string? search, int page, int pageSize);
-        Task<Service?> GetServiceByIdAsync(int id);
-        Task<bool> UpdateServiceAsync(int id, decimal basePrice, string? description);
 
         // Customers
         Task<PagedResult<User>> GetCustomersPagedAsync(string? search, int page, int pageSize);

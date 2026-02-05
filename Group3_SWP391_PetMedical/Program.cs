@@ -38,6 +38,9 @@ namespace Group3_SWP391_PetMedical
                                        Group3_SWP391_PetMedical.Repository.Implementations.AppointmentRepository>();
             builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IStaffService,
                                        Group3_SWP391_PetMedical.Services.Implementations.StaffService>();
+            // Manager Module DI (uses shared IServiceRepository)
+            builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IManagerService,
+                                       Group3_SWP391_PetMedical.Services.Implementations.ManagerService>();
 
             builder.Services.AddAuthentication("MyCookieAuth")
             .AddCookie("MyCookieAuth", options =>

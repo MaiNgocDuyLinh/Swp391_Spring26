@@ -203,24 +203,35 @@
                             <span asp-validation-for="Breed" class="text-danger"></span>
                         </div>
 
+                        <!-- Giới tính (đồng bộ style) -->
+                        <div class="col-md-6 mb-3">
+                            <label class="petform-label d-block">Giới tính</label>
+                            <select asp-for="PetGender" class="form-select petform-input">
+                                <option value="">-- Chọn --</option>
+                                <option value="Đực">Đực</option>
+                                <option value="Cái">Cái</option>
+                                <option value="Không rõ">Không rõ</option>
+                            </select>
+                            <span asp-validation-for="PetGender" class="text-danger"></span>
+                        </div>
+
                         <div class="col-md-6 mb-3">
                             <label class="petform-label">Cân nặng (kg)</label>
                             <input asp-for="Weight" class="form-control petform-input" step="0.01" />
                             <span asp-validation-for="Weight" class="text-danger"></span>
                         </div>
 
-                        <div class="col-md-6 mb-3"> 
-                            <label class="petform-label">Tuổi (năm)</label>
-                            @* <input asp-for="Age" type="number" class="form-control petform-input" placeholder="Nhập tuổi..." />
-                            <span asp-validation-for="Age" class="text-danger"></span> *@
-                            <input asp-for="Age"
-                                   type="number"
-                                   step="0.1"
-                                   min="0"
-                                   class="form-control petform-input"
-                                   placeholder="VD:1,2,3 ...." />
+                        <!-- Ngày sinh -->
+                        <div class="col-md-6 mb-3">
+                            <label class="petform-label">Ngày sinh</label>
+                            <input asp-for="PetBirthdate" id="petBirthdateInput" type="date" class="form-control petform-input" />
+                            <span asp-validation-for="PetBirthdate" class="text-danger"></span>
+
+                            <!-- Hidden Age để form submit không lỗi + hiển thị tuổi tự tính -->
+                            <input asp-for="Age" type="hidden" id="petAgeHidden" />
                             <span asp-validation-for="Age" class="text-danger"></span>
 
+                            <small id="petAgeHint" style="display:block;color:#5d6b82;margin-top:6px;"></small>
                         </div>
                     </div>
 
@@ -268,6 +279,54 @@
                 // giải phóng memory sau khi load xong
                 preview.onload = () => URL.revokeObjectURL(url);
             });
+        })();
+
+        (function () {
+            const birthInput = document.getElementById('petBirthdateInput');
+            const ageHidden = document.getElementById('petAgeHidden');
+            const hint = document.getElementById('petAgeHint');
+
+            if (!birthInput || !ageHidden) return;
+
+            function calcAgeYMD(birthStr) {
+                const bd = new Date(birthStr + "T00:00:00");
+                const today = new Date();
+
+                let years = today.getFullYear() - bd.getFullYear();
+                let months = today.getMonth() - bd.getMonth();
+                let days = today.getDate() - bd.getDate();
+
+                if (days < 0) {
+                    months--;
+                    const daysInPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+                    days += daysInPrevMonth;
+                }
+                if (months < 0) {
+                    years--;
+                    months += 12;
+                }
+                if (years < 0) years = 0;
+
+                return { years, months, days };
+            }
+
+            function syncAge() {
+                const val = birthInput.value;
+
+                // Nếu không nhập ngày sinh: set Age = 0 để không vướng [Required]
+                if (!val) {
+                    ageHidden.value = 0;
+                    if (hint) hint.textContent = "";
+                    return;
+                }
+
+                const a = calcAgeYMD(val);
+                ageHidden.value = a.years; // Age bind theo năm (int)
+                if (hint) hint.textContent = `Tuổi tự tính: ${a.years} năm ${a.months} tháng ${a.days} ngày`;
+            }
+
+            birthInput.addEventListener('change', syncAge);
+            syncAge();
         })();
     </script>
 }

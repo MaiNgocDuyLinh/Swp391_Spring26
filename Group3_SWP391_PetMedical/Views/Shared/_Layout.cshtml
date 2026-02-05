@@ -97,6 +97,30 @@
                                                 </li>
                                             }
 
+                                            @* Menu Staff trên navbar *@
+                                            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Staff"))
+                                            {
+                                                <li>
+                                                    <a href="#">Staff</a>
+                                                    <ul class="submenu">
+                                                        <li><a href="@Url.Action("ListServices", "Staff")">Danh sách dịch vụ</a></li>
+                                                        <li><a href="@Url.Action("ListCustomers", "Staff")">Danh sách khách hàng</a></li>
+                                                        <li><a href="@Url.Action("AppointmentList", "Staff")">Lịch khám theo ngày</a></li>
+                                                    </ul>
+                                                </li>
+                                            }
+
+                                            @* Menu Manager trên navbar *@
+                                            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Manager"))
+                                            {
+                                                <li>
+                                                    <a href="#">Manager</a>
+                                                    <ul class="submenu">
+                                                        <li><a href="@Url.Action("ListServices", "Manager")">Quản lý dịch vụ</a></li>
+                                                    </ul>
+                                                </li>
+                                            }
+
                                             <li>
                                                 <a href="blog.html">Blog</a>
                                                 <ul class="submenu">

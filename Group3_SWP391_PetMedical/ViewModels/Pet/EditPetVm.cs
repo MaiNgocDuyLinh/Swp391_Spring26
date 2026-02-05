@@ -6,7 +6,6 @@ namespace Group3_SWP391_PetMedical.ViewModels.Pet
     public class EditPetVm
     {
         public int PetId { get; set; }
-
         public string? CurrentPetImg { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập tên thú cưng")]
@@ -25,11 +24,19 @@ namespace Group3_SWP391_PetMedical.ViewModels.Pet
         [Range(0.01, 500, ErrorMessage = "Cân nặng phải lớn hơn 0 và nhỏ hơn hoặc bằng 500kg")]
         public decimal? Weight { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập tuổi")]
-        [Range(0, 200, ErrorMessage = "Tuổi phải từ 0 đến 200")]
         public int? Age { get; set; }
 
-        // Ảnh mới KHÔNG bắt buộc
+        
+        [Required(ErrorMessage = "Vui lòng chọn giới tính.")]
+        public string? PetGender { get; set; }
+
+       
+        [Required(ErrorMessage = "Vui lòng nhập ngày sinh.")]
+        [DataType(DataType.Date)]
+        public DateTime? PetBirthdate { get; set; }
+
+        public string? RealAgeText { get; set; }
+
         public IFormFile? NewPetImage { get; set; }
     }
 }
