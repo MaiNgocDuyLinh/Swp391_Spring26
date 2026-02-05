@@ -19,7 +19,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         }
 
         // lay user_id tu Claims
-        private int? GetCurrentUserId()
+        private int? GetCurrentUser_Id()
         {
             if (User.Identity?.IsAuthenticated != true)
                 return null;
@@ -33,7 +33,7 @@ namespace Group3_SWP391_PetMedical.Controllers
 
         public async Task<IActionResult> Profile()
         {
-            var userId = GetCurrentUserId();
+            var userId = GetCurrentUser_Id();
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
@@ -48,7 +48,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Profile([Bind(Prefix = "")] User model)
         {
-            var userId = GetCurrentUserId();
+            var userId = GetCurrentUser_Id();
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
@@ -88,7 +88,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         [HttpGet]
         public async Task<IActionResult> ChangePassword()
         {
-            var userId = GetCurrentUserId();
+            var userId = GetCurrentUser_Id();
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
@@ -103,7 +103,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
-            var userId = GetCurrentUserId();
+            var userId = GetCurrentUser_Id();
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
@@ -127,15 +127,6 @@ namespace Group3_SWP391_PetMedical.Controllers
             return RedirectToAction(nameof(Profile));
         }
 
-        public int GetCurrentUserId()
-        {
-            var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            idStr ??= User.FindFirstValue("user_id");
-
-            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out int id))
-                throw new Exception("Không lấy được user_id từ Claims. Hãy kiểm tra Login tạo Claims.");
-
-            return id;
-        }
+        
     }
 }
