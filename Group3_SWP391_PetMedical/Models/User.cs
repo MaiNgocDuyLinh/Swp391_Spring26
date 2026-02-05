@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Group3_SWP391_PetMedical.Models;
@@ -8,6 +8,8 @@ public partial class User
     public int user_id { get; set; }
 
     public int role_id { get; set; }
+
+    public string username { get; set; } = null!;
 
     public string email { get; set; } = null!;
 

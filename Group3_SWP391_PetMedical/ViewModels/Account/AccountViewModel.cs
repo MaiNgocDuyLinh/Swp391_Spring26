@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Group3_SWP391_PetMedical.Models;
 
 namespace Group3_SWP391_PetMedical.ViewModels.Account
 {
@@ -86,6 +87,10 @@ namespace Group3_SWP391_PetMedical.ViewModels.Account
 
     public class RegisterViewModel
     {
+        [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập.")]
+        [StringLength(50, ErrorMessage = "Tên đăng nhập không được vượt quá 50 ký tự.")]
+        public string Username { get; set; } = null!;
+
         [Required(ErrorMessage = "Vui lòng nhập họ tên.")]
         [StringLength(100, ErrorMessage = "Họ tên không được vượt quá 100 ký tự.")]
         public string Name { get; set; } = null!;
@@ -106,5 +111,25 @@ namespace Group3_SWP391_PetMedical.ViewModels.Account
 
         [Required(ErrorMessage = "Vui lòng đồng ý với điều khoản.")]
         public bool AgreeTerm { get; set; }
+    }
+
+    public class ChangePasswordViewModel
+    {
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu hiện tại.")]
+        [DataType(DataType.Password)]
+        public string CurrentPassword { get; set; } = null!;
+
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu mới.")]
+        [MinLength(6, ErrorMessage = "Mật khẩu mới tối thiểu 6 ký tự.")]
+        [DataType(DataType.Password)]
+        public string NewPassword { get; set; } = null!;
+
+        [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu mới.")]
+        [Compare("NewPassword", ErrorMessage = "Mật khẩu xác nhận không khớp.")]
+        [DataType(DataType.Password)]
+        public string ConfirmPassword { get; set; } = null!;
+
+        /// <summary>User info for sidebar (avatar, email, ...). Optional when only rendering form.</summary>
+        public User? User { get; set; }
     }
 }

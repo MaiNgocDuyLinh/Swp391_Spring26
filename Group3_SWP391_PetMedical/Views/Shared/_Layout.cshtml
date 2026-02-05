@@ -6,7 +6,7 @@
     <title>Animal | Template </title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="manifest" href="site.webmanifest">
+    <link rel="manifest" href="~/site.webmanifest">
     <link rel="shortcut icon" type="image/x-icon" href="~/assets/img/favicon.ico">
 
     <!-- CSS here -->
@@ -147,7 +147,6 @@
                                                 <a class="dropdown-item" href="@Url.Action("Profile", "User")" style="cursor: default; color: #666;">
                                                     <i class="fas fa-user"></i> @User.Identity.Name
                                                 </a>
-
                                                 @* <a class="dropdown-item" href="@Url.Action("MyPets", "Pet")" style="padding: 0.5rem 1rem;"> *@
                                                 @*     <i class="fas fa-paw"></i> Thú cưng của tôi *@
                                                 @* </a> *@
@@ -171,7 +170,9 @@
                                                 }
 
                                                 <div class="dropdown-divider"></div>
-
+                                                <a class="dropdown-item" href="@Url.Action("ChangePassword", "User")" style="padding: 0.5rem 1rem;">
+                                                    <i class="fas fa-key"></i> Đổi mật khẩu
+                                                </a>
                                                 <form asp-controller="Login" asp-action="Logout" method="post" style="margin: 0;">
                                                     <button type="submit" class="dropdown-item"
                                                             style="border: none; background: none; width: 100%; text-align: left; cursor: pointer; padding: 0.5rem 1rem;">
