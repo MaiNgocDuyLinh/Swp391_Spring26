@@ -87,6 +87,10 @@ namespace Group3_SWP391_PetMedical.ViewModels.Account
 
     public class RegisterViewModel
     {
+        [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập.")]
+        [StringLength(50, ErrorMessage = "Tên đăng nhập không được vượt quá 50 ký tự.")]
+        public string Username { get; set; } = null!;
+
         [Required(ErrorMessage = "Vui lòng nhập họ tên.")]
         [StringLength(100, ErrorMessage = "Họ tên không được vượt quá 100 ký tự.")]
         public string Name { get; set; } = null!;
