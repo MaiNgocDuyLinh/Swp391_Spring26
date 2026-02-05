@@ -18,7 +18,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         }
 
         // lay user_id tu Claims
-        private int? GetCurrentUserId()
+        private int? GetCurrentUser_Id()
         {
             if (User.Identity?.IsAuthenticated != true)
                 return null;
@@ -32,7 +32,7 @@ namespace Group3_SWP391_PetMedical.Controllers
 
         public async Task<IActionResult> Profile()
         {
-            var userId = GetCurrentUserId();
+            var userId = GetCurrentUser_Id();
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
@@ -47,7 +47,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Profile([Bind(Prefix = "")] User model)
         {
-            var userId = GetCurrentUserId();
+            var userId = GetCurrentUser_Id();
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
@@ -87,7 +87,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         [HttpGet]
         public async Task<IActionResult> ChangePassword()
         {
-            var userId = GetCurrentUserId();
+            var userId = GetCurrentUser_Id();
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
@@ -102,7 +102,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
-            var userId = GetCurrentUserId();
+            var userId = GetCurrentUser_Id();
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
@@ -125,5 +125,10 @@ namespace Group3_SWP391_PetMedical.Controllers
             TempData["SuccessMessage"] = "Đổi mật khẩu thành công.";
             return RedirectToAction(nameof(Profile));
         }
+<<<<<<< HEAD
+=======
+
+        
+>>>>>>> linh
     }
 }
