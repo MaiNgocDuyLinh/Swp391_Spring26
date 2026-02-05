@@ -11,11 +11,11 @@ namespace Group3_SWP391_PetMedical.Controllers;
 
 [Authorize(Roles = "Customer")]
 
-public class PetController : UserController
+public class PetController : Controller
 {
     private readonly IPetService _petService;
 
-    public PetController(IPetService petService, PetClinicContext context, ILogger<UserController> logger) : base(context, logger)
+    public PetController(IPetService petService)
     {
         _petService = petService;
     }
@@ -34,6 +34,17 @@ public class PetController : UserController
 
         return View(vm);
     }
+
+    public int GetCurrentUserId()
+        {
+            var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            idStr ??= User.FindFirstValue("user_id");
+
+            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out int id))
+                throw new Exception("Không lấy được user_id từ Claims. Hãy kiểm tra Login tạo Claims.");
+
+            return id;
+        }
 
     // ====== CREATE =======
     [HttpGet]
