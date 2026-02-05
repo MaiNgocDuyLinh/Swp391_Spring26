@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.ViewModels.Account;
 using Group3_SWP391_PetMedical.Services.Interfaces;
@@ -18,7 +19,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         }
 
         // lay user_id tu Claims
-        private int? GetCurrentUser_Id()
+        private int? GetCurrentUserId()
         {
             if (User.Identity?.IsAuthenticated != true)
                 return null;
@@ -32,7 +33,7 @@ namespace Group3_SWP391_PetMedical.Controllers
 
         public async Task<IActionResult> Profile()
         {
-            var userId = GetCurrentUser_Id();
+            var userId = GetCurrentUserId();
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
@@ -47,7 +48,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Profile([Bind(Prefix = "")] User model)
         {
-            var userId = GetCurrentUser_Id();
+            var userId = GetCurrentUserId();
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
@@ -87,7 +88,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         [HttpGet]
         public async Task<IActionResult> ChangePassword()
         {
-            var userId = GetCurrentUser_Id();
+            var userId = GetCurrentUserId();
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
@@ -102,7 +103,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
-            var userId = GetCurrentUser_Id();
+            var userId = GetCurrentUserId();
             if (userId == null)
                 return RedirectToAction("Login", "Login");
 
@@ -124,11 +125,7 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             TempData["SuccessMessage"] = "Đổi mật khẩu thành công.";
             return RedirectToAction(nameof(Profile));
-        }
-<<<<<<< HEAD
-=======
 
-        
->>>>>>> linh
+        }
     }
 }
