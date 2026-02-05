@@ -79,7 +79,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                 user.email = model.email;
                 user.phone = model.phone;
                 return View(user);
-            }
+            }   
 
             TempData["SuccessMessage"] = "Cập nhật thông tin thành công.";
             return RedirectToAction(nameof(Profile));
