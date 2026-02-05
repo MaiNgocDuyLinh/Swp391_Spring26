@@ -62,6 +62,20 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             await _context.SaveChangesAsync();
         }
 
+        public async Task<bool> ExistsEmailByOtherUserAsync(string email, int excludeUserId)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return false;
+            return await _context.Users
+                .AnyAsync(u => u.email.Trim().ToLower() == email.Trim().ToLower() && u.user_id != excludeUserId);
+        }
+
+        public async Task<bool> ExistsPhoneByOtherUserAsync(string? phone, int excludeUserId)
+        {
+            if (string.IsNullOrWhiteSpace(phone)) return false;
+            return await _context.Users
+                .AnyAsync(u => u.phone != null && u.phone.Trim() == phone.Trim() && u.user_id != excludeUserId);
+        }
+
         public async Task<bool> UpdateProfileAsync(int userId, string fullName, string email, string? phone)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.user_id == userId);

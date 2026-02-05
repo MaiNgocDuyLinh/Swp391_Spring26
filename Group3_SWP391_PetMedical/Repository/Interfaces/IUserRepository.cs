@@ -13,6 +13,12 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         /// <summary>Cập nhật entity User (đã load và sửa), gọi SaveChanges.</summary>
         Task UpdateAsync(User user);
 
+        /// <summary>Kiểm tra email đã tồn tại bởi user khác (loại trừ excludeUserId).</summary>
+        Task<bool> ExistsEmailByOtherUserAsync(string email, int excludeUserId);
+
+        /// <summary>Kiểm tra số điện thoại đã tồn tại bởi user khác (loại trừ excludeUserId).</summary>
+        Task<bool> ExistsPhoneByOtherUserAsync(string? phone, int excludeUserId);
+
         /// <summary>Cập nhật profile: full_name, email, phone. Trả về true nếu thành công.</summary>
         Task<bool> UpdateProfileAsync(int userId, string fullName, string email, string? phone);
 

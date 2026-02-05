@@ -25,6 +25,12 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             var email = (model.email ?? "").Trim();
             var phone = string.IsNullOrWhiteSpace(model.phone) ? null : model.phone.Trim();
 
+            if (await _userRepo.ExistsEmailByOtherUserAsync(email, userId))
+                return (false, "Email này đã được sử dụng bởi tài khoản khác.");
+
+            if (await _userRepo.ExistsPhoneByOtherUserAsync(phone, userId))
+                return (false, "Số điện thoại này đã được sử dụng bởi tài khoản khác.");
+
             var ok = await _userRepo.UpdateProfileAsync(userId, fullName, email, phone);
             return ok ? (true, null) : (false, "Không tìm thấy tài khoản.");
         }
