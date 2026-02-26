@@ -5,11 +5,17 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
 {
     public interface IUserService
     {
-        Task<User?> GetProfileAsync(int userId);
 
-        Task<(bool success, string? errorMessage)> UpdateProfileAsync(int userId, User model);
+        Task<(bool success, User? user, string? errorMessage)> AuthenticateAsync(string username, string password);// xác thực đăng nhập
 
-        Task<ChangePasswordViewModel?> GetChangePasswordModelAsync(int userId);
+
+        Task<(bool success, string? errorMessage)> RegisterAsync(RegisterViewModel model); // đăng kí tài khoản mới
+
+        Task<User?> GetProfileAsync(int userId); // lấy User bằng userid
+
+        Task<(bool success, string? errorMessage)> UpdateProfileAsync(int userId, User model); // update profile
+
+        Task<ChangePasswordViewModel?> GetChangePasswordModelAsync(int userId); //đổi pass bằng id
 
         Task<(bool success, string? errorMessage)> ChangePasswordAsync(int userId, ChangePasswordViewModel model);
     }
