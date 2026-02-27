@@ -12,5 +12,8 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
 
         public Task<PagedResult<Service>> GetServiceListAsync(PagingQuery query)
             => _repo.GetPagedAsync(query.Q, query.Page, query.PageSize);
+
+        public Task<List<Service>> GetAllAsync()
+            => _repo.GetAllAsync();
     }
 }

@@ -27,6 +27,12 @@ namespace Group3_SWP391_PetMedical
             //edit pet
             builder.Services.AddScoped<IPetRepository, PetRepository>();
             builder.Services.AddScoped<IPetService, PetService>();
+
+            //history appointment
+            builder.Services.AddScoped<ICusAppointmentRepository, CusAppointmentRepository>();
+            builder.Services.AddScoped<ICusAppointmentService, CusAppointmentService>();
+
+
             // User (Profile, ChangePassword)
             builder.Services.AddScoped<Group3_SWP391_PetMedical.Repository.Interfaces.IUserRepository,
                                        Group3_SWP391_PetMedical.Repository.Implementations.UserRepository>();
