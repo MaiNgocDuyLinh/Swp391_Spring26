@@ -60,7 +60,11 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     AppointmentId = a.appointment_id,
                     AppointmentDate = a.appointment_date,
                     PetName = a.pet.name,
-                    DoctorName = a.doctor != null ? a.doctor.full_name : "Chưa phân công",
+                    //DoctorName = a.doctor != null ? a.doctor.full_name : "Chưa phân công",
+                    DoctorName =
+                        (a.doctor_id != null && a.doctor != null && a.doctor.role_id == 3)
+                            ? a.doctor.full_name
+                            : "Chưa phân công",
                     Status = a.status ?? "",
                     Notes = a.notes,
                     ServiceNames = string.Join(", ", a.AppointmentDetails.Select(d => d.service.service_name)),
