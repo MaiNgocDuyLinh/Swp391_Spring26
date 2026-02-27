@@ -54,7 +54,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             ViewBag.TotalPages = result.TotalPages;
             ViewBag.TotalItems = result.TotalItems;
 
-            return View(result.Items.ToList());
+            return View(result.Items.ToList());  
         }
     }
 }
