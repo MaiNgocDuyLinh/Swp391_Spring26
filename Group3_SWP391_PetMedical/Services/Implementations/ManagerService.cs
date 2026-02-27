@@ -14,7 +14,6 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             _serviceRepo = serviceRepo;
         }
 
-        // ========== SERVICES ==========
         public Task<PagedResult<Service>> GetServicesPagedAsync(string? search, int page, int pageSize)
         {
             return _serviceRepo.GetPagedAsync(search, page, pageSize);
@@ -25,9 +24,9 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             return _serviceRepo.GetByIdAsync(id);
         }
 
-        public Task<bool> UpdateServiceAsync(int id, decimal basePrice, string? description)
+        public Task<bool> UpdateServiceAsync(int id, string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService, bool status)
         {
-            return _serviceRepo.UpdateAsync(id, basePrice, description);
+            return _serviceRepo.UpdateAsync(id, serviceName, basePrice, description, duration, isHomeService, status);
         }
     }
 }

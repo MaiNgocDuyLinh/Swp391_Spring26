@@ -42,9 +42,25 @@ namespace Group3_SWP391_PetMedical.Controllers
         // ========== 2. EDIT SERVICE (POST) ==========
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditService(int id, decimal base_price, string? description)
+        public async Task<IActionResult> EditService(
+            int id,
+            string service_name,
+            decimal base_price,
+            string? description,
+            int? duration,
+            bool is_home_service,
+            bool status)
         {
-            var success = await _managerService.UpdateServiceAsync(id, base_price, description);
+            if (string.IsNullOrWhiteSpace(service_name))
+            {
+                ModelState.AddModelError("service_name", "Tên dịch vụ không được để trống.");
+                var service = await _managerService.GetServiceByIdAsync(id);
+                return View(service);
+            }
+
+            var success = await _managerService.UpdateServiceAsync(
+                id, service_name, base_price, description, duration, is_home_service, status);
+
             if (!success)
             {
                 return NotFound();

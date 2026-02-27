@@ -29,58 +29,108 @@
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="id" value="@Model.service_id" />
 
-                        <!-- Thông tin chỉ đọc -->
-                        <div class="form-group row mb-3">
-                            <label class="col-sm-3 col-form-label font-weight-bold">Tên dịch vụ:</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control-plaintext" readonly value="@Model.service_name" />
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger">
+                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <div>@error.ErrorMessage</div>
+                                }
                             </div>
-                        </div>
+                        }
 
+                        <!-- Tên dịch vụ -->
                         <div class="form-group row mb-3">
-                            <label class="col-sm-3 col-form-label font-weight-bold">Thời gian:</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control-plaintext" readonly 
-                                       value="@(Model.duration?.ToString() ?? "N/A") phút" />
-                            </div>
-                        </div>
-
-                        <div class="form-group row mb-3">
-                            <label class="col-sm-3 col-form-label font-weight-bold">Dịch vụ tại nhà:</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control-plaintext" readonly 
-                                       value="@(Model.is_home_service == true ? "Có" : "Không")" />
-                            </div>
-                        </div>
-
-                        <hr />
-
-                        <!-- Thông tin có thể chỉnh sửa -->
-                        <div class="form-group row mb-3">
-                            <label for="base_price" class="col-sm-3 col-form-label font-weight-bold">
-                                Giá thành (VNĐ): <span class="text-danger">*</span>
+                            <label for="service_name" class="col-sm-3 col-form-label font-weight-bold">
+                                Tên dịch vụ: <span class="text-danger">*</span>
                             </label>
                             <div class="col-sm-9">
-                                <input type="number" class="form-control" id="base_price" name="base_price" 
+                                <input type="text" class="form-control" id="service_name" name="service_name"
+                                       value="@Model.service_name" required />
+                            </div>
+                        </div>
+
+                        <!-- Mô tả -->
+                        <div class="form-group row mb-3">
+                            <label for="description" class="col-sm-3 col-form-label font-weight-bold">Mô tả:</label>
+                            <div class="col-sm-9">
+                                <textarea class="form-control" id="description" name="description"
+                                          rows="4" placeholder="Nhập mô tả dịch vụ...">@Model.description</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Giá -->
+                        <div class="form-group row mb-3">
+                            <label for="base_price" class="col-sm-3 col-form-label font-weight-bold">
+                                Giá (VNĐ): <span class="text-danger">*</span>
+                            </label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control" id="base_price" name="base_price"
                                        value="@Model.base_price" min="0" step="1000" required />
                                 <small class="form-text text-muted">Nhập giá tiền bằng số (VNĐ)</small>
                             </div>
                         </div>
 
-                        <div class="form-group row mb-4">
-                            <label for="description" class="col-sm-3 col-form-label font-weight-bold">Mô tả:</label>
+                        <!-- Thời gian -->
+                        <div class="form-group row mb-3">
+                            <label for="duration" class="col-sm-3 col-form-label font-weight-bold">Thời gian (phút):</label>
                             <div class="col-sm-9">
-                                <textarea class="form-control" id="description" name="description" 
-                                          rows="4" placeholder="Nhập mô tả dịch vụ...">@Model.description</textarea>
+                                <input type="number" class="form-control" id="duration" name="duration"
+                                       value="@Model.duration" min="0" placeholder="Nhập số phút..." />
                             </div>
                         </div>
 
+                        <!-- Dịch vụ tại nhà -->
+                        <div class="form-group row mb-3">
+                            <label class="col-sm-3 col-form-label font-weight-bold">Dịch vụ tại nhà:</label>
+                            <div class="col-sm-9 d-flex align-items-center">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="is_home_service"
+                                           id="home_yes" value="true"
+                                           @(Model.is_home_service == true ? "checked" : "") />
+                                    <label class="form-check-label" for="home_yes">Có</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="is_home_service"
+                                           id="home_no" value="false"
+                                           @(Model.is_home_service != true ? "checked" : "") />
+                                    <label class="form-check-label" for="home_no">Không</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trạng thái -->
+                        <div class="form-group row mb-4">
+                            <label class="col-sm-3 col-form-label font-weight-bold">Trạng thái:</label>
+                            <div class="col-sm-9 d-flex align-items-center">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="status"
+                                           id="status_active" value="true"
+                                           @(Model.status == true ? "checked" : "") />
+                                    <label class="form-check-label" for="status_active">
+                                        <span class="badge badge-success">Hoạt động</span>
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="status"
+                                           id="status_inactive" value="false"
+                                           @(Model.status != true ? "checked" : "") />
+                                    <label class="form-check-label" for="status_inactive">
+                                        <span class="badge badge-danger">Ngừng</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Buttons -->
                         <div class="form-group row">
                             <div class="col-sm-9 offset-sm-3">
                                 <button type="submit" class="btn btn-success">
                                     <i class="fas fa-save"></i> Lưu thay đổi
                                 </button>
-                                <a href="@Url.Action("ListServices", "Manager")" class="btn btn-secondary">
+                                <a href="@Url.Action("ListServices", "Manager")" class="btn btn-secondary ml-2">
                                     <i class="fas fa-times"></i> Hủy
                                 </a>
                             </div>
@@ -93,14 +143,11 @@
 </div>
 
 <style>
-    .card {
-        border-radius: 10px;
-    }
-    .card-header {
-        border-radius: 10px 10px 0 0;
-    }
+    .card { border-radius: 10px; }
+    .card-header { border-radius: 10px 10px 0 0; }
     .form-control:focus {
         border-color: #28a745;
         box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
     }
+    .form-check-inline { margin-right: 20px; }
 </style>
