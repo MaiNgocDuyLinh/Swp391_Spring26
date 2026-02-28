@@ -57,6 +57,7 @@
                                                     <ul class="submenu">
                                                         <li><a href="@Url.Action("Index", "Admin")">Quản lý Tài khoản</a></li>
                                                         <li><a href="@Url.Action("Create", "Admin")">Tạo Tài khoản</a></li>
+                                                        <li><a href="@Url.Action("RolePermissions", "Admin")">Phân quyền theo màn hình</a></li>
                                                     </ul>
                                                 </li>
                                             }
@@ -85,6 +86,7 @@
                                                     <div class="dropdown-divider"></div>
                                                     <a class="dropdown-item" href="@Url.Action("Index", "Admin")"><i class="fas fa-cog"></i> Quản lý Tài khoản</a>
                                                     <a class="dropdown-item" href="@Url.Action("Create", "Admin")"><i class="fas fa-user-plus"></i> Tạo Tài khoản</a>
+                                                    <a class="dropdown-item" href="@Url.Action("RolePermissions", "Admin")"><i class="fas fa-shield-alt"></i> Phân quyền màn hình</a>
                                                 }
                                                 <div class="dropdown-divider"></div>
                                                 <form asp-controller="Login" asp-action="Logout" method="post" style="margin: 0;">
