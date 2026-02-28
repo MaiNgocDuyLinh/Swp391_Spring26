@@ -64,6 +64,43 @@ namespace Group3_SWP391_PetMedical.Controllers
             // return View(vm);
         }
 
+
+        // GET: /CusAppointment/MyAppointments
+        [HttpGet]
+        public async Task<IActionResult> MyAppointments([FromQuery] CusBookedAppointmentQuery filter)
+        {
+            int customerId = GetCurrentUserId();
+
+            var paged = await _cusAppointmentService
+                .GetCusBookedAppointmentsAsync(customerId, filter);
+
+            var services = await _serviceService.GetAllAsync();
+
+            var vm = new CusBookedAppointmentListVM
+            {
+                Filter = filter,
+                Page = new()
+                {
+                    Data = paged,
+                    Q = filter.Q
+                },
+                ServiceOptions = services.Select(s => new SelectListItem
+                {
+                    Value = s.service_id.ToString(),
+                    Text = s.service_name,
+                    Selected = filter.ServiceId.HasValue && filter.ServiceId.Value == s.service_id
+                }).ToList()
+            };
+
+            vm.ServiceOptions.Insert(0, new SelectListItem
+            {
+                Value = "",
+                Text = "Tất cả dịch vụ"
+            });
+
+            // View đặt tại: Views/Appointment/MyAppointments.cshtml (hoặc Views/CusAppointment/MyAppointments.cshtml tuỳ bạn)
+            return View("~/Views/Appointment/CusMyAppointments.cshtml", vm);
+        }
         private int GetCurrentUserId()
         {
             var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier)

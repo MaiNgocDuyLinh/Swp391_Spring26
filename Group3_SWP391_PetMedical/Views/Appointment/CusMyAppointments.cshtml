@@ -1,8 +1,8 @@
 ﻿@using Group3_SWP391_PetMedical.Models.Common
-@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusAppointmentHistoryListVM
+@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusBookedAppointmentListVM
 
 @{
-    ViewData["Title"] = "Lịch sử khám bệnh";
+    ViewData["Title"] = "Lịch khám đã đặt";
 
     var pagerObj = new PagedResult<object>
     {
@@ -30,7 +30,7 @@
         /* wrapper */
         .pc-wrap {
             /* background: linear-gradient(180deg, var(--pc-pink), #fff); */
-            background : #f3d7d5;
+            background: #f3d7d5;
             border: 1px solid var(--pc-border);
             border-radius: 18px;
             padding: 18px;
@@ -224,12 +224,12 @@
 <section class="container py-4" id="servicesArea">
     <div class="pc-wrap" style="margin-top:150px;">
 
-        <h3 class="pc-title">Lịch sử khám bệnh</h3>
-        <p class="pc-sub">Tra cứu lịch đã khám theo ngày và dịch vụ</p>
+        <h3 class="pc-title">Lịch khám đã đặt</h3>
+        <p class="pc-sub">Tra cứu lịch sắp tới theo ngày và dịch vụ</p>
 
         <!-- FILTER -->
         <div class="pc-filter">
-            <form method="get" asp-controller="CusAppointment" asp-action="AppointmentHistory" class="row g-3">
+            <form method="get" asp-controller="CusAppointment" asp-action="MyAppointments" class="row g-3">
                 <div class="col-lg-4 col-md-6">
                     <div class="pc-label">Từ khóa</div>
                     <input class="form-control pc-input"
@@ -266,7 +266,7 @@
                 <div class="col-12 mt-2">
                     <div class="pc-actions">
                         <a class="pc-btn pc-btn--ghost"
-                           href="@Url.Action("AppointmentHistory", "CusAppointment")#servicesArea">
+                           href="@Url.Action("MyAppointments", "CusAppointment")#servicesArea">
                             <i class="fas fa-undo-alt"></i> Làm mới
                         </a>
 
@@ -282,7 +282,7 @@
         @if (!Model.Page.Data.Items.Any())
         {
             <div class="alert alert-info mb-0" style="border-radius:14px;">
-                Chưa có lịch sử khám phù hợp.
+                Chưa có lịch khám đã đặt phù hợp.
             </div>
         }
         else
@@ -320,7 +320,7 @@
 
                                 <td>
                                     <span class="pc-badge">
-                                        <i class="fas fa-check-circle"></i>
+                                        <i class="fas fa-calendar-check"></i>
                                         @item.Status
                                     </span>
                                 </td>
@@ -336,7 +336,7 @@
 
             <div class="mt-3">
                 @await Html.PartialAsync("_Pager",
-                (action: "AppointmentHistory",
+                (action: "MyAppointments",
                 controller: "CusAppointment",
                 q: Model.Filter.Q,
                 pager: pagerObj))

@@ -7,5 +7,10 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
     {
         Task<PagedResult<CusAppointmentHistoryItemVM>>
             GetCusAppointmentHistoryAsync(int customerId, CusAppointmentHistoryQuery query);
+
+
+        //  Lịch đã đặt 
+        Task<PagedResult<CusBookedAppointmentItemVM>>
+            GetCusBookedAppointmentsAsync(int customerId, CusBookedAppointmentQuery query);
     }
 }
