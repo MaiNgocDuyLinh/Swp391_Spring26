@@ -67,7 +67,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px; /* giống mypets-actions */
+        gap: 10px;
         margin: 20px 0 30px;
     }
 
@@ -128,7 +128,6 @@
         transition: .2s ease;
     }
 
-    /* nút giống service (xanh) */
     .mypets-search-left .pc-btn--primary,
     .mypets-search-left .pc-btn--ghost {
         background: #5aa9ff;
@@ -143,7 +142,7 @@
             color: #fff;
         }
 
-    /* ====== ADD PET BUTTON (đều như btn Edit/Delete) ====== */
+    /* ====== ADD PET BUTTON ====== */
     .mypets-add-btn {
         height: 52px;
         border-radius: 999px;
@@ -152,7 +151,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 8px; /* giống icon-text */
+        gap: 8px;
         background: #ff3d1c;
         border: 1px solid #ff3d1c;
         color: #fff;
@@ -175,7 +174,7 @@
         }
     }
 
-    /* ====== PET CARD (service-like) ====== */
+    /* ====== PET CARD ====== */
     .mypets-card {
         background: #fff5f7;
         border-radius: 18px;
@@ -239,7 +238,7 @@
             font-weight: 800;
         }
 
-    /* ====== ACTION BUTTONS (Edit/Delete) ====== */
+    /* ====== ACTION BUTTONS ====== */
     .mypets-actions {
         display: flex;
         justify-content: center;
@@ -300,17 +299,14 @@
 <section class="services-area section-padding40 mypets-page">
     <div class="container">
 
-        <!-- KHUNG BO TRÒN BAO TẤT CẢ -->
         <div class="mypets-frame">
 
             <div class="mypets-hero">
                 <h1 class="title">Thú cưng của tôi</h1>
             </div>
 
-            @* IMPORTANT: SearchBar + Pager đang dùng #servicesArea *@
             <div id="servicesArea">
 
-                <!-- SEARCH + ADD -->
                 <div class="mypets-search-row">
                     <div class="mypets-search-left">
                         @await Html.PartialAsync("_SearchBar", ("MyPets", "Pet", q, pageSize))
@@ -323,7 +319,6 @@
                     </div>
                 </div>
 
-                @* list pet *@
                 @if (!Model.Result.Items.Any())
                 {
                     <div class="alert alert-info text-center" style="border-radius:16px;">
@@ -349,25 +344,34 @@
                                 imgUrl = Url.Content("~/uploads/pets/" + pet.PetImg);
                             }
 
-                            <div class="col-xl-4 col-lg-4 col-md-6 mb-4">
-                                <div class="mypets-card">
+                        <div class="col-xl-4 col-lg-4 col-md-6 mb-4">
+                            <div class="mypets-card">
 
-                                    <div class="mypets-avatar">
-                                        <img src="@imgUrl"
-                                             alt="@pet.Name"
-                                             onerror="this.onerror=null;this.src='@defaultImg';" />
-                                    </div>
+                                <div class="mypets-avatar">
+                                    <img src="@imgUrl"
+                                         alt="@pet.Name"
+                                         onerror="this.onerror=null;this.src='@defaultImg';" />
+                                </div>
 
-                                    <h3 class="mypets-name">@pet.Name</h3>
+                                <h3 class="mypets-name">@pet.Name</h3>
 
-                                    <ul class="mypets-meta">
-                                        <li><b>Loài:</b> @(pet.Species ?? "—")</li>
-                                        <li><b>Giống:</b> @(pet.Breed ?? "—")</li>
-                                        <li><b>Tuổi:</b> @(pet.Age?.ToString() ?? "—") <i>(năm)</i></li>
+                                <ul class="mypets-meta">
+                                    <li><b>Loài:</b> @(pet.Species ?? "—")</li>
+                                    <li><b>Giống:</b> @(pet.Breed ?? "—")</li>
+                                    <li><b>Giới tính:</b> @(pet.PetGender ?? "—")</li>
+                                    <li><b>Ngày sinh:</b> @(pet.PetBirthdate.HasValue? pet.PetBirthdate.Value.ToString("dd/MM/yyyy") : "—")</li>
+
+                                    <!-- Chỉ còn 1 dòng tuổi -->
+                                    <li>
+                                        <b>Tuổi:</b>
+                                        @(string.IsNullOrWhiteSpace(pet.RealAgeText)
+                                                                            ? ((pet.Age?.ToString() ?? "—") + " (năm)")
+                                                                            : pet.RealAgeText)
+                                </li>
+
                                         <li><b>Cân nặng:</b> @(pet.Weight?.ToString("0.##") ?? "—") <i>(kg)</i></li>
                                     </ul>
 
-                                    <!-- 2 nút Sửa / Xóa -->
                                     <div class="mypets-actions">
                                         <a class="btn btn-edit"
                                            href="@Url.Action("Edit", "Pet", new { id = pet.PetId })">
@@ -389,7 +393,7 @@
 
                                 </div>
                             </div>
-                        }
+                                        }
                     </div>
 
                     <div class="row mt-2">

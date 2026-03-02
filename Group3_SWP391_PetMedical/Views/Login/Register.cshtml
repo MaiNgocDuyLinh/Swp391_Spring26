@@ -25,7 +25,7 @@
             <!-- <img src="~/Register/images/signup-bg.jpg" alt=""> -->
             <div class="container">
                 <div class="signup-content">
-                    <form asp-action="Register" asp-controller="Login" method="POST" id="signup-form" class="signup-form">
+                    <form asp-action="Register" asp-controller="Register" method="post" id="signup-form" class="signup-form">
                         @Html.AntiForgeryToken()
                         <h2 class="form-title">Create account</h2>
                         
@@ -36,6 +36,10 @@
                             </div>
                         }
                         
+                        <div class="form-group">
+                            <input asp-for="Username" type="text" class="form-input" placeholder="Tên đăng nhập (username)" />
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                        </div>
                         <div class="form-group">
                             <input asp-for="Name" type="text" class="form-input" placeholder="Your Name" />
                             <span asp-validation-for="Name" class="text-danger"></span>

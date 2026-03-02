@@ -9,5 +9,12 @@
         public int? Age { get; set; }
         public double? Weight { get; set; }
         public string? PetImg { get; set; } // lưu filename hoặc path
+
+        
+        public string? PetGender { get; set; }
+
+        public DateTime? PetBirthdate { get; set; }
+
+        public string? RealAgeText { get; set; }
     }
 }

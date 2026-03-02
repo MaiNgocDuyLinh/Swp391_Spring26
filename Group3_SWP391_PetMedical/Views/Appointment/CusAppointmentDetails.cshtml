@@ -1,0 +1,309 @@
+﻿@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusAppointmentDetailVM
+
+@{
+    var isPopup = Context.Request.Query["popup"] == "1";
+    if (isPopup) { Layout = null; }
+
+    ViewData["Title"] = "Chi tiết lịch hẹn";
+}
+
+@if (isPopup)
+{
+    <style>
+        :root {
+            --pc-red: #ff3b3b;
+            --pc-red-dark: #e83434;
+            --pc-text: #2b2b2b;
+            --pc-muted: #7a7a7a;
+            --pc-border: rgba(0,0,0,0.06);
+            --pc-soft: #fff7f7;
+        }
+
+        body {
+            margin: 0;
+            background: #fff;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        }
+
+        .pc-wrap {
+            padding: 18px 20px 22px;
+        }
+
+        .pc-card {
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            border-radius: 18px;
+            padding: 16px 16px 18px;
+        }
+
+        .pc-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            margin-bottom: 12px;
+        }
+
+        .pc-title {
+            font-weight: 900;
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--pc-text);
+        }
+
+        .pc-sub {
+            color: var(--pc-muted);
+            margin: 6px 0 0 0;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* ✅ NÚT X */
+        .pc-xbtn {
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,0.10);
+            background: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+            flex: 0 0 auto;
+        }
+
+            .pc-xbtn:hover {
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+            }
+
+            .pc-xbtn svg {
+                width: 18px;
+                height: 18px;
+                opacity: 0.65;
+            }
+
+        .pc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 12px;
+        }
+
+        @@media (max-width: 900px) {
+            .pc-grid
+
+        {
+            grid-template-columns: 1fr;
+        }
+
+        }
+
+        .pc-item {
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 14px;
+            padding: 12px 14px;
+            background: var(--pc-soft);
+        }
+
+        .pc-label {
+            font-weight: 900;
+            font-size: 0.95rem;
+            color: #5f5f5f;
+            margin-bottom: 6px;
+        }
+
+        .pc-value {
+            font-weight: 900;
+            color: var(--pc-text);
+            font-size: 1.02rem;
+            line-height: 1.25rem;
+        }
+
+        .pc-value-muted {
+            font-weight: 700;
+            color: var(--pc-text);
+            white-space: pre-line;
+            line-height: 1.35rem;
+        }
+
+        .pc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.08);
+            font-weight: 900;
+        }
+
+            .pc-badge .dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 999px;
+                background: var(--pc-red);
+                display: inline-block;
+            }
+
+        .pc-section {
+            margin-top: 14px;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 16px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .pc-section__head {
+            background: var(--pc-soft);
+            padding: 12px 14px;
+            font-weight: 900;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .pc-section__body {
+            padding: 12px 14px;
+        }
+
+        .pc-list {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+            .pc-list li {
+                font-weight: 700;
+                margin: 6px 0;
+            }
+
+        .pc-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 16px;
+        }
+
+        .pc-btn {
+            border-radius: 999px;
+            height: 44px;
+            padding: 0 18px;
+            font-weight: 900;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid rgba(0,0,0,0.10);
+            background: #fff;
+            color: var(--pc-text);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+            .pc-btn:hover {
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+                color: var(--pc-red-dark);
+            }
+
+        .pc-btn--primary {
+            background: var(--pc-red);
+            border-color: var(--pc-red);
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(255,59,59,0.22);
+        }
+
+            .pc-btn--primary:hover {
+                background: var(--pc-red-dark);
+                color: #fff;
+            }
+    </style>
+}
+
+<div class="pc-wrap">
+    <div class="pc-card">
+        <!-- GRID INFO -->
+        <div class="pc-grid">
+            <div class="pc-item">
+                <div class="pc-label">Mã lịch</div>
+                <div class="pc-value">#@Model.AppointmentId</div>
+            </div>
+
+            <div class="pc-item">
+                <div class="pc-label">Trạng thái</div>
+                <div class="pc-badge">
+                    <span class="dot"></span>
+                    <span>@Model.Status</span>
+                </div>
+            </div>
+
+            <div class="pc-item">
+                <div class="pc-label">Ngày giờ khám</div>
+                <div class="pc-value">@Model.AppointmentDate.ToString("HH:mm dd/MM/yyyy")</div>
+            </div>
+
+            <div class="pc-item">
+                <div class="pc-label">Ngày tạo lịch</div>
+                <div class="pc-value">@Model.CreatedAt.ToString("HH:mm dd/MM/yyyy")</div>
+            </div>
+
+            <div class="pc-item">
+                <div class="pc-label">Thú cưng</div>
+                <div class="pc-value">@Model.PetName</div>
+            </div>
+
+            <div class="pc-item">
+                <div class="pc-label">Bác sĩ</div>
+                <div class="pc-value">@Model.DoctorName</div>
+            </div>
+
+            <div class="pc-item" style="grid-column: 1 / -1;">
+                <div class="pc-label">Tổng tiền</div>
+                <div class="pc-value">@((Model.TotalAmount ?? 0).ToString("N0"))</div>
+            </div>
+        </div>
+
+        <!-- SERVICES -->
+        <div class="pc-section">
+            <div class="pc-section__head">Dịch vụ đã chọn</div>
+            <div class="pc-section__body">
+                @if (Model.Services != null && Model.Services.Any())
+                {
+                    <ul class="pc-list">
+                        @foreach (var s in Model.Services)
+                        {
+                            <li>@s</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="pc-value-muted">Không có dịch vụ.</div>
+                }
+            </div>
+        </div>
+
+        <!-- NOTES -->
+        <div class="pc-section" style="margin-top: 12px;">
+            <div class="pc-section__head">Mô tả / ghi chú lịch hẹn</div>
+            <div class="pc-section__body">
+                <div class="pc-value-muted">@(!string.IsNullOrWhiteSpace(Model.Notes) ? Model.Notes : "—")</div>
+            </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="pc-actions">
+            <a class="pc-btn"
+               href="@Url.Action("Cancel", "CusAppointment", new { id = Model.AppointmentId, popup = 1 })">
+                Hủy lịch hẹn
+            </a>
+
+            <a class="pc-btn pc-btn--primary"
+               href="@Url.Action("Edit", "CusAppointment", new { id = Model.AppointmentId })">
+                Chỉnh sửa lịch hẹn
+            </a>
+        </div>
+    </div>
+</div>
+
