@@ -5,6 +5,7 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
 {
     public interface ICusAppointmentRepository
     {
+        //Lịch sử  khám
         Task<PagedResult<CusAppointmentHistoryItemVM>>
             GetCusAppointmentHistoryAsync(int customerId, CusAppointmentHistoryQuery query);
 
@@ -21,12 +22,14 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         // doctors
         Task<List<(int DoctorId, string DoctorName)>> GetDoctorsAsync();
 
-        // ✅ shifts: giữ bản 1 ngày (đang có)
+        //  shifts: giữ bản 1 ngày (đang có)
         Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime day);
 
-        // ✅ shifts: thêm overload (from,to) để controller/service dùng
+        // shifts: thêm overload (from,to) để controller/service dùng
         Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime from, DateTime to);
 
         Task<bool> IsDoctorWorkingAtAsync(int doctorId, DateTime appointmentDateTime);
+
+
     }
 }

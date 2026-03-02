@@ -26,7 +26,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             // ✅ Lịch sử: chỉ lấy lịch có trạng thái "đã thanh toán" hoặc "đã hủy"
             q = q.Where(a => a.status != null &&
                 (a.status.Trim().ToLower() == "đã thanh toán" ||
-                 a.status.Trim().ToLower() == "đã hủy"));
+                 a.status.Trim().ToLower() == "đã hủy" ||
+                 a.status.Trim().ToLower() == "không đến"));
 
             // Filter ngày
             if (query.FromDate.HasValue)
