@@ -8,7 +8,7 @@ namespace Group3_SWP391_PetMedical.Controllers
     public class ManagerController : Controller
     {
         private readonly IManagerService _managerService;
-        private const int PageSize = 10;
+        private const int PageSize = 5;
 
         public ManagerController(IManagerService managerService)
         {

@@ -4,6 +4,7 @@
     var appt = Model.appointment;
 }
 
+<!-- Hero Area -->
 <div class="slider-area2 slider-height2 d-flex align-items-center">
     <div class="container">
         <div class="hero-cap text-center pt-50">
@@ -12,82 +13,85 @@
     </div>
 </div>
 
-<div class="container" style="padding: 40px 0;">
-    <a href="@Url.Action("AppointmentDetail", "Staff", new { id = Model.appointment_id })" class="btn btn-secondary mb-3">
-        <i class="fas fa-arrow-left"></i> Quay lại lịch hẹn
-    </a>
+<div class="our-services section-padding30">
+    <div class="container">
+        
+        <div class="mb-4">
+            <a href="@Url.Action("AppointmentDetail", "Staff", new { id = Model.appointment_id })" class="pc-btn pc-btn--reset">
+                <i class="fas fa-arrow-left"></i> Quay lại lịch hẹn
+            </a>
+        </div>
 
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-dark text-white text-center">
-                    <h4 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> HÓA ĐƠN THANH TOÁN</h4>
-                    <small>Phòng khám thú y PetMedical</small>
-                </div>
-                <div class="card-body">
-                    <!-- Thông tin khách hàng -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <p><strong>Khách hàng:</strong> @(appt?.customer?.full_name ?? "N/A")</p>
-                            <p><strong>Điện thoại:</strong> @(appt?.customer?.phone ?? "N/A")</p>
-                        </div>
-                        <div class="col-md-6 text-right">
-                            <p><strong>Mã lịch hẹn:</strong> #@Model.appointment_id</p>
-                            <p><strong>Ngày tạo:</strong> @(Model.created_at?.ToString("dd/MM/yyyy HH:mm") ?? "-")</p>
-                            <p><strong>Thú cưng:</strong> @(appt?.pet?.name ?? "N/A")</p>
-                        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="pc-card shadow">
+                    <div class="pc-card-head text-center" style="background:#343a40;">
+                        <h4 class="mb-0 text-white" style="font-weight:700;"><i class="fas fa-file-invoice-dollar mr-2"></i>HÓA ĐƠN THANH TOÁN</h4>
+                        <p class="mb-0 text-white-50">Phòng khám thú y PetMedical</p>
                     </div>
-                    <hr />
-
-                    <!-- Dịch vụ -->
-                    <table class="table table-bordered">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th>#</th>
-                                <th>Dịch vụ</th>
-                                <th class="text-right">Đơn giá</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (appt?.AppointmentDetails != null)
-                            {
-                                int i = 1;
-                                @foreach (var d in appt.AppointmentDetails)
-                                {
-                                    <tr>
-                                        <td>@i</td>
-                                        <td>@(d.service?.service_name ?? "N/A")</td>
-                                        <td class="text-right">@((d.actual_price ?? d.service?.base_price ?? 0).ToString("N0")) đ</td>
-                                    </tr>
-                                    i++;
-                                }
-                            }
-                        </tbody>
-                        <tfoot>
-                            <tr class="table-success font-weight-bold">
-                                <td colspan="2" class="text-right">TỔNG CỘNG:</td>
-                                <td class="text-right text-success">@Model.total_amount.ToString("N0") đ</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    <hr />
-
-                    <!-- Thanh toán -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Phương thức:</strong> @(Model.payment_method ?? "Cash")</p>
+                    <div class="pc-card-body p-4">
+                        <!-- Thông tin header -->
+                        <div class="row mb-4">
+                            <div class="col-sm-6">
+                                <p class="mb-1"><span class="text-muted">Khách hàng:</span> <strong>@(appt?.customer?.full_name ?? "N/A")</strong></p>
+                                <p class="mb-1"><span class="text-muted">Điện thoại:</span> @(appt?.customer?.phone ?? "N/A")</p>
+                            </div>
+                            <div class="col-sm-6 text-sm-right">
+                                <p class="mb-1"><span class="text-muted">Mã lịch hẹn:</span> #@Model.appointment_id</p>
+                                <p class="mb-1"><span class="text-muted">Ngày tạo:</span> @(Model.created_at?.ToString("dd/MM/yyyy HH:mm") ?? "-")</p>
+                                <p class="mb-1"><span class="text-muted">Thú cưng:</span> @(appt?.pet?.name ?? "N/A")</p>
+                            </div>
                         </div>
-                        <div class="col-md-6 text-right">
-                            <p><strong>Trạng thái:</strong>
-                                <span class="badge @(Model.payment_status == "Paid" ? "badge-success" : "badge-warning")">
+
+                        <!-- Table Dịch vụ -->
+                        <div class="table-responsive mb-4">
+                            <table class="table table-bordered">
+                                <thead style="background:#f7f9fc;">
+                                    <tr>
+                                        <th width="50px">#</th>
+                                        <th>Dịch vụ</th>
+                                        <th class="text-right">Đơn giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (appt?.AppointmentDetails != null)
+                                    {
+                                        int i = 1;
+                                        @foreach (var d in appt.AppointmentDetails)
+                                        {
+                                            <tr>
+                                                <td>@i</td>
+                                                <td>@(d.service?.service_name ?? "N/A")</td>
+                                                <td class="text-right">@((d.actual_price ?? d.service?.base_price ?? 0).ToString("N0")) đ</td>
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr style="background:#f0f7ff; font-weight:700;">
+                                        <td colspan="2" class="text-right">TỔNG CỘNG:</td>
+                                        <td class="text-right" style="color:#084298; font-size:1.2rem;">@Model.total_amount.ToString("N0") đ</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Phương thức thanh toán -->
+                        <div class="row align-items-center">
+                            <div class="col-sm-6">
+                                <p class="mb-0"><span class="text-muted">Phương thức:</span> <strong>@(Model.payment_method ?? "Tiền mặt")</strong></p>
+                            </div>
+                            <div class="col-sm-6 text-sm-right">
+                                <span class="pc-status @(Model.payment_status == "Paid" ? "st-success" : "st-warning")">
                                     @(Model.payment_status == "Paid" ? "Đã thanh toán" : "Chưa thanh toán")
                                 </span>
-                            </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-footer text-center text-muted">
-                    <small>Cảm ơn quý khách đã sử dụng dịch vụ PetMedical!</small>
+                    <div class="card-footer text-center bg-light py-3">
+                        <small class="text-muted"><i class="fas fa-heart text-danger"></i> Cảm ơn quý khách đã tin tưởng PetMedical!</small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -95,6 +99,13 @@
 </div>
 
 <style>
-    .card { border-radius: 10px; }
-    .badge { padding: 6px 12px; font-size: 0.9em; }
+    :root { --btn-bg: #7EB6FF; --btn-text: #fff; }
+    .pc-card { border-radius:16px; overflow:hidden; border:none; box-shadow:0 4px 20px rgba(0,0,0,0.1); }
+    .pc-card-head { padding:24px; }
+    .pc-btn { height:46px; padding:0 22px; background:var(--btn-bg) !important; color:var(--btn-text) !important; border:none !important; border-radius:8px !important; font-weight:700; display:inline-flex; align-items:center; cursor:pointer; text-decoration:none; }
+    .pc-btn--reset { background:#f0f0f0 !important; color:#333 !important; }
+    .pc-status { display:inline-block; padding:6px 16px; border-radius:999px; font-size:0.9rem; font-weight:700; }
+    .st-success { background:#d1e7dd; color:#0a3622; }
+    .st-warning { background:#fff3cd; color:#856404; }
+    .table-bordered th, .table-bordered td { border:1px solid #dee2e6 !important; }
 </style>

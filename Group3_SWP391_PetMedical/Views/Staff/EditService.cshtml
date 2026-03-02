@@ -3,89 +3,79 @@
     ViewData["Title"] = "Chỉnh sửa dịch vụ";
 }
 
-<!-- Hero Area Start -->
+<!-- Hero Area -->
 <div class="slider-area2 slider-height2 d-flex align-items-center">
     <div class="container">
         <div class="row">
             <div class="col-xl-12">
                 <div class="hero-cap text-center pt-50">
-                    <h2>Chỉnh sửa Dịch vụ</h2>
+                    <h2>Chỉnh sửa Dịch vụ (Staff)</h2>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- Hero Area End -->
 
-<div class="container" style="padding: 50px 0;">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="fas fa-edit"></i> Chỉnh sửa: @Model.service_name</h5>
+<div class="our-services section-padding30">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="mb-4">
+                    <a href="@Url.Action("ListServices", "Staff")" class="pc-btn pc-btn--reset">
+                        <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                    </a>
                 </div>
-                <div class="card-body">
-                    <form asp-action="EditService" asp-controller="Staff" method="post">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@Model.service_id" />
 
-                        <!-- Thông tin chỉ đọc -->
-                        <div class="form-group row mb-3">
-                            <label class="col-sm-3 col-form-label font-weight-bold">Tên dịch vụ:</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control-plaintext" readonly value="@Model.service_name" />
+                <div class="pc-card shadow-sm">
+                    <div class="pc-card-head" style="background:#7EB6FF;">
+                        <h5><i class="fas fa-edit mr-2"></i>Chỉnh sửa: @Model.service_name</h5>
+                    </div>
+                    <div class="pc-card-body p-4">
+                        <form asp-action="EditService" asp-controller="Staff" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.service_id" />
+
+                            <!-- Thông tin chỉ đọc -->
+                            <div class="bg-light p-3 rounded mb-4" style="border-left:4px solid #7EB6FF;">
+                                <div class="row mb-2">
+                                    <div class="col-sm-4 text-muted">Tên dịch vụ:</div>
+                                    <div class="col-sm-8 font-weight-bold">@Model.service_name</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4 text-muted">Thời gian:</div>
+                                    <div class="col-sm-8">@(Model.duration?.ToString() ?? "N/A") phút</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-4 text-muted">Tại nhà:</div>
+                                    <div class="col-sm-8">@(Model.is_home_service == true ? "Có" : "Không")</div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="form-group row mb-3">
-                            <label class="col-sm-3 col-form-label font-weight-bold">Thời gian:</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control-plaintext" readonly 
-                                       value="@(Model.duration?.ToString() ?? "N/A") phút" />
-                            </div>
-                        </div>
-
-                        <div class="form-group row mb-3">
-                            <label class="col-sm-3 col-form-label font-weight-bold">Dịch vụ tại nhà:</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control-plaintext" readonly 
-                                       value="@(Model.is_home_service == true ? "Có" : "Không")" />
-                            </div>
-                        </div>
-
-                        <hr />
-
-                        <!-- Thông tin có thể chỉnh sửa -->
-                        <div class="form-group row mb-3">
-                            <label for="base_price" class="col-sm-3 col-form-label font-weight-bold">
-                                Giá thành (VNĐ): <span class="text-danger">*</span>
-                            </label>
-                            <div class="col-sm-9">
-                                <input type="number" class="form-control" id="base_price" name="base_price" 
+                            <!-- Thông tin có thể chỉnh sửa -->
+                            <div class="form-group mb-4">
+                                <label for="base_price" class="font-weight-bold mb-2">Giá thành (VNĐ) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control pc-input" id="base_price" name="base_price" 
                                        value="@Model.base_price" min="0" step="1000" required />
-                                <small class="form-text text-muted">Nhập giá tiền bằng số (VNĐ)</small>
+                                <small class="text-muted">Nhập giá tiền bằng số (Ví dụ: 150000)</small>
                             </div>
-                        </div>
 
-                        <div class="form-group row mb-4">
-                            <label for="description" class="col-sm-3 col-form-label font-weight-bold">Mô tả:</label>
-                            <div class="col-sm-9">
-                                <textarea class="form-control" id="description" name="description" 
-                                          rows="4" placeholder="Nhập mô tả dịch vụ...">@Model.description</textarea>
+                            <div class="form-group mb-4">
+                                <label for="description" class="font-weight-bold mb-2">Mô tả</label>
+                                <textarea class="form-control pc-input" id="description" name="description" 
+                                          rows="4" placeholder="Nhập mô tả dịch vụ..." style="height:auto;">@Model.description</textarea>
                             </div>
-                        </div>
 
-                        <div class="form-group row">
-                            <div class="col-sm-9 offset-sm-3">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-save"></i> Lưu thay đổi
+                            <hr class="my-4" />
+
+                            <!-- Buttons -->
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="@Url.Action("ListServices", "Staff")" class="pc-btn pc-btn--reset mr-2">Hủy</a>
+                                <button type="submit" class="pc-btn">
+                                    <i class="fas fa-save mr-1"></i> Lưu thay đổi
                                 </button>
-                                <a href="@Url.Action("ListServices", "Staff")" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> Hủy
-                                </a>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -93,14 +83,13 @@
 </div>
 
 <style>
-    .card {
-        border-radius: 10px;
-    }
-    .card-header {
-        border-radius: 10px 10px 0 0;
-    }
-    .form-control:focus {
-        border-color: #ffc107;
-        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
-    }
+    :root { --btn-bg: #7EB6FF; --btn-text: #fff; }
+    .pc-card { border-radius:16px; overflow:hidden; border:none; box-shadow:0 4px 20px rgba(0,0,0,0.08); }
+    .pc-card-head { padding:18px 24px; color:#fff; }
+    .pc-card-head h5 { margin:0; font-weight:700; }
+    .pc-btn { height:48px; padding:0 24px; background:var(--btn-bg) !important; color:var(--btn-text) !important; border:none !important; border-radius:8px !important; font-weight:700; display:inline-flex; align-items:center; cursor:pointer; text-decoration:none; }
+    .pc-btn:hover { opacity:.88; color:#fff !important; text-decoration:none; }
+    .pc-btn--reset { background:#f0f0f0 !important; color:#333 !important; }
+    .pc-input { height:48px; border-radius:8px !important; border:1px solid rgba(0,0,0,.10); }
+    .pc-input:focus { border-color:var(--btn-bg); box-shadow: 0 0 0 0.2rem rgba(126, 182, 255, 0.25); }
 </style>
