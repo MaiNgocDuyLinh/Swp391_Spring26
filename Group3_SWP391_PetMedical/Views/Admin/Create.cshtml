@@ -1,12 +1,8 @@
 @using Group3_SWP391_PetMedical.ViewModels.Account
-@using Microsoft.AspNetCore.Mvc.Rendering
 @model CreateAccountViewModel
 @{
     ViewData["Title"] = "Tạo Tài khoản";
     Layout = "~/Views/Shared/AdminLayout.cshtml";
-    var roleList = new List<SelectListItem> { new SelectListItem("-- Chọn vai trò --", "") };
-    foreach (var r in Model.AvailableRoles)
-        roleList.Add(new SelectListItem(r.RoleName, r.RoleId.ToString()));
 }
 
 @section Styles {
@@ -34,19 +30,36 @@
                     <div class="card-header">Thông tin tài khoản</div>
                     <div class="card-body">
                         <form asp-action="Create" method="post" class="admin-form">
+                            @Html.AntiForgeryToken()
                             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
                             <div class="form-row">
                                 <div class="form-group col-md-6">
-                                    <label asp-for="Email">Email <span class="text-danger">*</span></label>
-                                    <input asp-for="Email" class="form-control" placeholder="email@example.com" />
-                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                    <label asp-for="Username">Tên đăng nhập <span class="text-danger">*</span></label>
+                                    <input asp-for="Username" class="form-control" placeholder="vd: staff01" autocomplete="off" />
+                                    <span asp-validation-for="Username" class="text-danger"></span>
+                                    <small class="form-text text-muted">Dùng để đăng nhập hệ thống.</small>
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label asp-for="Password">Mật khẩu <span class="text-danger">*</span></label>
-                                    <input asp-for="Password" type="password" class="form-control" placeholder="Tối thiểu 6 ký tự" />
-                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                    <label asp-for="Email">Email <span class="text-danger">*</span></label>
+                                    <input asp-for="Email" class="form-control" placeholder="email@example.com" autocomplete="off" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
                                 </div>
                             </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label asp-for="Password">Mật khẩu <span class="text-danger">*</span></label>
+                                    <input asp-for="Password" type="password" class="form-control" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password" />
+                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label asp-for="ConfirmPassword">Nhập lại mật khẩu <span class="text-danger">*</span></label>
+                                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Nhập lại mật khẩu" autocomplete="new-password" />
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                </div>
+                            </div>
+
                             <div class="form-row">
                                 <div class="form-group col-md-6">
                                     <label asp-for="FullName">Họ và tên <span class="text-danger">*</span></label>
@@ -59,9 +72,16 @@
                                     <span asp-validation-for="Phone" class="text-danger"></span>
                                 </div>
                             </div>
+
                             <div class="form-group">
                                 <label asp-for="RoleId">Vai trò <span class="text-danger">*</span></label>
-                                <select asp-for="RoleId" class="form-control" asp-items="roleList"></select>
+                                <select asp-for="RoleId" class="form-control" required>
+                                    <option value="0">-- Chọn vai trò --</option>
+                                    @foreach (var r in Model.AvailableRoles)
+                                    {
+                                        <option value="@r.RoleId">@r.RoleName</option>
+                                    }
+                                </select>
                                 <span asp-validation-for="RoleId" class="text-danger"></span>
                                 <small class="form-text text-muted">Chỉ Staff hoặc Doctor.</small>
                             </div>

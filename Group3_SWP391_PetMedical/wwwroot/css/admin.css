@@ -86,18 +86,65 @@
 
 .admin-page .btn-primary {
     background: #ff4d4d !important;
-    border: none !important;
+    color: #fff !important;
     border-radius: 30px;
     padding: 8px 18px;
+    border: 1px solid #ff4d4d !important;
 }
 
     .admin-page .btn-primary:hover {
         background: #e63b3b !important;
+        border-color: #e63b3b !important;
     }
 
-.btn-secondary {
+.admin-page .btn-secondary {
     border-radius: 30px;
+    background-color: #fff;
+    color: #ff4d4d;
+    border: 1px solid #ff4d4d;
 }
+
+    .admin-page .btn-secondary:hover {
+        background-color: #ff4d4d;
+        border-color: #ff4d4d;
+        color: #fff;
+    }
+
+/* Biến thể nút khác trong khu admin (chỉ dùng tông hồng/đỏ) */
+
+.admin-page .btn-warning {
+    background-color: #ff7a8a;
+    border-color: #ff7a8a;
+    color: #fff;
+}
+
+    .admin-page .btn-warning:hover {
+        background-color: #ff4d4d;
+        border-color: #ff4d4d;
+    }
+
+.admin-page .btn-success {
+    background-color: #ff4d4d;
+    border-color: #ff4d4d;
+    color: #fff;
+}
+
+    .admin-page .btn-success:hover {
+        background-color: #e63b3b;
+        border-color: #e63b3b;
+    }
+
+.admin-page .btn-light {
+    background-color: #fff;
+    border-color: #ff4d4d;
+    color: #ff4d4d;
+}
+
+    .admin-page .btn-light:hover {
+        background-color: #ff4d4d;
+        color: #fff;
+        border-color: #ff4d4d;
+    }
 
 /* ============================= */
 /* BADGES */
@@ -147,6 +194,15 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        background-color: #fff;
+        color: #ff4d4d;
+        border: 1px solid #ff4d4d;
+    }
+
+    .admin-btn-group .btn:hover {
+        background-color: #ff4d4d;
+        border-color: #ff4d4d;
+        color: #fff;
     }
 
 /* ============================= */
@@ -157,6 +213,7 @@
 .form-select {
     border-radius: 12px;
     height: 42px;
+    border-color: #f3eaea;
 }
 
     .form-control:focus {
@@ -199,6 +256,14 @@
 .filter-item {
     flex: 1;
     min-width: 180px;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-page .filter-item label,
+.admin-page .form-group label {
+    display: block;
+    margin-bottom: 6px;
 }
 
 .btn-search {
