@@ -10,9 +10,8 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         
         // Lấy chi tiết dịch vụ (Manager dùng để edit)
         Task<Service?> GetByIdAsync(int id);
-
-        Task<List<Service>> GetAllAsync();
-        // Cập nhật dịch vụ (Manager only)
-        Task<bool> UpdateAsync(int id, decimal basePrice, string? description);
+        
+        // Cập nhật toàn bộ thông tin dịch vụ (Manager only)
+        Task<bool> UpdateAsync(int id, string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService, bool status);
     }
 }

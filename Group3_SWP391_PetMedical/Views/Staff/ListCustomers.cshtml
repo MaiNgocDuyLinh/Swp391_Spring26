@@ -7,168 +7,118 @@
     string? search = ViewBag.Search;
 }
 
-<!-- Hero Area Start -->
-<div class="slider-area2 slider-height2 d-flex align-items-center">
-    <div class="container">
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="hero-cap text-center pt-50">
-                    <h2>Danh sách Khách hàng</h2>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Hero Area End -->
+@section Styles {
+    <style>
+        :root { --pc-red:#ff3b3b; --pc-red-dark:#e83434; --pc-text:#2b2b2b; --pc-muted:#7a7a7a; --pc-border:rgba(0,0,0,0.06); }
+        .pc-wrap { background:#f3d7d5; border:1px solid var(--pc-border); border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(0,0,0,0.06); }
+        .pc-title { font-weight:800; margin:0; } .pc-sub { color:var(--pc-muted); margin:0; }
+        .pc-filter { background:#fff; border:1px solid var(--pc-border); border-radius:16px; padding:18px; margin:18px 0; box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+        .pc-label { font-weight:700; font-size:0.9rem; margin-bottom:6px; }
+        .pc-input { border-radius:12px; border:1px solid rgba(0,0,0,0.10); height:42px; padding:0 12px; }
+        .pc-btn { border-radius:999px; padding:0 18px; height:42px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; text-decoration:none; }
+        .pc-btn--primary { background:var(--pc-red); color:#fff; box-shadow:0 10px 20px rgba(255,59,59,0.25); }
+        .pc-btn--primary:hover { background:var(--pc-red-dark); color:#fff; }
+        .pc-btn--ghost { background:#fff; border:1px solid rgba(0,0,0,0.10); color:var(--pc-text) !important; }
+        .pc-table { border-radius:16px; overflow:hidden; background:#fff; border:1px solid var(--pc-border); box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+        .pc-table thead th { background:#fff7f7; font-weight:800; }
+        .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight:800; font-size:0.85rem; border:1px solid rgba(0,0,0,0.06); background:#fff; }
+        .pc-badge i { color:var(--pc-red); }
+        tbody.pc-record { transition:background 0.25s ease; }
+        tbody.pc-record:hover tr { background:#fff3f3 !important; }
+        .pc-pager.pagination { gap:10px; margin:0; }
+        .pc-pager .page-item .page-link { border-radius:999px !important; width:44px; height:44px; display:inline-flex; align-items:center; justify-content:center; padding:0 !important; border:1px solid rgba(0,0,0,0.10); color:var(--pc-text); background:#fff; box-shadow:0 8px 18px rgba(0,0,0,0.04); }
+        .pc-pager .page-item .page-link:hover { border-color:rgba(255,59,59,0.35); color:var(--pc-red-dark); }
+        .pc-pager .page-item.active .page-link { background:var(--pc-red) !important; border-color:var(--pc-red) !important; color:#fff !important; box-shadow:0 12px 24px rgba(255,59,59,0.25); }
+        .pc-pager .page-item.disabled .page-link { opacity:0.45; pointer-events:none; box-shadow:none; }
+    </style>
+}
 
-<div class="container" style="padding: 50px 0;">
-    <!-- Search Box -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <form method="get" asp-action="ListCustomers" asp-controller="Staff" class="form-row align-items-center">
-                        <div class="col-auto">
-                            <label class="font-weight-bold">
-                                <i class="fas fa-search"></i> Tìm kiếm:
-                            </label>
-                        </div>
-                        <div class="col-md-5">
-                            <input type="text" class="form-control" name="search" value="@search" 
-                                   placeholder="Tên, email, số điện thoại..." />
-                        </div>
-                        <div class="col-auto">
-                            <button type="submit" class="btn btn-info">
-                                <i class="fas fa-search"></i> Tìm
-                            </button>
-                        </div>
-                        @if (!string.IsNullOrEmpty(search))
-                        {
-                            <div class="col-auto">
-                                <a href="@Url.Action("ListCustomers", "Staff")" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> Xóa lọc
-                                </a>
-                            </div>
-                        }
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+<section class="container py-4" id="servicesArea">
+    <div class="pc-wrap" style="margin-top:150px;">
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-users"></i> Danh sách Khách hàng</h5>
+        <h3 class="pc-title">Danh sách khách hàng</h3>
+        <p class="pc-sub">Quản lý thông tin khách hàng của phòng khám</p>
+
+        <div class="pc-filter">
+            <form method="get" asp-controller="Staff" asp-action="ListCustomers" class="row g-3">
+                <div class="col-lg-6 col-md-8">
+                    <div class="pc-label">Từ khóa</div>
+                    <input class="form-control pc-input" name="search" value="@search"
+                           placeholder="Tìm tên, số điện thoại, email..." />
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Họ và tên</th>
-                                    <th>Email</th>
-                                    <th>Số điện thoại</th>
-                                    <th>Trạng thái</th>
-                                    <th>Ngày đăng ký</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (Model != null && Model.Any())
-                                {
-                                    int index = (currentPage - 1) * 5 + 1;
-                                    @foreach (var customer in Model)
-                                    {
-                                        <tr>
-                                            <td>@index</td>
-                                            <td>
-                                                @if (!string.IsNullOrEmpty(customer.avatar))
-                                                {
-                                                    <img src="@customer.avatar" alt="avatar" 
-                                                         style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;" />
-                                                }
-                                                <strong>@customer.full_name</strong>
-                                            </td>
-                                            <td>@customer.email</td>
-                                            <td>@(customer.phone ?? "Chưa cập nhật")</td>
-                                            <td>
-                                                @if (customer.status == "Active")
-                                                {
-                                                    <span class="badge badge-success">Hoạt động</span>
-                                                }
-                                                else if (customer.status == "Inactive")
-                                                {
-                                                    <span class="badge badge-secondary">Không hoạt động</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge badge-warning">@customer.status</span>
-                                                }
-                                            </td>
-                                            <td>@(customer.created_at?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</td>
-                                        </tr>
-                                        index++;
-                                    }
-                                }
-                                else
-                                {
-                                    <tr>
-                                        <td colspan="6" class="text-center">Không tìm thấy khách hàng nào.</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                <div class="col-12 mt-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a class="pc-btn pc-btn--ghost" href="@Url.Action("ListCustomers", "Staff")#servicesArea">
+                            <i class="fas fa-undo-alt"></i> Làm mới
+                        </a>
+                        <button type="submit" class="pc-btn pc-btn--primary">
+                            <i class="fas fa-filter"></i> Lọc
+                        </button>
                     </div>
-                    
-                    <!-- Pagination -->
-                    @if (totalPages > 1)
+                </div>
+            </form>
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="alert alert-info mb-0" style="border-radius:14px;">Không tìm thấy khách hàng nào.</div>
+        }
+        else
+        {
+            <div class="pc-table table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width:60px;">#</th>
+                            <th>Họ và tên</th>
+                            <th>Số điện thoại</th>
+                            <th>Email</th>
+                            <th style="width:120px;">Trạng thái</th>
+                            <th style="width:130px;">Ngày tham gia</th>
+                        </tr>
+                    </thead>
+                    @{int idx = (currentPage - 1) * 5 + 1;}
+                    @foreach (var u in Model)
                     {
-                        <nav aria-label="Page navigation" class="mt-4">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                                    <a class="page-link" href="@Url.Action("ListCustomers", "Staff", new { search = search, page = currentPage - 1 })">
-                                        <i class="fas fa-chevron-left"></i> Trước
-                                    </a>
-                                </li>
-                                @for (int i = 1; i <= totalPages; i++)
-                                {
-                                    <li class="page-item @(i == currentPage ? "active" : "")">
-                                        <a class="page-link" href="@Url.Action("ListCustomers", "Staff", new { search = search, page = i })">@i</a>
-                                    </li>
-                                }
-                                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-                                    <a class="page-link" href="@Url.Action("ListCustomers", "Staff", new { search = search, page = currentPage + 1 })">
-                                        Sau <i class="fas fa-chevron-right"></i>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
+                        <tbody class="pc-record">
+                            <tr>
+                                <td>@idx</td>
+                                <td><strong>@u.full_name</strong></td>
+                                <td>@u.phone</td>
+                                <td><small class="text-muted">@u.email</small></td>
+                                <td>
+                                    <span class="pc-badge">
+                                        <i class="fas @(u.status == "Active" ? "fa-check-circle" : "fa-times-circle")"></i>
+                                        @(u.status == "Active" ? "Hoạt động" : "Không hoạt động")
+                                    </span>
+                                </td>
+                                <td>@u.created_at?.ToString("dd/MM/yyyy")</td>
+                            </tr>
+                        </tbody>
+                        idx++;
                     }
-
-                    <!-- Stats -->
-                    <div class="text-muted text-center">
-                        <small>Hiển thị @Model?.Count mục trên tổng @totalItems | Trang @currentPage / @(totalPages == 0 ? 1 : totalPages)</small>
-                    </div>
-                </div>
+                </table>
             </div>
-        </div>
-    </div>
-</div>
 
-<style>
-    .card { border-radius: 10px; }
-    .card-header { border-radius: 10px 10px 0 0; }
-    .table th, .table td { vertical-align: middle; }
-    .badge { padding: 8px 12px; font-size: 0.9em; }
-    .pagination .page-link { color: #17a2b8; }
-    .pagination .page-item.active .page-link { background-color: #17a2b8; border-color: #17a2b8; }
-    .form-control { height: 45px; }
-    .form-row .btn { 
-        height: 45px; 
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-</style>
+            <div class="mt-3 d-flex justify-content-center">
+                <ul class="pagination pc-pager">
+                    <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("ListCustomers", "Staff", new { search, page = currentPage - 1 })"><i class="fas fa-chevron-left"></i></a>
+                    </li>
+                    @for (int i = 1; i <= Math.Max(totalPages, 1); i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("ListCustomers", "Staff", new { search, page = i })">@i</a>
+                        </li>
+                    }
+                    <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("ListCustomers", "Staff", new { search, page = currentPage + 1 })"><i class="fas fa-chevron-right"></i></a>
+                    </li>
+                </ul>
+            </div>
+            <div class="text-center mt-2" style="color:var(--pc-muted); font-size:0.95rem;">
+                Tổng: <strong>@totalItems</strong> khách hàng
+            </div>
+        }
+    </div>
+</section>
