@@ -23,7 +23,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .AsNoTracking()
                 .Where(a => a.customer_id == customerId);
 
-            // ✅ Lịch sử: chỉ lấy lịch có trạng thái "đã thanh toán" hoặc "đã hủy"
+            // Lịch sử: chỉ lấy lịch có trạng thái "đã thanh toán" hoặc "đã hủy" , "không đến "
             q = q.Where(a => a.status != null &&
                 (a.status.Trim().ToLower() == "đã thanh toán" ||
                  a.status.Trim().ToLower() == "đã hủy" ||
@@ -82,10 +82,11 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .AsNoTracking()
                 .Where(a => a.customer_id == customerId);
 
-            // Lịch đã đặt: loại "đã thanh toán" và "đã hủy"
+            // Lịch đã đặt: loại "đã thanh toán" và "đã hủy" "không đến "
             q = q.Where(a => a.status == null
                 || (a.status.Trim().ToLower() != "đã thanh toán"
-                    && a.status.Trim().ToLower() != "đã hủy"));
+                    && a.status.Trim().ToLower() != "đã hủy"
+                    && a.status.Trim().ToLower() != "không đến"));
 
             // Filter ngày
             if (query.FromDate.HasValue)
