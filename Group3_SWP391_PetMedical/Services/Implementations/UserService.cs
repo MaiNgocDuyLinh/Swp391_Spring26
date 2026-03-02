@@ -106,6 +106,15 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             return ok ? (true, null) : (false, "Không tìm thấy tài khoản.");
         }
 
+        public async Task<(bool success, string? errorMessage)> UpdateAvatarAsync(int userId, string avatarPath)
+        {
+            if (string.IsNullOrWhiteSpace(avatarPath))
+                return (false, "Đường dẫn ảnh không hợp lệ.");
+
+            var ok = await _userRepo.UpdateAvatarAsync(userId, avatarPath);
+            return ok ? (true, null) : (false, "Không tìm thấy tài khoản.");
+        }
+
         public async Task<ChangePasswordViewModel?> GetChangePasswordModelAsync(int userId)
         {
             var user = await _userRepo.GetByIdWithRoleAsync(userId);

@@ -15,6 +15,8 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
 
         Task<(bool success, string? errorMessage)> UpdateProfileAsync(int userId, User model); // update profile
 
+        Task<(bool success, string? errorMessage)> UpdateAvatarAsync(int userId, string avatarPath); // update avatar path
+
         Task<ChangePasswordViewModel?> GetChangePasswordModelAsync(int userId); //đổi pass bằng id
 
         Task<(bool success, string? errorMessage)> ChangePasswordAsync(int userId, ChangePasswordViewModel model);
