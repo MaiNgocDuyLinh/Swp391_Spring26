@@ -6,106 +6,152 @@
     Layout = "~/Views/Shared/AdminLayout.cshtml";
 }
 
-<div class="container mt-4">
-    <h2 class="mb-3">
-        <i class="fas fa-history"></i> Nhật ký hệ thống
-    </h2>
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" />
+}
 
-    <table class="table table-bordered table-striped table-hover mt-3">
-        <thead class="table-dark">
-            <tr>
-                <th>User</th>
-                <th>Hành động</th>
-                <th>Đối tượng</th>
-                <th style="min-width:300px">Thay đổi</th>
-                <th>IP</th>
-                <th>Thời gian</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var log in Model)
-            {
-                <tr>
-                    <!-- User -->
-                    <td>
-                        @(string.IsNullOrEmpty(log.UserEmail) ? "System" : log.UserEmail)
-                    </td>
+<div class="admin-page">
+    <div class="container">
+        <div class="admin-title-bar d-flex justify-content-between align-items-center flex-wrap">
+            <h1 class="mb-3 mb-md-0">
+                <i class="fas fa-history"></i> Nhật ký hệ thống
+            </h1>
+            <a href="@Url.Action("Index", "Admin")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left mr-1"></i> Quay lại Quản lý tài khoản
+            </a>
+        </div>
 
-                    <!-- Action -->
-                    <td>
-                        @if (log.Action == "Added")
-                        {
-                            <span class="badge bg-success">Added</span>
-                        }
-                        else if (log.Action == "Modified")
-                        {
-                            <span class="badge bg-warning text-dark">Modified</span>
-                        }
-                        else if (log.Action == "Deleted")
-                        {
-                            <span class="badge bg-danger">Deleted</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">@log.Action</span>
-                        }
-                    </td>
+        <div class="admin-filter mb-4">
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label for="logSearch">Từ khóa</label>
+                    <input id="logSearch" type="text" class="form-control" placeholder="User, hành động, đối tượng, IP..." />
+                </div>
+            </div>
+        </div>
 
-                    <!-- Object -->
-                    <td>
-                        @log.EntityName (@log.EntityId)
-                    </td>
-
-                    <!-- Changes -->
-                    <td>
-                        @if (!string.IsNullOrEmpty(log.OldValues) || !string.IsNullOrEmpty(log.NewValues))
-                        {
-                            var oldValues = string.IsNullOrEmpty(log.OldValues)
-                                ? new Dictionary<string, object>()
-                                : JsonSerializer.Deserialize<Dictionary<string, object>>(log.OldValues);
-
-                            var newValues = string.IsNullOrEmpty(log.NewValues)
-                                ? new Dictionary<string, object>()
-                                : JsonSerializer.Deserialize<Dictionary<string, object>>(log.NewValues);
-
-                            if (newValues != null && newValues.Any())
+        <div class="admin-card card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table admin-table" id="logsTable">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Hành động</th>
+                                <th>Đối tượng</th>
+                                <th style="min-width:300px">Thay đổi</th>
+                                <th>IP</th>
+                                <th>Thời gian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in Model)
                             {
-                                foreach (var key in newValues.Keys)
-                                {
-                                    <div>
-                                        <strong>@key</strong>:
-                                        <span class="text-danger">
-                                            @(oldValues != null && oldValues.ContainsKey(key) ? oldValues[key] : "")
-                                        </span>
-                                        →
-                                        <span class="text-success">
-                                            @newValues[key]
-                                        </span>
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <span class="text-muted">Không có thay đổi</span>
-                            }
-                        }
-                        else
-                        {
-                            <span class="text-muted">Không có thay đổi</span>
-                        }
-                    </td>
+                                <tr>
+                                    <!-- User -->
+                                    <td>
+                                        @(string.IsNullOrEmpty(log.UserEmail) ? "System" : log.UserEmail)
+                                    </td>
 
-                    <!-- IP -->
-                    <td>@log.IpAddress</td>
+                                    <!-- Action -->
+                                    <td>
+                                        @if (log.Action == "Added")
+                                        {
+                                            <span class="badge bg-success">Added</span>
+                                        }
+                                        else if (log.Action == "Modified")
+                                        {
+                                            <span class="badge bg-warning text-dark">Modified</span>
+                                        }
+                                        else if (log.Action == "Deleted")
+                                        {
+                                            <span class="badge bg-danger">Deleted</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@log.Action</span>
+                                        }
+                                    </td>
 
-                    <!-- Time -->
-                    <td>
-                        @(log.CreatedAt.HasValue 
-                            ? log.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm") 
-                            : "")
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                                    <!-- Object -->
+                                    <td>
+                                        @log.EntityName (@log.EntityId)
+                                    </td>
+
+                                    <!-- Changes -->
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(log.OldValues) || !string.IsNullOrEmpty(log.NewValues))
+                                        {
+                                            var oldValues = string.IsNullOrEmpty(log.OldValues)
+                                                ? new Dictionary<string, object>()
+                                                : JsonSerializer.Deserialize<Dictionary<string, object>>(log.OldValues);
+
+                                            var newValues = string.IsNullOrEmpty(log.NewValues)
+                                                ? new Dictionary<string, object>()
+                                                : JsonSerializer.Deserialize<Dictionary<string, object>>(log.NewValues);
+
+                                            if (newValues != null && newValues.Any())
+                                            {
+                                                foreach (var key in newValues.Keys)
+                                                {
+                                                    <div>
+                                                        <strong>@key</strong>:
+                                                        <span class="text-danger">
+                                                            @(oldValues != null && oldValues.ContainsKey(key) ? oldValues[key] : "")
+                                                        </span>
+                                                        →
+                                                        <span class="text-success">
+                                                            @newValues[key]
+                                                        </span>
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Không có thay đổi</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Không có thay đổi</span>
+                                        }
+                                    </td>
+
+                                    <!-- IP -->
+                                    <td>@log.IpAddress</td>
+
+                                    <!-- Time -->
+                                    <td>
+                                        @(log.CreatedAt.HasValue 
+                                            ? log.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm") 
+                                            : "")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Lọc nhanh nhật ký theo từ khóa trên giao diện (client-side)
+        (function () {
+            var searchInput = document.getElementById('logSearch');
+            if (!searchInput) return;
+
+            searchInput.addEventListener('input', function () {
+                var keyword = this.value.toLowerCase();
+                var rows = document.querySelectorAll('#logsTable tbody tr');
+
+                rows.forEach(function (row) {
+                    var text = row.textContent.toLowerCase();
+                    row.style.display = text.indexOf(keyword) !== -1 ? '' : 'none';
+                });
+            });
+        })();
+    </script>
+}
