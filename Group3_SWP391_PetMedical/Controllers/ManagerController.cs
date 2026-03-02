@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Services.Interfaces;
+using Group3_SWP391_PetMedical.ViewModels.Manager;
 
 namespace Group3_SWP391_PetMedical.Controllers
 {
@@ -8,11 +11,13 @@ namespace Group3_SWP391_PetMedical.Controllers
     public class ManagerController : Controller
     {
         private readonly IManagerService _managerService;
+        private readonly PetClinicContext _context;
         private const int PageSize = 5;
 
-        public ManagerController(IManagerService managerService)
+        public ManagerController(IManagerService managerService, PetClinicContext context)
         {
             _managerService = managerService;
+            _context = context;
         }
 
         // ========== 1. VIEW LIST SERVICE ==========
@@ -52,6 +57,107 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             TempData["SuccessMessage"] = "Cập nhật dịch vụ thành công!";
             return RedirectToAction("ListServices");
+        }
+
+        // ========== 3. OVERVIEW STATISTICS (Thống kê tổng quan) ==========
+        public async Task<IActionResult> Overview(DateTime? fromDate, DateTime? toDate, string? groupBy)
+        {
+            var now = DateTime.Now;
+            var start = fromDate ?? new DateTime(now.Year, now.Month, 1);
+            var end = toDate ?? now.Date.AddDays(1).AddTicks(-1);
+            if (end < start) end = start;
+            groupBy = string.IsNullOrEmpty(groupBy) || groupBy != "month" ? "day" : "month";
+
+            var vm = new OverviewStatsVM
+            {
+                FromDate = start,
+                ToDate = end,
+                GroupBy = groupBy
+            };
+
+            // Doanh thu: tổng từ Invoices đã thanh toán (Paid/Completed) trong kỳ
+            var paidStatuses = new[] { "Paid", "Completed", "paid", "completed" };
+            vm.Revenue = await _context.Invoices
+                .Where(i => i.created_at >= start && i.created_at <= end &&
+                            i.payment_status != null && paidStatuses.Contains(i.payment_status))
+                .SumAsync(i => i.total_amount);
+
+            // Lượt đăng nhập khách hàng: AuditLogs Action = Login, user thuộc role Customer
+            var customerRoleId = await _context.Roles
+                .Where(r => r.role_name == "Customer")
+                .Select(r => r.role_id)
+                .FirstOrDefaultAsync();
+            vm.CustomerLoginCount = await _context.AuditLogs
+                .Where(a => a.Action == "Login" && a.CreatedAt >= start && a.CreatedAt <= end && a.UserId != null)
+                .Join(_context.Users.Where(u => u.role_id == customerRoleId),
+                    a => a.UserId, u => u.user_id, (a, u) => a)
+                .CountAsync();
+
+            // Số lịch khám đã đặt trong kỳ (theo created_at)
+            var appointmentsInRange = await _context.Appointments
+                .Where(a => a.created_at >= start && a.created_at <= end)
+                .ToListAsync();
+            vm.TotalAppointments = appointmentsInRange.Count;
+            vm.AppointmentsByStatus = appointmentsInRange
+                .GroupBy(a => a.status ?? "Khác")
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            // Dữ liệu biểu đồ: doanh thu theo ngày/tháng
+            var invoicesForChart = await _context.Invoices
+                .Where(i => i.created_at >= start && i.created_at <= end &&
+                            i.payment_status != null && paidStatuses.Contains(i.payment_status))
+                .Select(i => new { i.created_at, i.total_amount })
+                .ToListAsync();
+            if (groupBy == "month")
+            {
+                vm.RevenueByDate = invoicesForChart
+                    .GroupBy(i => new { Year = i.created_at?.Year ?? 0, Month = i.created_at?.Month ?? 0 })
+                    .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                    .Select(g => new RevenueByDateItem
+                    {
+                        Label = $"{g.Key.Month:D2}/{g.Key.Year}",
+                        Value = g.Sum(x => x.total_amount)
+                    })
+                    .ToList();
+            }
+            else
+            {
+                vm.RevenueByDate = invoicesForChart
+                    .GroupBy(i => i.created_at?.Date ?? DateTime.MinValue)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new RevenueByDateItem
+                    {
+                        Label = g.Key.ToString("dd/MM"),
+                        Value = g.Sum(x => x.total_amount)
+                    })
+                    .ToList();
+            }
+
+            // Số lịch khám theo ngày/tháng cho biểu đồ
+            var apptsForChart = await _context.Appointments
+                .Where(a => a.created_at >= start && a.created_at <= end)
+                .Select(a => a.created_at)
+                .ToListAsync();
+            if (groupBy == "month")
+            {
+                vm.AppointmentsByDate = apptsForChart
+                    .GroupBy(d => d.HasValue ? new DateTime(d.Value.Year, d.Value.Month, 1) : DateTime.MinValue)
+                    .Where(g => g.Key != DateTime.MinValue)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new AppointmentsByDateItem { Label = g.Key.ToString("MM/yyyy"), Count = g.Count() })
+                    .ToList();
+            }
+            else
+            {
+                vm.AppointmentsByDate = apptsForChart
+                    .Where(d => d.HasValue)
+                    .GroupBy(d => d!.Value.Date)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new AppointmentsByDateItem { Label = g.Key.ToString("dd/MM"), Count = g.Count() })
+                    .ToList();
+            }
+
+            return View(vm);
         }
     }
 }

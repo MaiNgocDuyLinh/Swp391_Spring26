@@ -81,6 +81,21 @@ namespace Group3_SWP391_PetMedical.Controllers
             // (Ghi Cookie vào trình duyệt)
             await HttpContext.SignInAsync("MyCookieAuth", new ClaimsPrincipal(claimsIdentity));
 
+            // Ghi log đăng nhập để thống kê (Manager Overview)
+            var ipAddress = HttpContext.Connection?.RemoteIpAddress?.ToString();
+            _context.AuditLogs.Add(new AuditLog
+            {
+                Action = "Login",
+                UserId = user.user_id,
+                UserEmail = user.email,
+                EntityName = "User",
+                EntityId = user.user_id.ToString(),
+                Description = "User login",
+                IpAddress = ipAddress,
+                CreatedAt = DateTime.Now
+            });
+            await _context.SaveChangesAsync();
+
             // Nếu user Unactive, có thể hiển thị thông báo nhắc cập nhật thông tin
             if (user.status == "Unactive")
             {
