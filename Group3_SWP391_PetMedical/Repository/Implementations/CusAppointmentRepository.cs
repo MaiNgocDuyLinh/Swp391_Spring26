@@ -1,4 +1,8 @@
-﻿using Group3_SWP391_PetMedical.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Group3_SWP391_PetMedical.Data;
 using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Models.Common;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
@@ -27,26 +31,20 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .AsNoTracking()
                 .Where(a => a.customer_id == customerId);
 
-            // Lịch sử: chỉ lấy lịch có trạng thái "đã thanh toán" hoặc "đã hủy" , "không đến "
             q = q.Where(a => a.status != null &&
                 (a.status.Trim().ToLower() == "đã thanh toán" ||
                  a.status.Trim().ToLower() == "đã hủy" ||
                  a.status.Trim().ToLower() == "không đến"));
 
-            // Filter ngày
             if (query.FromDate.HasValue)
                 q = q.Where(a => a.appointment_date >= query.FromDate.Value);
 
             if (query.ToDate.HasValue)
                 q = q.Where(a => a.appointment_date <= query.ToDate.Value);
 
-            // Filter theo dịch vụ
             if (query.ServiceId.HasValue)
-            {
                 q = q.Where(a => a.AppointmentDetails.Any(d => d.service_id == query.ServiceId.Value));
-            }
 
-            // Search keyword
             if (!string.IsNullOrWhiteSpace(query.Q))
             {
                 var kw = query.Q.Trim();
@@ -59,7 +57,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             }
 
             var projected = q
-                .OrderByDescending(a => a.appointment_date)
+                .OrderByDescending(a => EF.Property<DateTime>(a, CREATED_AT_FIELD))
                 .Select(a => new CusAppointmentHistoryItemVM
                 {
                     AppointmentId = a.appointment_id,
@@ -78,7 +76,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return await projected.ToPagedResultAsync(query.Page, query.PageSize);
         }
 
-        // lịch đã đặt
         public async Task<PagedResult<CusBookedAppointmentItemVM>>
             GetCusBookedAppointmentsAsync(int customerId, CusBookedAppointmentQuery query)
         {
@@ -86,26 +83,20 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .AsNoTracking()
                 .Where(a => a.customer_id == customerId);
 
-            // Lịch đã đặt: loại "đã thanh toán" và "đã hủy" "không đến "
             q = q.Where(a => a.status == null
-                || (a.status.Trim().ToLower() != "đã thanh toán"
-                    && a.status.Trim().ToLower() != "đã hủy"
-                    && a.status.Trim().ToLower() != "không đến"));
+                || (a.status.Trim().ToLower() != "Đã thanh toán"
+                    && a.status.Trim().ToLower() != "Đã hủy"
+                    && a.status.Trim().ToLower() != "Không đến"));
 
-            // Filter ngày
             if (query.FromDate.HasValue)
                 q = q.Where(a => a.appointment_date >= query.FromDate.Value);
 
             if (query.ToDate.HasValue)
                 q = q.Where(a => a.appointment_date <= query.ToDate.Value);
 
-            // Filter theo dịch vụ
             if (query.ServiceId.HasValue)
-            {
                 q = q.Where(a => a.AppointmentDetails.Any(d => d.service_id == query.ServiceId.Value));
-            }
 
-            // Search keyword
             if (!string.IsNullOrWhiteSpace(query.Q))
             {
                 var kw = query.Q.Trim();
@@ -118,7 +109,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             }
 
             var projected = q
-                .OrderBy(a => a.appointment_date) // sắp tới lên đầu
+                .OrderByDescending(a => EF.Property<DateTime>(a, CREATED_AT_FIELD))
                 .Select(a => new CusBookedAppointmentItemVM
                 {
                     AppointmentId = a.appointment_id,
@@ -137,9 +128,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return await projected.ToPagedResultAsync(query.Page, query.PageSize);
         }
 
-        // =========================
-        // ✅ NEW: Pets dropdown
-        // =========================
         public async Task<List<(int PetId, string PetName)>> GetCustomerPetsAsync(int customerId)
         {
             return await _context.Pets
@@ -150,9 +138,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .ToListAsync();
         }
 
-        // =========================
-        // ✅ NEW: Doctors dropdown
-        // =========================
         public async Task<List<(int DoctorId, string DoctorName)>> GetDoctorsAsync()
         {
             return await _context.Users
@@ -162,10 +147,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .Select(u => new ValueTuple<int, string>(u.user_id, u.full_name))
                 .ToListAsync();
         }
-
-        // ==========================================================
-        // ✅ NEW: Get doctor shifts (2 overloads)
-        // ==========================================================
 
         public Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime day)
             => GetDoctorShiftsAsync(doctorId, day.Date, day.Date);
@@ -237,18 +218,12 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return result.OrderBy(x => x.Start).ToList();
         }
 
-        // =========================
-        // ✅ NEW: Validate appointment time in doctor's shifts
-        // =========================
         public async Task<bool> IsDoctorWorkingAtAsync(int doctorId, DateTime appointmentDateTime)
         {
             var shifts = await GetDoctorShiftsAsync(doctorId, appointmentDateTime.Date);
             return shifts.Any(x => appointmentDateTime >= x.Start && appointmentDateTime < x.End);
         }
 
-        // =========================
-        // ✅ NEW: Create Appointment (doctor optional + validate shift)
-        // =========================
         public async Task<int> CreateAppointmentAsync(int customerId, CusCreateAppointmentCommand cmd)
         {
             var petOk = await _context.Pets
@@ -315,10 +290,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return appt.appointment_id;
         }
 
-        // ==========================================================
-        // ✅ NEW: Appointment Details / Edit / Cancel (Customer)
-        // ==========================================================
-
         public async Task<CusAppointmentDetailVM?> GetCusAppointmentDetailAsync(int customerId, int appointmentId)
         {
             var q = _context.Appointments
@@ -376,7 +347,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             appt.appointment_date = vm.AppointmentDate;
             appt.notes = vm.Notes;
 
-            // ✅ Update services: remove old + add new (đảm bảo xóa thật trong DB)
             if (vm.ServiceIds != null && vm.ServiceIds.Count > 0)
             {
                 var validCount = await _context.Services.AsNoTracking()
@@ -401,6 +371,24 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return true;
         }
 
+        // ✅ NEW: Data cho popup Cancel (ngắn gọn: ngày giờ, thú cưng, dịch vụ)
+        public async Task<CusCancelAppointmentVM?> GetCusCancelAppointmentAsync(int customerId, int appointmentId)
+        {
+            var q = _context.Appointments
+                .AsNoTracking()
+                .Where(a => a.customer_id == customerId && a.appointment_id == appointmentId)
+                .Select(a => new CusCancelAppointmentVM
+                {
+                    AppointmentId = a.appointment_id,
+                    AppointmentDate = a.appointment_date,
+                    PetName = a.pet.name,
+                    ServiceNames = string.Join(", ", a.AppointmentDetails.Select(d => d.service.service_name)),
+                    Description = a.notes
+                });
+
+            return await q.FirstOrDefaultAsync();
+        }
+
         public async Task<bool> CancelCusAppointmentAsync(int customerId, int appointmentId, string reason)
         {
             var appt = await _context.Appointments
@@ -408,7 +396,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (appt == null) return false;
 
-            appt.status = "đã hủy";
+            appt.status = "Đã hủy";
 
             var old = appt.notes ?? "";
             var line = $"[Lý do hủy]: {reason}";

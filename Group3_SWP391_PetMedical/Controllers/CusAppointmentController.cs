@@ -22,9 +22,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             _serviceService = serviceService;
         }
 
-        // ==========================================================
-        // LỊCH SỬ
-        // ==========================================================
+        // GET: /CusAppointment/AppointmentHistory
         [HttpGet]
         public async Task<IActionResult> AppointmentHistory([FromQuery] CusAppointmentHistoryQuery filter)
         {
@@ -60,9 +58,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View("~/Views/Appointment/CusAppointmentHistory.cshtml", vm);
         }
 
-        // ==========================================================
-        // LỊCH ĐÃ ĐẶT
-        // ==========================================================
+        // GET: /CusAppointment/MyAppointments
         [HttpGet]
         public async Task<IActionResult> MyAppointments([FromQuery] CusBookedAppointmentQuery filter)
         {
@@ -98,176 +94,9 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View("~/Views/Appointment/CusMyAppointments.cshtml", vm);
         }
 
-        // ==========================================================
-        // CHI TIẾT LỊCH HẸN
-        // ==========================================================
-        [HttpGet]
-        public async Task<IActionResult> Details(int id)
-        {
-            int customerId = GetCurrentUserId();
-
-            var detail = await _cusAppointmentService
-                .GetCusAppointmentDetailAsync(customerId, id);
-
-            if (detail == null)
-                return NotFound();
-
-            // ✅ Normalize status để không lỗi int vs string
-            var statusKey = NormalizeStatus(detail.Status);
-
-            var within24h = (DateTime.Now - detail.CreatedAt) <= TimeSpan.FromHours(24);
-
-            detail.CanEdit = within24h &&
-                             statusKey != "đã hủy" &&
-                             statusKey != "đã thanh toán" &&
-                             statusKey != "không đến";
-
-            detail.CanCancel = statusKey != "đã hủy" &&
-                               statusKey != "đã thanh toán" &&
-                               statusKey != "không đến";
-
-            return View("~/Views/Appointment/CusAppointmentDetails.cshtml", detail);
-        }
-
-        // ==========================================================
-        // CHỈNH SỬA LỊCH HẸN (<= 24h từ CreatedAt, KHÔNG sửa status)
-        // ==========================================================
-        [HttpGet]
-        public async Task<IActionResult> Edit(int id)
-        {
-            int customerId = GetCurrentUserId();
-
-            var vm = await _cusAppointmentService
-                .GetCusEditAppointmentAsync(customerId, id);
-
-            if (vm == null)
-                return NotFound();
-
-            var statusKey = NormalizeStatus(vm.Status);
-            var within24h = (DateTime.Now - vm.CreatedAt) <= TimeSpan.FromHours(24);
-
-            if (!within24h ||
-                statusKey == "đã hủy" ||
-                statusKey == "đã thanh toán" ||
-                statusKey == "không đến")
-            {
-                TempData["Err"] = "Chỉ được chỉnh sửa trong vòng 24h từ lúc tạo lịch và khi lịch chưa hủy / chưa thanh toán.";
-                return RedirectToAction(nameof(Details), new { id });
-            }
-
-            vm.ServiceIds ??= new List<int>();
-
-            var services = await _serviceService.GetAllAsync();
-            vm.AllServices = services.Select(s => new SelectListItem
-            {
-                Value = s.service_id.ToString(),
-                Text = s.service_name,
-                Selected = vm.ServiceIds.Contains(s.service_id)
-            }).ToList();
-
-            return View("~/Views/Appointment/CusEditAppointment.cshtml", vm);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(CusEditAppointmentVM vm)
-        {
-            int customerId = GetCurrentUserId();
-
-            vm.ServiceIds ??= new List<int>();
-
-            // ✅ check lại rule từ DB cho chắc
-            var detail = await _cusAppointmentService
-                .GetCusAppointmentDetailAsync(customerId, vm.AppointmentId);
-
-            if (detail == null)
-                return NotFound();
-
-            var statusKey = NormalizeStatus(detail.Status);
-            var within24h = (DateTime.Now - detail.CreatedAt) <= TimeSpan.FromHours(24);
-
-            if (!within24h ||
-                statusKey == "đã hủy" ||
-                statusKey == "đã thanh toán" ||
-                statusKey == "không đến")
-            {
-                TempData["Err"] = "Không thể chỉnh sửa lịch hẹn này.";
-                return RedirectToAction(nameof(Details), new { id = vm.AppointmentId });
-            }
-
-            if (!ModelState.IsValid)
-            {
-                var services = await _serviceService.GetAllAsync();
-                vm.AllServices = services.Select(s => new SelectListItem
-                {
-                    Value = s.service_id.ToString(),
-                    Text = s.service_name,
-                    Selected = vm.ServiceIds.Contains(s.service_id)
-                }).ToList();
-
-                return View("~/Views/Appointment/CusEditAppointment.cshtml", vm);
-            }
-
-            await _cusAppointmentService.UpdateCusAppointmentAsync(customerId, vm);
-
-            TempData["Ok"] = "Cập nhật lịch hẹn thành công.";
-            return RedirectToAction(nameof(Details), new { id = vm.AppointmentId });
-        }
-
-        // ==========================================================
-        // HỦY LỊCH HẸN (hiện mô tả + nhập lý do)
-        // ==========================================================
-        [HttpGet]
-        public async Task<IActionResult> Cancel(int id)
-        {
-            int customerId = GetCurrentUserId();
-
-            var detail = await _cusAppointmentService
-                .GetCusAppointmentDetailAsync(customerId, id);
-
-            if (detail == null)
-                return NotFound();
-
-            var statusKey = NormalizeStatus(detail.Status);
-
-            if (statusKey == "đã hủy" ||
-                statusKey == "đã thanh toán" ||
-                statusKey == "không đến")
-            {
-                TempData["Err"] = "Không thể hủy lịch hẹn này.";
-                return RedirectToAction(nameof(Details), new { id });
-            }
-
-            var vm = new CusCancelAppointmentVM
-            {
-                AppointmentId = id,
-                Description = detail.Notes
-            };
-
-            return View("~/Views/Appointment/CusCancelAppointment.cshtml", vm);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Cancel(CusCancelAppointmentVM vm)
-        {
-            int customerId = GetCurrentUserId();
-
-            if (string.IsNullOrWhiteSpace(vm.Reason))
-            {
-                ModelState.AddModelError(nameof(vm.Reason), "Vui lòng nhập lý do hủy.");
-                return View("~/Views/Appointment/CusCancelAppointment.cshtml", vm);
-            }
-
-            await _cusAppointmentService.CancelCusAppointmentAsync(customerId, vm.AppointmentId, vm.Reason.Trim());
-
-            TempData["Ok"] = "Đã hủy lịch hẹn.";
-            return RedirectToAction(nameof(Details), new { id = vm.AppointmentId });
-        }
-
-        // ==========================================================
-        // BOOK APPOINTMENT (GIỮ NGUYÊN LOGIC CŨ)
-        // ==========================================================
+        // =========================
+        // ✅ GET: /CusAppointment/Book
+        // =========================
         [HttpGet]
         public async Task<IActionResult> Book()
         {
@@ -275,8 +104,6 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             var pets = await _cusAppointmentService.GetCustomerPetsAsync(customerId);
             var services = await _serviceService.GetAllAsync();
-
-            // ✅ NEW: doctors
             var doctors = await _cusAppointmentService.GetDoctorsAsync();
 
             var vm = new CusCreateAppointmentVM
@@ -291,8 +118,6 @@ namespace Group3_SWP391_PetMedical.Controllers
                     Value = s.service_id.ToString(),
                     Text = s.service_name
                 }).ToList(),
-
-                // ✅ NEW: doctor dropdown
                 DoctorOptions = doctors.Select(d => new SelectListItem
                 {
                     Value = d.DoctorId.ToString(),
@@ -300,7 +125,6 @@ namespace Group3_SWP391_PetMedical.Controllers
                 }).ToList()
             };
 
-            // option đầu: chưa phân công
             vm.DoctorOptions.Insert(0, new SelectListItem
             {
                 Value = "",
@@ -311,6 +135,9 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View("~/Views/Appointment/CusBookAppointment.cshtml", vm);
         }
 
+        // =========================
+        // ✅ POST: /CusAppointment/Book
+        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Book(CusCreateAppointmentVM vm)
@@ -334,12 +161,14 @@ namespace Group3_SWP391_PetMedical.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-
                 await ReloadBookOptions(customerId, vm);
                 return View("~/Views/Appointment/CusBookAppointment.cshtml", vm);
             }
         }
 
+        // =========================
+        // ✅ NEW: /CusAppointment/DoctorShifts?doctorId=3&day=2026-03-01
+        // =========================
         [HttpGet]
         public async Task<IActionResult> DoctorShifts(int doctorId, string? day)
         {
@@ -374,6 +203,99 @@ namespace Group3_SWP391_PetMedical.Controllers
             }));
         }
 
+        // =========================
+        // ✅ DETAILS (popup)
+        // /CusAppointment/Details?id=44&popup=1
+        // =========================
+        [HttpGet]
+        public async Task<IActionResult> Details(int id, int popup = 0)
+        {
+            int customerId = GetCurrentUserId();
+
+            var vm = await _cusAppointmentService.GetCusAppointmentDetailAsync(customerId, id);
+            if (vm == null) return NotFound();
+
+            if (popup == 1) ViewBag.Popup = true;
+
+            return View("~/Views/Appointment/CusAppointmentDetails.cshtml", vm);
+        }
+
+        // =========================
+        // ✅ CANCEL (GET popup)  <<< FIX CHÍNH Ở ĐÂY
+        // /CusAppointment/Cancel?id=44&popup=1
+        // =========================
+        [HttpGet]
+        public async Task<IActionResult> Cancel(int id, int popup = 0)
+        {
+            int customerId = GetCurrentUserId();
+
+            // ✅ LẤY ĐÚNG DATA (Ngày giờ / Thú cưng / Dịch vụ / Mô tả)
+            var vm = await _cusAppointmentService.GetCusCancelAppointmentAsync(customerId, id);
+
+            if (vm == null)
+                return NotFound();
+
+            if (popup == 1) ViewBag.Popup = true;
+
+            return View("~/Views/Appointment/CusCancelAppointment.cshtml", vm);
+        }
+
+        // POST: /CusAppointment/Cancel
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cancel(CusCancelAppointmentVM vm, int popup = 0)
+        {
+            int customerId = GetCurrentUserId();
+
+            if (string.IsNullOrWhiteSpace(vm.Reason))
+                ModelState.AddModelError(nameof(vm.Reason), "Vui lòng nhập lý do hủy.");
+
+            if (!ModelState.IsValid)
+            {
+                // reload tóm tắt để không bị trống khi validate fail
+                var reload = await _cusAppointmentService.GetCusCancelAppointmentAsync(customerId, vm.AppointmentId);
+                if (reload != null)
+                {
+                    vm.AppointmentDate = reload.AppointmentDate;
+                    vm.PetName = reload.PetName;
+                    vm.ServiceNames = reload.ServiceNames;
+                    vm.Description = reload.Description;
+                }
+
+                if (popup == 1) ViewBag.Popup = true;
+                return View("~/Views/Appointment/CusCancelAppointment.cshtml", vm);
+            }
+
+            var ok = await _cusAppointmentService
+     .CancelCusAppointmentAsync(customerId, vm.AppointmentId, vm.Reason);
+
+            if (!ok) return NotFound();
+
+            // ✅ Nếu là popup → chuyển parent về MyAppointments (reload luôn)
+            if (popup == 1)
+            {
+                var backUrl = Url.Action("MyAppointments", "CusAppointment");
+
+                return Content($@"
+                                    <!doctype html>
+                                    <html>
+                                    <head><meta charset='utf-8'></head>
+                                    <body>
+                                    <script>
+                                        window.parent.location.href = '{backUrl}';
+                                    </script>
+                                    </body>
+                                    </html>
+                                    ", "text/html");
+            }
+
+            // không popup
+            return RedirectToAction(nameof(MyAppointments));
+        }
+
+        // =========================
+        // helper: reload options for Book view
+        // =========================
         private async Task ReloadBookOptions(int customerId, CusCreateAppointmentVM vm)
         {
             var pets = await _cusAppointmentService.GetCustomerPetsAsync(customerId);
@@ -418,36 +340,6 @@ namespace Group3_SWP391_PetMedical.Controllers
                 throw new Exception("Không lấy được customer_id từ Claims. Kiểm tra đăng nhập/claims.");
 
             return id;
-        }
-
-        /// <summary>
-        /// Chuẩn hóa Status để tránh lỗi int/string.
-        /// - Nếu status là string: trim + lower
-        /// - Nếu status là int: map theo quy ước (nếu dự án bạn dùng status code)
-        ///   Bạn có thể chỉnh mapping ở đây nếu khác.
-        /// </summary>
-        private static string NormalizeStatus(object? status)
-        {
-            if (status == null) return "";
-
-            if (status is string s)
-                return (s ?? "").Trim().ToLower();
-
-            if (status is int i)
-            {
-                // ⚠️ Nếu dự án bạn đang dùng status code, chỉnh map tại đây
-                // Mặc định: 2=đã thanh toán, 3=đã hủy, 4=không đến (bạn sửa theo hệ của bạn)
-                return i switch
-                {
-                    2 => "đã thanh toán",
-                    3 => "đã hủy",
-                    4 => "không đến",
-                    _ => i.ToString()
-                };
-            }
-
-            // fallback
-            return status.ToString()?.Trim().ToLower() ?? "";
         }
     }
 }

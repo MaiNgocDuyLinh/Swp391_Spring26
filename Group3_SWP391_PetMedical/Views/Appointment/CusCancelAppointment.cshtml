@@ -5,6 +5,14 @@
     if (isPopup) { Layout = null; }
 
     ViewData["Title"] = "Hủy lịch hẹn";
+
+    var apptDateText =
+        Model.AppointmentDate > DateTime.MinValue
+            ? Model.AppointmentDate.ToString("HH:mm dd/MM/yyyy")
+            : "—";
+
+    var petNameText = !string.IsNullOrWhiteSpace(Model.PetName) ? Model.PetName : "—";
+    var serviceNamesText = !string.IsNullOrWhiteSpace(Model.ServiceNames) ? Model.ServiceNames : "—";
 }
 
 @if (isPopup)
@@ -23,6 +31,55 @@
             background: #fff;
             font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
         }
+
+        .pc-topbar {
+            padding: 18px 22px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            background: #fff;
+        }
+
+            .pc-topbar h3 {
+                font-weight: 900;
+                margin: 0;
+                font-size: 1.15rem;
+            }
+
+            .pc-topbar p {
+                color: var(--pc-muted);
+                margin: 6px 0 0 0;
+                font-weight: 600;
+            }
+
+        .pc-xbtn {
+            width: 46px;
+            height: 46px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,59,59,0.45);
+            background: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex: 0 0 auto;
+            box-shadow: 0 10px 22px rgba(255,59,59,0.08);
+        }
+
+            .pc-xbtn:hover {
+                border-color: rgba(255,59,59,0.75);
+                box-shadow: 0 12px 26px rgba(255,59,59,0.14);
+            }
+
+            .pc-xbtn span {
+                color: var(--pc-red);
+                font-size: 26px;
+                font-weight: 900;
+                line-height: 1;
+                transform: translateY(-1px);
+            }
 
         .pc-wrap {
             padding: 18px;
@@ -51,18 +108,37 @@
             background: #fff7f7;
             border: 1px solid rgba(0,0,0,0.06);
             border-radius: 14px;
-            padding: 12px;
+            padding: 14px 16px;
         }
 
         .pc-label {
             font-weight: 800;
             font-size: 0.9rem;
             color: var(--pc-muted);
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
-        .pc-desc {
-            font-weight: 700;
+        /* ===== Summary layout ===== */
+        .pc-summary-row {
+            display: flex;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+
+            .pc-summary-row:last-child {
+                border-bottom: none;
+            }
+
+        .pc-summary-key {
+            width: 110px;
+            font-weight: 800;
+            color: var(--pc-muted);
+        }
+
+        .pc-summary-value {
+            flex: 1;
+            font-weight: 900;
             color: var(--pc-text);
             white-space: pre-line;
         }
@@ -114,8 +190,21 @@
         .text-danger {
             color: #dc3545;
             font-weight: 700;
+            margin-top: 6px;
         }
     </style>
+
+    <div class="pc-topbar">
+        <div>
+            <h3>Hủy lịch hẹn</h3>
+            <p>Vui lòng nêu rõ lý do để phòng khám hỗ trợ tốt hơn</p>
+        </div>
+
+        <!-- ✅ Nút X đỏ đóng modal -->
+        <button type="button" class="pc-xbtn" onclick="closeCancelPopup()" aria-label="Đóng">
+            <span>×</span>
+        </button>
+    </div>
 }
 
 <div class="pc-wrap">
@@ -123,25 +212,46 @@
         <h3 class="pc-title">Hủy lịch hẹn</h3>
         <p class="pc-sub">Xác nhận hủy và nêu rõ lý do</p>
 
+        <!-- ✅ TÓM TẮT LỊCH HẸN NGẮN GỌN -->
         <div class="pc-box">
-            <div class="pc-label">Mô tả / ghi chú lịch hẹn</div>
-            <div class="pc-desc">@(!string.IsNullOrWhiteSpace(Model.Description) ? Model.Description : "—")</div>
+            <div class="pc-label">Tóm tắt lịch hẹn</div>
+
+            <div class="pc-summary-row">
+                <div class="pc-summary-key">Ngày giờ</div>
+                <div class="pc-summary-value">@apptDateText</div>
+            </div>
+
+            <div class="pc-summary-row">
+                <div class="pc-summary-key">Thú cưng</div>
+                <div class="pc-summary-value">@petNameText</div>
+            </div>
+
+            <div class="pc-summary-row">
+                <div class="pc-summary-key">Dịch vụ</div>
+                <div class="pc-summary-value">@serviceNamesText</div>
+            </div>
         </div>
 
         <form method="post" asp-controller="CusAppointment" asp-action="Cancel">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="AppointmentId" />
+            <input type="hidden" name="popup" value="@(isPopup ? "1" : "0")" />
 
             <div class="pc-box">
                 <div class="pc-label">Lý do hủy</div>
-                <textarea class="pc-input" asp-for="Reason" placeholder="Ví dụ: bận đột xuất, đổi lịch, thú cưng không khỏe..."></textarea>
-                <div class="text-danger">@Html.ValidationMessageFor(m => m.Reason)</div>
+                <textarea class="pc-input"
+                          asp-for="Reason"
+                          placeholder="Ví dụ: bận đột xuất, đổi lịch,..."></textarea>
+                <div class="text-danger">
+                    @Html.ValidationMessageFor(m => m.Reason)
+                </div>
             </div>
 
             <div class="pc-actions">
-                <a class="pc-btn" href="@Url.Action("Details", "CusAppointment", new { id = Model.AppointmentId, popup = 1 })">
+                <!-- ✅ Quay lại: đóng popup luôn, không load details trong iframe -->
+                <button type="button" class="pc-btn" onclick="closeCancelPopup()">
                     <i class="fas fa-arrow-left"></i> Quay lại
-                </a>
+                </button>
 
                 <button type="submit" class="pc-btn pc-btn--danger">
                     <i class="fas fa-times"></i> Xác nhận hủy
@@ -150,3 +260,23 @@
         </form>
     </div>
 </div>
+
+@if (isPopup)
+{
+    <script>
+        function closeCancelPopup() {
+            try {
+                const modalEl = window.parent.document.getElementById('cancelModal');
+                if (!modalEl) return;
+
+                const modal = window.parent.bootstrap?.Modal.getInstance(modalEl)
+                    || new window.parent.bootstrap.Modal(modalEl);
+
+                modal.hide();
+            } catch (e) {
+                // fallback: reload trang cha nếu không đóng được modal
+                window.parent.location.reload();
+            }
+        }
+    </script>
+}
