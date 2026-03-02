@@ -1,0 +1,111 @@
+@model List<Group3_SWP391_PetMedical.Models.AuditLog>
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Nhật ký hệ thống";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3">
+        <i class="fas fa-history"></i> Nhật ký hệ thống
+    </h2>
+
+    <table class="table table-bordered table-striped table-hover mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>User</th>
+                <th>Hành động</th>
+                <th>Đối tượng</th>
+                <th style="min-width:300px">Thay đổi</th>
+                <th>IP</th>
+                <th>Thời gian</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var log in Model)
+            {
+                <tr>
+                    <!-- User -->
+                    <td>
+                        @(string.IsNullOrEmpty(log.UserEmail) ? "System" : log.UserEmail)
+                    </td>
+
+                    <!-- Action -->
+                    <td>
+                        @if (log.Action == "Added")
+                        {
+                            <span class="badge bg-success">Added</span>
+                        }
+                        else if (log.Action == "Modified")
+                        {
+                            <span class="badge bg-warning text-dark">Modified</span>
+                        }
+                        else if (log.Action == "Deleted")
+                        {
+                            <span class="badge bg-danger">Deleted</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@log.Action</span>
+                        }
+                    </td>
+
+                    <!-- Object -->
+                    <td>
+                        @log.EntityName (@log.EntityId)
+                    </td>
+
+                    <!-- Changes -->
+                    <td>
+                        @if (!string.IsNullOrEmpty(log.OldValues) || !string.IsNullOrEmpty(log.NewValues))
+                        {
+                            var oldValues = string.IsNullOrEmpty(log.OldValues)
+                                ? new Dictionary<string, object>()
+                                : JsonSerializer.Deserialize<Dictionary<string, object>>(log.OldValues);
+
+                            var newValues = string.IsNullOrEmpty(log.NewValues)
+                                ? new Dictionary<string, object>()
+                                : JsonSerializer.Deserialize<Dictionary<string, object>>(log.NewValues);
+
+                            if (newValues != null && newValues.Any())
+                            {
+                                foreach (var key in newValues.Keys)
+                                {
+                                    <div>
+                                        <strong>@key</strong>:
+                                        <span class="text-danger">
+                                            @(oldValues != null && oldValues.ContainsKey(key) ? oldValues[key] : "")
+                                        </span>
+                                        →
+                                        <span class="text-success">
+                                            @newValues[key]
+                                        </span>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">Không có thay đổi</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">Không có thay đổi</span>
+                        }
+                    </td>
+
+                    <!-- IP -->
+                    <td>@log.IpAddress</td>
+
+                    <!-- Time -->
+                    <td>
+                        @(log.CreatedAt.HasValue 
+                            ? log.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm") 
+                            : "")
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
