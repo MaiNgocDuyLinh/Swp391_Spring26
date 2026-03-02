@@ -23,7 +23,7 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime day);
 
         Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime from, DateTime to);
-
+        Task<List<DoctorAppointmentEventVM>>GetDoctorAppointmentsAsync(int doctorId, DateTime from, DateTime to);
         Task<bool> IsDoctorWorkingAtAsync(int doctorId, DateTime appointmentDateTime);
 
         Task<CusAppointmentDetailVM?> GetCusAppointmentDetailAsync(int customerId, int appointmentId);
@@ -32,7 +32,7 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
 
         Task<bool> UpdateCusAppointmentAsync(int customerId, CusEditAppointmentVM vm);
 
-        // ✅ NEW: GET Cancel popup data (tóm tắt: ngày giờ, thú cưng, dịch vụ, mô tả)
+        //  GET Cancel popup data (tóm tắt: ngày giờ, thú cưng, dịch vụ, mô tả)
         Task<CusCancelAppointmentVM?> GetCusCancelAppointmentAsync(int customerId, int appointmentId);
 
         Task<bool> CancelCusAppointmentAsync(int customerId, int appointmentId, string reason);

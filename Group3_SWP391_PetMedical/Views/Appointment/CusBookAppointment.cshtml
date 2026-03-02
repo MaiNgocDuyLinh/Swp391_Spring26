@@ -116,7 +116,6 @@
             margin-bottom: 0;
         }
 
-    /* ✅ NEW: style for pc-service-item2 (you are using it below) */
     .pc-service-item2 {
         padding: 10px 12px;
         border-radius: 14px;
@@ -133,7 +132,6 @@
             margin-top: .25rem;
         }
 
-    /* Primary red button similar to header pill */
     .pc-btn-primary {
         border: 0;
         border-radius: 999px;
@@ -227,7 +225,7 @@
         height: 48px !important;
         border-radius: 14px !important;
         border: 1px solid rgba(0,0,0,.10) !important;
-        padding: 0 14px !important; /* không chừa chỗ icon nữa */
+        padding: 0 14px !important;
         background-color: #fff !important;
         line-height: 48px !important; /* text nằm giữa theo dọc */
     }
@@ -263,6 +261,37 @@
         margin-bottom: 8px;
         font-weight: 700;
     }
+
+    /* ✅ NEW: list style for calendar-like view */
+    .pc-cal-list {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .pc-cal-item {
+        border: 1px solid rgba(0,0,0,.08);
+        border-radius: 14px;
+        background: rgba(255,255,255,.92);
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .pc-cal-date {
+        font-weight: 800;
+    }
+
+    .pc-cal-time {
+        font-weight: 700;
+        color: rgba(0,0,0,.65);
+        white-space: nowrap;
+    }
 </style>
 
 <div class="container my-4">
@@ -282,11 +311,6 @@
                         Chọn thú cưng, thời gian khám và dịch vụ mong muốn.
                         Hệ thống sẽ tạo lịch với trạng thái <b>Chờ xác nhận</b>.
                     </div>
-
-                    @* @if (TempData["msg"] != null)
-                    {
-                        <div class="alert alert-success mb-3">@TempData["msg"]</div>
-                    } *@
 
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -358,9 +382,7 @@
                                         <div class="pc-note">Gợi ý: bạn có thể chọn nhiều dịch vụ trong một lần khám.</div>
                                     </div>
 
-                                    <!-- =========================
-                                          NEW: Doctor select + shifts (ADDED ONLY)
-                                         ========================= -->
+                                    <!--  Doctor select + shifts (ADDED ONLY)  -->
                                     <div class="col-12 pc-field">
                                         <label class="form-label">Bác sĩ</label>
 
@@ -439,12 +461,12 @@
                                     </div>
                                 </div>
 
-                                <!-- ✅ NEW step: choose doctor -->
+                                <!--  choose doctor -->
                                 <div class="pc-step">
                                     <div class="pc-step-num">3</div>
                                     <div>
                                         <div style="font-weight:800;">Chọn bác sĩ</div>
-                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Xem ca làm để chọn giờ khám phù hợp.</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Xem lịch làm để chọn giờ khám phù hợp.</div>
                                     </div>
                                 </div>
 
@@ -465,30 +487,30 @@
                             </div>
 
                             <!-- =========================
-                                 ✅ NEW: show shifts on the right side (ADDED ONLY)
-                                 ✅ FIX: always show (no display:none)
+                                  ✅ UPDATED: show FULL doctor schedule (next N days)
+                                  always show
                                  ========================= -->
                             <div id="rightDoctorBox" class="mt-3">
                                 <div class="pc-badge" style="margin-bottom:10px;">
                                     <i class="far fa-calendar-alt"></i>
-                                    <span>Ca làm của bác sĩ</span>
+                                    <span>Lịch khám / ca làm của bác sĩ</span>
                                 </div>
 
                                 <div class="pc-step" style="flex-direction:column; gap:10px;">
-                                    <div style="font-weight:800;">Trong ngày bạn chọn</div>
+                                    <div style="font-weight:800;">Các ca sắp tới</div>
 
-                                    <div class="pc-services-box" style="max-height:220px; width:100%;">
-                                        <ul id="rightDoctorShiftsList" style="margin:0; padding-left:18px;"></ul>
+                                    <div class="pc-services-box" style="max-height:260px; width:100%;">
+                                        <ul id="rightDoctorShiftsList" class="pc-cal-list"></ul>
                                     </div>
 
                                     <div class="pc-note" id="rightDoctorNote">
-                                        Chọn bác sĩ để xem ca làm. Nếu không chọn sẽ hiển thị ca mặc định của phòng khám.
+                                        Chọn bác sĩ để xem lịch làm. Nếu không chọn sẽ hiển thị ca mặc định của phòng khám (7 ngày tới).
                                     </div>
 
                                     <div class="text-danger" id="rightDoctorError" style="display:none;"></div>
                                 </div>
                             </div>
-                            <!-- ========================= -->
+
                         </div>
                     </div>
                 </div>
@@ -502,50 +524,42 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
-    <!-- =========================
-         ✅ NEW JS: Load doctor shifts + validate time (ADDED ONLY)
-         ✅ Right side ALWAYS shows:
-             - default clinic shifts when no doctor selected
-             - doctor shifts when doctor selected
-         ✅ If time not match doctor shifts -> show error + block submit
-         ========================= -->
     <script>
         (function () {
             const doctorSelect = document.getElementById("doctorSelect");
             const dateInput = document.querySelector('input[name="Form.AppointmentDate"]');
 
-            // left box (under doctor select)
+            // left box (under doctor select) - still per-day
             const shiftsBox = document.getElementById("doctorShiftsBox");
             const shiftsList = document.getElementById("doctorShiftsList");
             const shiftError = document.getElementById("doctorShiftError");
 
-            // right box (always visible)
+            // right box (always visible) - full schedule (range)
             const rightList = document.getElementById("rightDoctorShiftsList");
             const rightErr = document.getElementById("rightDoctorError");
 
             const form = document.querySelector("form");
 
-            let shifts = [];
+            // per-day shifts (for validation)
+            let dayShifts = [];
 
-            // ✅ Default clinic shifts (when no doctor selected)
+            // clinic default shifts for any day
             const defaultClinicShifts = [
-                { display: "Sáng (08:00 - 12:00)" },
-                { display: "Chiều (13:00 - 17:00)" },
-                { display: "Tối (18:00 - 21:00)" }
+                { label: "Sáng", start: "08:00", end: "12:00" },
+                { label: "Chiều", start: "13:00", end: "17:00" },
+                { label: "Tối", start: "18:00", end: "21:00" }
             ];
 
-            function renderDefaultClinicShifts() {
-                // right side
-                rightList.innerHTML = "";
-                defaultClinicShifts.forEach(s => {
-                    const li = document.createElement("li");
-                    li.textContent = s.display;
-                    rightList.appendChild(li);
-                });
+            const RANGE_DAYS = 7;
 
-                // left side hidden
-                shiftsList.innerHTML = "";
-                shiftsBox.style.display = "none";
+            function pad2(n) { return String(n).padStart(2, '0'); }
+
+            function formatDateVN(d) {
+                return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
+            }
+
+            function toISODate(d) {
+                return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
             }
 
             function parseLocalDateTime(val) {
@@ -554,38 +568,77 @@
                 return isNaN(d.getTime()) ? null : d;
             }
 
-            function sameDayISO(dateObj) {
-                const y = dateObj.getFullYear();
-                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const d = String(dateObj.getDate()).padStart(2, '0');
-                return `${y}-${m}-${d}`;
-            }
-
-            function renderDoctorShifts() {
-                shiftsList.innerHTML = "";
+            function renderRightDefaultSchedule() {
                 rightList.innerHTML = "";
 
-                function addLi(ul, text) {
+                const base = parseLocalDateTime(dateInput?.value) || new Date();
+                const baseDay = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+
+                for (let i = 0; i < RANGE_DAYS; i++) {
+                    const d = new Date(baseDay);
+                    d.setDate(baseDay.getDate() + i);
+
+                    defaultClinicShifts.forEach(s => {
+                        const li = document.createElement("li");
+                        li.className = "pc-cal-item";
+                        li.innerHTML = `<span class="pc-cal-date">${formatDateVN(d)} • ${s.label}</span>
+                                        <span class="pc-cal-time">${s.start} - ${s.end}</span>`;
+                        rightList.appendChild(li);
+                    });
+                }
+            }
+
+            function renderLeftDayShifts() {
+                shiftsList.innerHTML = "";
+
+                function addLi(text) {
                     const li = document.createElement("li");
                     li.textContent = text;
-                    ul.appendChild(li);
+                    shiftsList.appendChild(li);
                 }
 
-                if (!shifts.length) {
-                    addLi(shiftsList, "Không có ca làm trong ngày này.");
-                    addLi(rightList, "Không có ca làm trong ngày này.");
+                if (!dayShifts.length) {
+                    addLi("Không có ca làm trong ngày này.");
                     return;
                 }
 
-                shifts.forEach(s => {
-                    const text = s.display || `${s.start.toLocaleString()} - ${s.end.toLocaleString()}`;
-                    addLi(shiftsList, text);
-                    addLi(rightList, text);
+                dayShifts.forEach(s => addLi(s.display));
+            }
+
+            function renderRightDoctorSchedule(allShifts) {
+                rightList.innerHTML = "";
+
+                if (!allShifts.length) {
+                    const li = document.createElement("li");
+                    li.className = "pc-cal-item";
+                    li.innerHTML = `<span class="pc-cal-date">Không có ca làm trong khoảng ngày này.</span>
+                                    <span class="pc-cal-time"></span>`;
+                    rightList.appendChild(li);
+                    return;
+                }
+
+                allShifts.forEach(s => {
+                    const li = document.createElement("li");
+                    li.className = "pc-cal-item";
+                    const d = s.start;
+                    li.innerHTML = `<span class="pc-cal-date">${formatDateVN(d)}</span>
+                                    <span class="pc-cal-time">${s.display}</span>`;
+                    rightList.appendChild(li);
                 });
             }
 
-            async function loadShifts() {
-                // clear errors
+            async function fetchDoctorShifts(doctorId, dayStr) {
+                const url = `@Url.Action("DoctorShifts", "CusAppointment")?doctorId=${doctorId}&day=${encodeURIComponent(dayStr)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                return (data || []).map(x => ({
+                    start: new Date(x.start),
+                    end: new Date(x.end),
+                    display: x.display
+                }));
+            }
+
+            async function loadDayShiftsAndValidate() {
                 shiftError.style.display = "none";
                 shiftError.textContent = "";
                 rightErr.style.display = "none";
@@ -593,47 +646,65 @@
 
                 const docId = doctorSelect?.value;
 
-                // ✅ no doctor -> show default on right
+                // if no doctor => hide left, allow submit, show default right
                 if (!docId) {
-                    shifts = [];
-                    renderDefaultClinicShifts();
+                    dayShifts = [];
+                    shiftsBox.style.display = "none";
+                    renderRightDefaultSchedule();
                     return;
                 }
 
-                // ✅ doctor selected -> fetch doctor shifts and render on right immediately
-                let appt = parseLocalDateTime(dateInput?.value);
-                let dayStr = appt ? sameDayISO(appt) : sameDayISO(new Date());
+                // day for validation = day of appointment input (or today)
+                const appt = parseLocalDateTime(dateInput?.value) || new Date();
+                const dayStr = toISODate(appt);
 
-                const url = `@Url.Action("DoctorShifts", "CusAppointment")?doctorId=${docId}&day=${encodeURIComponent(dayStr)}`;
-                const res = await fetch(url);
-                const data = await res.json();
+                dayShifts = await fetchDoctorShifts(docId, dayStr);
 
-                shifts = (data || []).map(x => ({
-                    start: new Date(x.start),
-                    end: new Date(x.end),
-                    display: x.display
-                }));
-
-                // show left box when doctor chosen
+                // show left day shifts
                 shiftsBox.style.display = "block";
+                renderLeftDayShifts();
 
-                // render to both sides
-                renderDoctorShifts();
-
-                // validate time
-                validateAgainstShifts();
+                validateAgainstDayShifts();
             }
 
-            function validateAgainstShifts() {
+            async function loadRightFullSchedule() {
                 const docId = doctorSelect?.value;
 
-                // no doctor -> allow
+                // no doctor => show clinic default schedule for next RANGE_DAYS
+                if (!docId) {
+                    renderRightDefaultSchedule();
+                    return;
+                }
+
+                // build range start based on selected appointment day (or today)
+                const base = parseLocalDateTime(dateInput?.value) || new Date();
+                const baseDay = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+
+                const all = [];
+                for (let i = 0; i < RANGE_DAYS; i++) {
+                    const d = new Date(baseDay);
+                    d.setDate(baseDay.getDate() + i);
+                    const dayStr = toISODate(d);
+
+                    const oneDay = await fetchDoctorShifts(docId, dayStr);
+                    // attach day to display if needed: DoctorShiftVM already includes date
+                    all.push(...oneDay);
+                }
+
+                // sort by start
+                all.sort((a, b) => a.start - b.start);
+
+                renderRightDoctorSchedule(all);
+            }
+
+            function validateAgainstDayShifts() {
+                const docId = doctorSelect?.value;
                 if (!docId) return true;
 
                 const appt = parseLocalDateTime(dateInput?.value);
                 if (!appt) return true;
 
-                const ok = shifts.some(s => appt >= s.start && appt <= s.end);
+                const ok = dayShifts.some(s => appt >= s.start && appt <= s.end);
 
                 if (!ok) {
                     shiftError.style.display = "block";
@@ -652,16 +723,20 @@
                 return ok;
             }
 
-            // ✅ IMPORTANT: always reload shifts on doctor/date change
-            doctorSelect?.addEventListener("change", loadShifts);
-            dateInput?.addEventListener("change", loadShifts);
+            async function reloadAll() {
+                await loadRightFullSchedule();
+                await loadDayShiftsAndValidate();
+            }
+
+            doctorSelect?.addEventListener("change", reloadAll);
+            dateInput?.addEventListener("change", reloadAll);
 
             form?.addEventListener("submit", function (e) {
-                if (!validateAgainstShifts()) e.preventDefault();
+                if (!validateAgainstDayShifts()) e.preventDefault();
             });
 
-            // ✅ IMPORTANT: initial load -> if doctor selected then auto show doctor shifts, else default
-            loadShifts();
+            // init
+            reloadAll();
         })();
     </script>
 }

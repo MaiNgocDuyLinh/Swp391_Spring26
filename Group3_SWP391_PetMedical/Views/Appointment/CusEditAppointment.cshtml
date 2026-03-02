@@ -4,7 +4,7 @@
 @{
     ViewData["Title"] = "Chỉnh sửa lịch hẹn";
 
-    // ✅ Lấy services từ ViewBag (đúng với controller của bạn)
+    //   Lấy services từ ViewBag (đúng với controller của bạn)
     var serviceOptions = ViewBag.ServiceOptions as List<SelectListItem> ?? new List<SelectListItem>();
 }
 
@@ -239,7 +239,7 @@
                     <form method="post" asp-controller="CusAppointment" asp-action="Edit">
                         @Html.AntiForgeryToken()
 
-                        <!-- ✅ show lỗi tổng để biết vì sao không lưu -->
+                        <!--  show lỗi tổng để biết vì sao không lưu -->
                         @Html.ValidationSummary(true, "", new { @class = "text-danger", style = "margin-bottom:10px;" })
 
                         <input type="hidden" asp-for="AppointmentId" />
@@ -256,7 +256,7 @@
 
                         <div class="mb-3">
                             <div class="pc-label">Ngày giờ khám</div>
-                            <!-- ✅ bind trực tiếp để ModelState bắt đúng -->
+                            <!--  bind trực tiếp để ModelState bắt đúng -->
                             <input type="datetime-local"
                                    class="pc-input"
                                    asp-for="AppointmentDate"
@@ -270,7 +270,7 @@
                             <div class="pc-services">
                                 @if (serviceOptions.Any())
                                 {
-                                    <!-- ✅ Checkbox bind vào ServiceIds -->
+                                    <!--  Checkbox bind vào ServiceIds -->
                                     @foreach (var opt in serviceOptions)
                                     {
                                         <div class="form-check" style="margin-bottom:8px;">

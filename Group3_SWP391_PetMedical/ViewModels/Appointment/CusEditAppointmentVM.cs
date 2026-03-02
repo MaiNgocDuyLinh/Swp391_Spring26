@@ -9,7 +9,6 @@ namespace Group3_SWP391_PetMedical.ViewModels.Appointment
         public DateTime AppointmentDate { get; set; }  // cho phép đổi ngày/giờ
         public string? Notes { get; set; }             // cho phép đổi mô tả/ghi chú
 
-        // nếu bạn muốn cho đổi dịch vụ: dùng list checkbox (serviceIds)
         public List<int> ServiceIds { get; set; } = new();
 
         // để render checkbox

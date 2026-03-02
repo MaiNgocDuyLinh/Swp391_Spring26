@@ -14,9 +14,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
     public class CusAppointmentRepository : ICusAppointmentRepository
     {
         private readonly PetClinicContext _context;
-
-        // ⚠️ ĐỔI TÊN FIELD này đúng với cột "ngày tạo" thật trong Appointments của bạn
-        // Ví dụ: "CreatedAt", "created_date", "createdAt", ...
         private const string CREATED_AT_FIELD = "created_at";
 
         public CusAppointmentRepository(PetClinicContext context)
@@ -152,6 +149,30 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         public Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime day)
             => GetDoctorShiftsAsync(doctorId, day.Date, day.Date);
 
+
+        public async Task<List<DoctorAppointmentEventVM>>
+            GetDoctorAppointmentsAsync(int doctorId, DateTime from, DateTime to)
+                {
+                    var q = _context.Appointments
+                        .AsNoTracking()
+                        .Where(a => a.doctor_id == doctorId
+                                    && a.appointment_date >= from
+                                    && a.appointment_date <= to
+                                    && (a.status == null || a.status.Trim().ToLower() != "đã hủy"));
+
+                    var list = await q
+                        .OrderBy(a => a.appointment_date)
+                        .Select(a => new DoctorAppointmentEventVM
+                        {
+                            Title = a.pet != null ? $"Khám - {a.pet.name}" : "Lịch hẹn",
+                            Start = a.appointment_date,
+                            End = a.appointment_date.AddMinutes(30), // duration 30 phút
+                            Status = a.status
+                        })
+                        .ToListAsync();
+
+                    return list;
+                }
         public async Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime from, DateTime to)
         {
             var targetDate = DateOnly.FromDateTime(from.Date);
@@ -344,10 +365,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (appt == null) return false;
 
-            // ==========================================================
-            // ✅ CHẶN EDIT: chỉ được sửa trong 24h kể từ lúc tạo lịch
-            // (Nếu trong 24h thì vẫn lưu edit bình thường)
-            // ==========================================================
+          
             DateTime createdAt;
             try
             {
@@ -373,18 +391,17 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (DateTime.Now - createdAt > TimeSpan.FromHours(24))
                 throw new Exception("Chỉ được chỉnh sửa lịch hẹn trong vòng 24 giờ kể từ lúc đặt lịch.");
 
-            // ✅ thêm validate cơ bản: không cho chỉnh về quá khứ
+            //  thêm validate cơ bản: không cho chỉnh về quá khứ
             if (vm.AppointmentDate <= DateTime.Now)
                 throw new Exception("Ngày giờ khám phải lớn hơn hiện tại.");
 
-            // ✅ KHÔNG CHO SỬA STATUS
-            // appt.status = ... (KHÔNG LÀM)
+       
 
-            // ✅ Update các field cho phép
+            //  các field cho phép
             appt.appointment_date = vm.AppointmentDate;
             appt.notes = vm.Notes;
 
-            // ✅ Update services: remove old + add new
+            //  services: remove old + add new
             if (vm.ServiceIds != null && vm.ServiceIds.Count > 0)
             {
                 var validCount = await _context.Services.AsNoTracking()
@@ -393,11 +410,11 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 if (validCount != vm.ServiceIds.Count)
                     throw new Exception("Danh sách dịch vụ không hợp lệ.");
 
-                // ✅ xoá cũ trong DB
+                //  xoá cũ trong DB
                 if (appt.AppointmentDetails != null && appt.AppointmentDetails.Count > 0)
                     _context.AppointmentDetails.RemoveRange(appt.AppointmentDetails);
 
-                // ✅ thêm mới
+                //  thêm mới
                 var newDetails = vm.ServiceIds.Distinct().Select(sid => new AppointmentDetail
                 {
                     appointment_id = appt.appointment_id,
@@ -411,7 +428,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return true;
         }
 
-        // ✅ NEW: Data cho popup Cancel (ngắn gọn: ngày giờ, thú cưng, dịch vụ)
+        // Data cho popup Cancel (ngắn gọn: ngày giờ, thú cưng, dịch vụ)
         public async Task<CusCancelAppointmentVM?> GetCusCancelAppointmentAsync(int customerId, int appointmentId)
         {
             var q = _context.Appointments

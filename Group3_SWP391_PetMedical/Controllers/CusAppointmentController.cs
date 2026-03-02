@@ -94,9 +94,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View("~/Views/Appointment/CusMyAppointments.cshtml", vm);
         }
 
-        // =========================
-        // ✅ GET: /CusAppointment/Book
-        // =========================
+        //  GET: /CusAppointment/Book
         [HttpGet]
         public async Task<IActionResult> Book()
         {
@@ -135,9 +133,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View("~/Views/Appointment/CusBookAppointment.cshtml", vm);
         }
 
-        // =========================
-        // ✅ POST: /CusAppointment/Book
-        // =========================
+        //  POST: /CusAppointment/Book
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Book(CusCreateAppointmentVM vm)
@@ -165,9 +161,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
         }
 
-        // =========================
-        // ✅ NEW: /CusAppointment/DoctorShifts?doctorId=3&day=2026-03-01
-        // =========================
+        // get doctorshift
         [HttpGet]
         public async Task<IActionResult> DoctorShifts(int doctorId, string? day)
         {
@@ -202,10 +196,51 @@ namespace Group3_SWP391_PetMedical.Controllers
             }));
         }
 
-        // =========================================================
-        // ✅ DETAILS (popup)
-        // /CusAppointment/Details?id=34&popup=1
-        // =========================================================
+
+        //   Get full calendar of doctor (busy appointments) 
+        // GET: /CusAppointment/DoctorCalendar?doctorId=5&from=2026-03-01&to=2026-03-15
+        [HttpGet]
+        public async Task<IActionResult> DoctorCalendar(int doctorId, string? from, string? to)
+        {
+            DateTime fromDate;
+            DateTime toDate;
+
+            // parse yyyy-MM-dd
+            if (!DateTime.TryParseExact(from ?? "",
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out fromDate))
+            {
+                fromDate = DateTime.Today;
+            }
+
+            if (!DateTime.TryParseExact(to ?? "",
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out toDate))
+            {
+                toDate = DateTime.Today.AddDays(14);
+            }
+
+            fromDate = fromDate.Date;
+            toDate = toDate.Date.AddDays(1).AddTicks(-1);
+
+            // Lấy toàn bộ lịch hẹn của bác sĩ trong khoảng thời gian
+            var appointments = await _cusAppointmentService
+                .GetDoctorAppointmentsAsync(doctorId, fromDate, toDate);
+
+            // Trả về format chuẩn cho FullCalendar
+            return Json(appointments.Select(a => new
+            {
+                title = a.Title,
+                start = a.Start,
+                end = a.End,
+                status = a.Status
+            }));
+        }
+        //get details
         [HttpGet]
         public async Task<IActionResult> Details(int id, int? popup)
         {
@@ -219,7 +254,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View("~/Views/Appointment/CusAppointmentDetails.cshtml", vm);
         }
 
-        // ✅ EDIT Get
+        //  EDIT Get
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -228,8 +263,6 @@ namespace Group3_SWP391_PetMedical.Controllers
             var vm = await _cusAppointmentService.GetCusEditAppointmentAsync(customerId, id);
             if (vm == null) return NotFound();
 
-            // 🔴 CHẶN SAU 24H (dựa trên CreatedAt lấy từ DB trong vm)
-            // Lưu ý: nếu CreatedAt bị default (DB null) thì coi như không chặn
             if (vm.CreatedAt != default && DateTime.Now > vm.CreatedAt.AddHours(24))
             {
                 TempData["error"] = "Không thể thay đổi lịch hẹn sau 24h.";
@@ -246,37 +279,34 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             return View("~/Views/Appointment/CusEditAppointment.cshtml", vm);
         }
-
-        // =========================================================
-        // ✅ EDIT POST  (FIX: check 24h dùng DB, không dùng vm.CreatedAt từ form)
-        // =========================================================
+        //  EDIT POST  
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(CusEditAppointmentVM vm)
         {
             int customerId = GetCurrentUserId();
 
-            // ✅ đảm bảo list không null
+            //  đảm bảo list không null
             vm.ServiceIds ??= new List<int>();
 
-            // ✅ Lấy lại bản ghi hiện tại từ DB để:
+            //  Lấy lại bản ghi hiện tại từ DB để:
             // - lấy CreatedAt thật (form không submit CreatedAt)
             // - chống bypass 24h
             var current = await _cusAppointmentService.GetCusEditAppointmentAsync(customerId, vm.AppointmentId);
             if (current == null) return NotFound();
 
-            // ✅ gán lại CreatedAt/Status để view hiển thị đúng nếu trả về View do lỗi
+            //  gán lại CreatedAt/Status để view hiển thị đúng nếu trả về View do lỗi
             vm.CreatedAt = current.CreatedAt;
             vm.Status = current.Status;
 
-            // 🔴 CHẶN SAU 24H (DÙNG current.CreatedAt)
+            //  CHẶN SAU 24H (DÙNG current.CreatedAt)
             if (current.CreatedAt != default && DateTime.Now > current.CreatedAt.AddHours(24))
             {
                 TempData["error"] = "Không thể thay đổi lịch hẹn sau 24h.";
                 return RedirectToAction(nameof(MyAppointments));
             }
 
-            // ✅ Bắt buộc chọn ít nhất 1 dịch vụ
+            //  Bắt buộc chọn ít nhất 1 dịch vụ
             if (vm.ServiceIds.Count == 0)
             {
                 ModelState.AddModelError("ServiceIds", "Vui lòng chọn ít nhất 1 dịch vụ.");
@@ -319,10 +349,8 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
         }
 
-        // =========================================================
-        // ✅ CANCEL GET (popup)
+        // CANCEL GET (popup)
         // /CusAppointment/Cancel?id=34&popup=1
-        // =========================================================
         [HttpGet]
         public async Task<IActionResult> Cancel(int id, int? popup)
         {
@@ -345,9 +373,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View("~/Views/Appointment/CusCancelAppointment.cshtml", vm);
         }
 
-        // =========================================================
-        // ✅ CANCEL POST
-        // =========================================================
+        //  CANCEL POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Cancel(CusCancelAppointmentVM vm, int? popup)
@@ -370,7 +396,7 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             TempData["msg"] = "Đã hủy lịch hẹn thành công!";
 
-            // ✅ Sau khi hủy: luôn quay về lịch sử khám bệnh
+            //  Sau khi hủy: luôn quay về lịch sử khám bệnh
             if (popup == 1)
             {
                 // URL trang cha cần quay về
@@ -381,9 +407,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return RedirectToAction(nameof(AppointmentHistory));
         }
 
-        // =========================
-        // ✅ helper: reload options for Book view
-        // =========================
+        // helper: reload options for Book view
         private async Task ReloadBookOptions(int customerId, CusCreateAppointmentVM vm)
         {
             var pets = await _cusAppointmentService.GetCustomerPetsAsync(customerId);

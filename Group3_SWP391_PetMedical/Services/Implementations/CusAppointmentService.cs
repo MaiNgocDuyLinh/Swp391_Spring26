@@ -40,6 +40,8 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime from, DateTime to)
             => _repo.GetDoctorShiftsAsync(doctorId, from.Date, to.Date);
 
+        public Task<List<DoctorAppointmentEventVM>> GetDoctorAppointmentsAsync(int doctorId, DateTime from, DateTime to)
+    => _repo.GetDoctorAppointmentsAsync(doctorId, from, to);
         public Task<bool> IsDoctorWorkingAtAsync(int doctorId, DateTime appointmentDateTime)
             => _repo.IsDoctorWorkingAtAsync(doctorId, appointmentDateTime);
 
@@ -52,7 +54,7 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<bool> UpdateCusAppointmentAsync(int customerId, CusEditAppointmentVM vm)
             => _repo.UpdateCusAppointmentAsync(customerId, vm);
 
-        // ✅ NEW: Cancel popup data
+        //  Cancel popup data
         public Task<CusCancelAppointmentVM?> GetCusCancelAppointmentAsync(int customerId, int appointmentId)
             => _repo.GetCusCancelAppointmentAsync(customerId, appointmentId);
 
