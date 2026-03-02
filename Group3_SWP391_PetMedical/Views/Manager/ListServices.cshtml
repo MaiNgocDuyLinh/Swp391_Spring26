@@ -7,120 +7,125 @@
     string? search = ViewBag.Search;
 }
 
-<!-- Hero Area -->
-<div class="slider-area2 slider-height2 d-flex align-items-center">
-    <div class="container">
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="hero-cap text-center pt-50">
-                    <h2>Quản lý Dịch vụ</h2>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+@section Styles {
+    <style>
+        :root { --pc-red:#ff3b3b; --pc-red-dark:#e83434; --pc-text:#2b2b2b; --pc-muted:#7a7a7a; --pc-border:rgba(0,0,0,0.06); }
+        .pc-wrap { background:#f3d7d5; border:1px solid var(--pc-border); border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(0,0,0,0.06); }
+        .pc-title { font-weight:800; margin:0; } .pc-sub { color:var(--pc-muted); margin:0; }
+        .pc-filter { background:#fff; border:1px solid var(--pc-border); border-radius:16px; padding:18px; margin:18px 0; box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+        .pc-label { font-weight:700; font-size:0.9rem; margin-bottom:6px; }
+        .pc-input { border-radius:12px; border:1px solid rgba(0,0,0,0.10); height:42px; padding:0 12px; }
+        .pc-btn { border-radius:999px; padding:0 18px; height:42px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; text-decoration:none; }
+        .pc-btn--primary { background:var(--pc-red); color:#fff; box-shadow:0 10px 20px rgba(255,59,59,0.25); }
+        .pc-btn--primary:hover { background:var(--pc-red-dark); color:#fff; }
+        .pc-btn--ghost { background:#fff; border:1px solid rgba(0,0,0,0.10); color:var(--pc-text) !important; }
+        .pc-table { border-radius:16px; overflow:hidden; background:#fff; border:1px solid var(--pc-border); box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+        .pc-table thead th { background:#fff7f7; font-weight:800; }
+        .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight:800; font-size:0.85rem; border:1px solid rgba(0,0,0,0.06); background:#fff; }
+        .pc-badge i { color:var(--pc-red); }
+        .pc-money { font-weight:900; }
+        .pc-ico { width:36px; height:36px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(0,0,0,0.10); background:#fff; color:var(--pc-text); box-shadow:0 8px 18px rgba(0,0,0,0.04); text-decoration:none; cursor:pointer; }
+        .pc-ico:hover { border-color:rgba(255,59,59,0.35); box-shadow:0 10px 22px rgba(255,59,59,0.12); color:var(--pc-red-dark); }
+        .pc-action-icons { display:flex; justify-content:flex-end; gap:10px; }
+        tbody.pc-record { transition:background 0.25s ease; }
+        tbody.pc-record:hover tr { background:#fff3f3 !important; }
+        .pc-pager.pagination { gap:10px; margin:0; }
+        .pc-pager .page-item .page-link { border-radius:999px !important; width:44px; height:44px; display:inline-flex; align-items:center; justify-content:center; padding:0 !important; border:1px solid rgba(0,0,0,0.10); color:var(--pc-text); background:#fff; box-shadow:0 8px 18px rgba(0,0,0,0.04); }
+        .pc-pager .page-item .page-link:hover { border-color:rgba(255,59,59,0.35); color:var(--pc-red-dark); }
+        .pc-pager .page-item.active .page-link { background:var(--pc-red) !important; border-color:var(--pc-red) !important; color:#fff !important; box-shadow:0 12px 24px rgba(255,59,59,0.25); }
+        .pc-pager .page-item.disabled .page-link { opacity:0.45; pointer-events:none; box-shadow:none; }
+    </style>
+}
 
-<div class="our-services section-padding30">
-    <div class="container">
+<section class="container py-4" id="servicesArea">
+    <div class="pc-wrap" style="margin-top:150px;">
+
+        <h3 class="pc-title">Quản lý Dịch vụ</h3>
+        <p class="pc-sub">Xem và chỉnh sửa danh sách dịch vụ tại phòng khám</p>
 
         @if (TempData["SuccessMessage"] != null)
         {
-            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <div class="alert alert-success mt-3 mb-0" style="border-radius:14px;">
                 <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
-                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
             </div>
         }
 
-        <!-- Search Bar -->
-        <div class="pc-searchbar d-flex align-items-center flex-wrap gap-2 mb-4">
-            <form method="get" asp-action="ListServices" asp-controller="Manager"
-                  class="d-flex align-items-center flex-wrap gap-2" style="width:100%;">
-                <input type="text" class="form-control" name="search" value="@search"
-                       placeholder="Tên dịch vụ hoặc mô tả..." style="max-width:400px;" />
-                <button type="submit" class="pc-btn pc-btn--icon" title="Tìm kiếm">
-                    <i class="fas fa-search"></i>
-                </button>
-                @if (!string.IsNullOrEmpty(search))
-                {
-                    <a href="@Url.Action("ListServices", "Manager")" class="pc-btn pc-btn--reset">
-                        <i class="fas fa-times"></i> Xóa lọc
-                    </a>
-                }
+        <div class="pc-filter">
+            <form method="get" asp-controller="Manager" asp-action="ListServices" class="row g-3">
+                <div class="col-lg-6 col-md-8">
+                    <div class="pc-label">Từ khóa</div>
+                    <input class="form-control pc-input" name="search" value="@search"
+                           placeholder="Tên dịch vụ hoặc mô tả..." />
+                </div>
+                <div class="col-12 mt-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a class="pc-btn pc-btn--ghost" href="@Url.Action("ListServices", "Manager")#servicesArea">
+                            <i class="fas fa-undo-alt"></i> Làm mới
+                        </a>
+                        <button type="submit" class="pc-btn pc-btn--primary">
+                            <i class="fas fa-filter"></i> Lọc
+                        </button>
+                    </div>
+                </div>
             </form>
         </div>
 
-        <!-- Table Card -->
-        <div class="card shadow-sm" style="border-radius:16px; overflow:hidden; border:none;">
-            <div class="card-header" style="background:#7EB6FF; color:#fff; padding:18px 24px;">
-                <h5 class="mb-0" style="font-weight:700;">
-                    <i class="fas fa-list mr-2"></i>Danh sách Dịch vụ (Manager)
-                </h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0" style="font-size:0.95rem;">
-                        <thead style="background:#f7f9fc;">
+        @if (Model == null || !Model.Any())
+        {
+            <div class="alert alert-info mb-0" style="border-radius:14px;">Chưa có dịch vụ nào.</div>
+        }
+        else
+        {
+            <div class="pc-table table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width:60px;">#</th>
+                            <th>Tên dịch vụ</th>
+                            <th>Mô tả</th>
+                            <th class="text-end" style="width:140px;">Giá (VNĐ)</th>
+                            <th style="width:100px;">Thời gian</th>
+                            <th style="width:80px;">Tại nhà</th>
+                            <th style="width:100px;">Trạng thái</th>
+                            <th style="width:80px;" class="text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+                    @{int idx = (currentPage - 1) * 5 + 1;}
+                    @foreach (var s in Model)
+                    {
+                        <tbody class="pc-record">
                             <tr>
-                                <th style="padding:14px 18px;">#</th>
-                                <th style="padding:14px 18px;">Tên dịch vụ</th>
-                                <th style="padding:14px 18px;">Giá (VNĐ)</th>
-                                <th style="padding:14px 18px;">Thời gian</th>
-                                <th style="padding:14px 18px;">Tại nhà</th>
-                                <th style="padding:14px 18px;">Trạng thái</th>
-                                <th style="padding:14px 18px;">Thao tác</th>
+                                <td>@idx</td>
+                                <td><strong>@s.service_name</strong></td>
+                                <td><small class="text-muted">@(s.description ?? "-")</small></td>
+                                <td class="text-end pc-money">@s.base_price.ToString("N0")</td>
+                                <td>@(s.duration?.ToString() ?? "N/A") phút</td>
+                                <td>@(s.is_home_service == true ? "Có" : "Không")</td>
+                                <td>
+                                    <span class="pc-badge">
+                                        <i class="fas @(s.status == true ? "fa-check-circle" : "fa-times-circle")"></i>
+                                        @(s.status == true ? "Hoạt động" : "Ngừng")
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="pc-action-icons">
+                                        <a class="pc-ico" title="Chỉnh sửa"
+                                           href="@Url.Action("EditService", "Manager", new { id = s.service_id })">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @if (Model != null && Model.Any())
-                            {
-                                int index = (currentPage - 1) * 5 + 1;
-                                @foreach (var s in Model)
-                                {
-                                    <tr style="border-bottom:1px solid #f0f0f0;">
-                                        <td style="padding:14px 18px; color:#888;">@index</td>
-                                        <td style="padding:14px 18px;"><strong>@s.service_name</strong></td>
-                                        <td style="padding:14px 18px;">@s.base_price.ToString("N0")</td>
-                                        <td style="padding:14px 18px;">@(s.duration?.ToString() ?? "N/A") p</td>
-                                        <td style="padding:14px 18px;">
-                                            <span class="pc-status @(s.is_home_service == true ? "st-success" : "st-secondary")">
-                                                @(s.is_home_service == true ? "Có" : "Không")
-                                            </span>
-                                        </td>
-                                        <td style="padding:14px 18px;">
-                                            <span class="pc-status @(s.status == true ? "st-success" : "st-danger")">
-                                                @(s.status == true ? "Hoạt động" : "Ngừng")
-                                            </span>
-                                        </td>
-                                        <td style="padding:14px 18px;">
-                                            <a href="@Url.Action("EditService", "Manager", new { id = s.service_id })"
-                                               class="pc-action-btn">
-                                                <i class="fas fa-edit"></i> Sửa
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    index++;
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">
-                                        Không tìm thấy dịch vụ nào.
-                                    </td>
-                                </tr>
-                            }
                         </tbody>
-                    </table>
-                </div>
+                        idx++;
+                    }
+                </table>
             </div>
 
-            <!-- Pagination -->
-            <div class="card-footer" style="background:#fff; border-top:1px solid #f0f0f0; padding:16px;">
-                <ul class="pagination pc-pager justify-content-center mb-1">
-                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("ListServices", "Manager", new { search, page = currentPage - 1 })">
-                            <i class="fas fa-chevron-left"></i>
-                        </a>
+            <div class="mt-3 d-flex justify-content-center">
+                <ul class="pagination pc-pager">
+                    <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("ListServices", "Manager", new { search, page = currentPage - 1 })"><i class="fas fa-chevron-left"></i></a>
                     </li>
                     @for (int i = 1; i <= Math.Max(totalPages, 1); i++)
                     {
@@ -129,33 +134,13 @@
                         </li>
                     }
                     <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("ListServices", "Manager", new { search, page = currentPage + 1 })">
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
+                        <a class="page-link" href="@Url.Action("ListServices", "Manager", new { search, page = currentPage + 1 })"><i class="fas fa-chevron-right"></i></a>
                     </li>
                 </ul>
             </div>
-        </div>
+            <div class="text-center mt-2" style="color:var(--pc-muted); font-size:0.95rem;">
+                Tổng: <strong>@totalItems</strong> dịch vụ
+            </div>
+        }
     </div>
-</div>
-
-<style>
-    :root { --btn-bg: #7EB6FF; --btn-text: #fff; }
-    .pc-searchbar .form-control { height:52px; border-radius:999px !important; padding:0 18px; border:1px solid rgba(0,0,0,.10); }
-    .pc-btn { height:52px; padding:0 22px; background:var(--btn-bg) !important; color:var(--btn-text) !important; border:none !important; border-radius:8px !important; font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer; transition:opacity .15s; text-decoration:none; }
-    .pc-btn:hover { opacity:.88; color:var(--btn-text) !important; background:var(--btn-bg) !important; text-decoration:none; }
-    .pc-btn--icon { width:52px; padding:0 !important; justify-content:center; }
-    .pc-btn--reset { background:#f0f0f0 !important; color:#333 !important; }
-    .pc-btn--reset:hover { background:#f0f0f0 !important; color:#333 !important; }
-    .pc-status { display:inline-block; padding:4px 12px; border-radius:999px; font-size:0.8rem; font-weight:700; }
-    .st-success { background:#d1e7dd; color:#0a3622; }
-    .st-danger { background:#f8d7da; color:#842029; }
-    .st-secondary { background:#e2e3e5; color:#41464b; }
-    .pc-action-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 16px; background:var(--btn-bg); color:#fff; border-radius:8px; font-size:0.85rem; font-weight:700; text-decoration:none; transition:opacity .15s; }
-    .pc-action-btn:hover { opacity:.88; color:#fff; background:var(--btn-bg); text-decoration:none; }
-    .pc-pager .page-link { border-radius:999px !important; margin:0 4px; min-width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(0,0,0,.10) !important; color:#333 !important; font-weight:700; }
-    .pc-pager .page-item.active .page-link { background:var(--btn-bg) !important; border-color:var(--btn-bg) !important; color:#fff !important; }
-    .pc-pager .page-item.disabled .page-link { opacity:.45; }
-    .table td, .table th { vertical-align:middle; }
-    .gap-2 { gap:8px; }
-</style>
+</section>
