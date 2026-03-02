@@ -7,7 +7,19 @@
     int totalItems = ViewBag.TotalItems;
     string? search = ViewBag.Search;
 
-    string StatusViet(string? s) => s switch {
+    string NormalizeStatus(string? s) => (s ?? "").Trim().ToLower() switch {
+        "chờ xác nhận"  => "Pending",
+        "đã đặt cọc"    => "Deposited",
+        "đã xác nhận"   => "Confirmed",
+        "đã đến"        => "Arrived",
+        "hoàn thành"    => "Completed",
+        "đã hủy"        => "Cancelled",
+        "không đến"     => "NoShow",
+        "đã thanh toán" => "Completed",
+        _ => s ?? ""
+    };
+
+    string StatusViet(string? s) => NormalizeStatus(s) switch {
         "Pending"   => "Chờ xác nhận",
         "Deposited" => "Đã đặt cọc",
         "Confirmed" => "Đã xác nhận",

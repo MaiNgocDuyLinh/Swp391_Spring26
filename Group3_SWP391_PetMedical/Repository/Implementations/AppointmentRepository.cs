@@ -47,10 +47,18 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         {
             var query = BaseQuery();
 
-            // Lọc theo status
+            // Lọc theo status (hỗ trợ cả English và Vietnamese status)
             if (!string.IsNullOrWhiteSpace(statusFilter) && statusFilter != "All")
             {
-                query = query.Where(a => a.status == statusFilter);
+                // Map English status sang Vietnamese tương ứng để lọc cả 2
+                var vietMap = new Dictionary<string, string> {
+                    {"Pending", "Chờ xác nhận"}, {"Deposited", "Đã đặt cọc"},
+                    {"Confirmed", "Đã xác nhận"}, {"Arrived", "Đã đến"},
+                    {"Completed", "Hoàn thành"}, {"Cancelled", "Đã hủy"},
+                    {"NoShow", "Không đến"}
+                };
+                var vietStatus = vietMap.ContainsKey(statusFilter) ? vietMap[statusFilter] : statusFilter;
+                query = query.Where(a => a.status == statusFilter || a.status == vietStatus);
             }
 
             // Tìm kiếm
