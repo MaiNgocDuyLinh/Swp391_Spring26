@@ -4,7 +4,21 @@
     ViewData["Title"] = "Chi tiết Lịch hẹn";
     var doctors = ViewBag.Doctors as List<User> ?? new List<User>();
 
-    string StatusViet(string? s) => s switch {
+    string NormalizeStatus(string? s) => (s ?? "").Trim().ToLower() switch {
+        "chờ xác nhận"  => "Pending",
+        "đã đặt cọc"    => "Deposited",
+        "đã xác nhận"   => "Confirmed",
+        "đã đến"        => "Arrived",
+        "hoàn thành"    => "Completed",
+        "đã hủy"        => "Cancelled",
+        "không đến"     => "NoShow",
+        "đã thanh toán" => "Completed",
+        _ => s ?? ""
+    };
+
+    var normalizedStatus = NormalizeStatus(Model.status);
+
+    string StatusViet(string? s) => NormalizeStatus(s) switch {
         "Pending"   => "Chờ xác nhận",
         "Deposited" => "Đã đặt cọc",
         "Confirmed" => "Đã xác nhận",
@@ -125,7 +139,7 @@
 
             <!-- Col 2: Actions -->
             <div class="col-md-6">
-                @if (Model.status == "Pending" || Model.status == "Deposited")
+                @if (normalizedStatus == "Pending" || normalizedStatus == "Deposited")
                 {
                     <div class="pc-card">
                         <div class="pc-card-head"><i class="fas fa-gavel"></i>Duyệt / Hủy</div>
@@ -144,7 +158,7 @@
                     </div>
                 }
 
-                @if (Model.status != "Cancelled" && Model.status != "Completed")
+                @if (normalizedStatus != "Cancelled" && normalizedStatus != "Completed")
                 {
                     <div class="pc-card">
                         <div class="pc-card-head"><i class="fas fa-user-md"></i>Chỉ định Bác sĩ</div>
