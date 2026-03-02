@@ -137,5 +137,16 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 role = await _context.Roles.OrderBy(r => r.role_id).FirstOrDefaultAsync();
             return role;
         }
+
+        public async Task<bool> UpdateAvatarAsync(int userId, string avatarPath)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.user_id == userId);
+            if (user == null)
+                return false;
+
+            user.avatar = avatarPath;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

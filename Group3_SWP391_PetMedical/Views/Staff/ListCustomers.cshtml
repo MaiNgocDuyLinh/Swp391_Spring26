@@ -84,11 +84,8 @@
                                         <tr>
                                             <td>@index</td>
                                             <td>
-                                                @if (!string.IsNullOrEmpty(customer.avatar))
-                                                {
-                                                    <img src="@customer.avatar" alt="avatar" 
-                                                         style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;" />
-                                                }
+                                                <img src="@(string.IsNullOrEmpty(customer.avatar) ? AppPaths.DefaultAvatarPath : customer.avatar)" alt="avatar"
+                                                     style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;" />
                                                 <strong>@customer.full_name</strong>
                                             </td>
                                             <td>@customer.email</td>

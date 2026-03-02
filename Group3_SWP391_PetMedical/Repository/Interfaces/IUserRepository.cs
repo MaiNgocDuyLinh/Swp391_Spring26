@@ -37,6 +37,9 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         /// <summary>Thêm user mới và lưu. Trả về user đã có user_id.</summary>
         Task AddAsync(User user);
 
+        /// <summary>Cập nhật đường dẫn avatar cho user. Trả về true nếu thành công.</summary>
+        Task<bool> UpdateAvatarAsync(int userId, string avatarPath);
+
         /// <summary>Lấy role mặc định cho đăng ký: ưu tiên "User" hoặc "Customer", không có thì lấy role đầu tiên.</summary>
         Task<Role?> GetDefaultRoleAsync();
     }
