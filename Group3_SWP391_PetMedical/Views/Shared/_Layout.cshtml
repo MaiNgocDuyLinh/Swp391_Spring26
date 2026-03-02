@@ -82,7 +82,7 @@
                                         <ul id="navigation">
                                             <li><a href="@Url.Action("Index", "Home")">Home</a></li>
                                             <li><a href="@Url.Action("About", "Home")">About</a></li>
-                                            <li><a href="@Url.Action("Service", "Service")">Services</a></li>
+                                            <li><a href="@Url.Action("Service", "Service")">Dịch vụ </a></li>
 
                                             @* Menu Admin trên navbar (tuỳ bạn muốn giữ hay bỏ) *@
                                             @if (User.Identity?.IsAuthenticated == true &&
@@ -106,6 +106,7 @@
                                                         <li><a href="@Url.Action("ListServices", "Staff")">Danh sách dịch vụ</a></li>
                                                         <li><a href="@Url.Action("ListCustomers", "Staff")">Danh sách khách hàng</a></li>
                                                         <li><a href="@Url.Action("AppointmentList", "Staff")">Lịch khám theo ngày</a></li>
+                                                        <li><a href="@Url.Action("AllAppointments", "Staff")">Tất cả lịch hẹn</a></li>
                                                     </ul>
                                                 </li>
                                             }
@@ -117,6 +118,7 @@
                                                     <a href="#">Manager</a>
                                                     <ul class="submenu">
                                                         <li><a href="@Url.Action("ListServices", "Manager")">Quản lý dịch vụ</a></li>
+                                                        <li><a href="@Url.Action("AppointmentList", "Manager")">Quản lý lịch hẹn</a></li>
                                                     </ul>
                                                 </li>
                                             }
@@ -130,6 +132,16 @@
                                                 </ul>
                                             </li>
                                             <li><a href="contact.html">Contact</a></li>
+
+                                            @if (User.Identity?.IsAuthenticated == true &&
+                                            (User.IsInRole("Customer") ||
+                                            User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Customer")))
+                                            {
+                                                <li>
+                                                    <a href="@Url.Action("Book", "CusAppointment")">Đặt lịch ngay</a>
+                                                </li>
+                                            }
+                                           
                                         </ul>
                                     </nav>
                                 </div>
@@ -147,17 +159,24 @@
                                                 <a class="dropdown-item" href="@Url.Action("Profile", "User")" style="cursor: default; color: #666;">
                                                     <i class="fas fa-user"></i> @User.Identity.Name
                                                 </a>
-                                                @* <a class="dropdown-item" href="@Url.Action("MyPets", "Pet")" style="padding: 0.5rem 1rem;"> *@
-                                                @*     <i class="fas fa-paw"></i> Thú cưng của tôi *@
-                                                @* </a> *@
-
+                                        
                                                 @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Customer"))
                                                 {
                                                     <a class="dropdown-item" href="@Url.Action("MyPets", "Pet")" style="padding: 0.5rem 1rem;">
-                                                        <i class="fas fa-paw"></i> Thú cưng của tôi
+                                                        <i class="fas fa-paw me-2"></i> Thú cưng của tôi
+                                                    </a>
+
+                                                    <a class="dropdown-item" href="@Url.Action("MyAppointments", "CusAppointment")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-calendar-check me-2"></i> Lịch khám đã đặt
+                                                    </a>
+
+                                                    <a class="dropdown-item" href="@Url.Action("AppointmentHistory", "CusAppointment")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-history me-2"></i> Lịch sử khám
                                                     </a>
                                                 }
 
+
+                                                    
                                                 @if (User.IsInRole("Admin") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Admin"))
                                                 {
                                                     <div class="dropdown-divider"></div>
@@ -319,6 +338,7 @@
     <script src="~/assets/js/jquery.ajaxchimp.min.js"></script>
     <script src="~/assets/js/plugins.js"></script>
     <script src="~/assets/js/main.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
     @RenderSection("Scripts", required: false)
 </body>

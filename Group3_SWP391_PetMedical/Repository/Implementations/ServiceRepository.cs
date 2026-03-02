@@ -14,12 +14,17 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             _context = context;
         }
 
+
+        public Task<List<Service>> GetAllAsync()
+           => _context.Services.AsNoTracking()
+        .OrderBy(s => s.service_name)
+        .ToListAsync();
+
         // Xem danh sách dịch vụ (Staff + Manager dùng chung)
         public async Task<PagedResult<Service>> GetPagedAsync(string? search, int page, int pageSize)
         {
             var query = _context.Services.AsNoTracking().AsQueryable();
 
-            // Tìm kiếm theo tên hoặc mô tả
             if (!string.IsNullOrWhiteSpace(search))
             {
                 search = search.Trim().ToLower();
@@ -50,14 +55,18 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return await _context.Services.FirstOrDefaultAsync(s => s.service_id == id);
         }
 
-        // Cập nhật dịch vụ (Manager only)
-        public async Task<bool> UpdateAsync(int id, decimal basePrice, string? description)
+        // Cập nhật toàn bộ thông tin dịch vụ (Manager only)
+        public async Task<bool> UpdateAsync(int id, string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService, bool status)
         {
             var service = await _context.Services.FirstOrDefaultAsync(s => s.service_id == id);
             if (service == null) return false;
 
+            service.service_name = serviceName;
             service.base_price = basePrice;
             service.description = description;
+            service.duration = duration;
+            service.is_home_service = isHomeService;
+            service.status = status;
 
             await _context.SaveChangesAsync();
             return true;
