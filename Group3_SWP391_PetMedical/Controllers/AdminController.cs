@@ -1,6 +1,7 @@
 using Group3_SWP391_PetMedical.Attributes;
 using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.ViewModels.Account;
+using Group3_SWP391_PetMedical.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,10 @@ namespace Group3_SWP391_PetMedical.Controllers
     {
         private readonly PetClinicContext _context;
         private readonly ILogger<AdminController> _logger;
+
+        // Lưu tạm cấu hình phân quyền theo màn hình trong bộ nhớ ứng dụng.
+        // Nếu cần lưu DB thực sự có thể thay bằng bảng riêng trong database.
+        private static readonly Dictionary<int, List<ScreenPermissionItem>> _roleScreenPermissions = new();
 
         public AdminController(PetClinicContext context, ILogger<AdminController> logger)
         {
@@ -253,6 +258,134 @@ namespace Group3_SWP391_PetMedical.Controllers
                 CreatedAt = user.created_at
             };
             return View(vm);
+        }
+
+        /// <summary>
+        /// Màn hình Phân quyền theo màn hình (Screen-based permission) cho từng role.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> RolePermissions(int? roleId)
+        {
+            var roles = await _context.Roles.OrderBy(r => r.role_id).ToListAsync();
+            if (!roles.Any())
+            {
+                ViewBag.Error = "Chưa có bất kỳ vai trò nào.";
+                return View(new RolePermissionScreenViewModel());
+            }
+
+            var selectedRoleId = roleId ?? roles.First().role_id;
+            var selectedRole = roles.FirstOrDefault(r => r.role_id == selectedRoleId) ?? roles.First();
+
+            if (!_roleScreenPermissions.TryGetValue(selectedRole.role_id, out var screens))
+            {
+                screens = BuildDefaultScreensForRole(selectedRole.role_name);
+                _roleScreenPermissions[selectedRole.role_id] = screens;
+            }
+
+            var vm = new RolePermissionScreenViewModel
+            {
+                SelectedRoleId = selectedRole.role_id,
+                SelectedRoleName = selectedRole.role_name,
+                Roles = roles.Select(r => new RolePermissionRoleItem
+                {
+                    RoleId = r.role_id,
+                    RoleName = r.role_name
+                }).ToList(),
+                Screens = screens.Select(s => new ScreenPermissionItem
+                {
+                    ScreenKey = s.ScreenKey,
+                    ScreenName = s.ScreenName,
+                    CanView = s.CanView,
+                    CanCreate = s.CanCreate,
+                    CanUpdate = s.CanUpdate,
+                    CanBan = s.CanBan
+                }).ToList()
+            };
+
+            return View(vm);
+        }
+
+        /// <summary>
+        /// Lưu thay đổi phân quyền theo màn hình cho role được chọn.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RolePermissions(RolePermissionScreenViewModel model)
+        {
+            var roles = await _context.Roles.OrderBy(r => r.role_id).ToListAsync();
+            if (!roles.Any())
+            {
+                ViewBag.Error = "Chưa có bất kỳ vai trò nào.";
+                return View(model);
+            }
+
+            var selectedRole = roles.FirstOrDefault(r => r.role_id == model.SelectedRoleId) ?? roles.First();
+            model.SelectedRoleId = selectedRole.role_id;
+            model.SelectedRoleName = selectedRole.role_name;
+
+            model.Screens ??= new List<ScreenPermissionItem>();
+
+            var normalizedScreens = model.Screens
+                .Select(s => new ScreenPermissionItem
+                {
+                    ScreenKey = string.IsNullOrWhiteSpace(s.ScreenKey) ? Guid.NewGuid().ToString() : s.ScreenKey,
+                    ScreenName = string.IsNullOrWhiteSpace(s.ScreenName) ? "Screen" : s.ScreenName,
+                    CanView = s.CanView,
+                    CanCreate = s.CanCreate,
+                    CanUpdate = s.CanUpdate,
+                    CanBan = s.CanBan
+                })
+                .ToList();
+
+            if (normalizedScreens.Count == 0)
+            {
+                normalizedScreens = BuildDefaultScreensForRole(selectedRole.role_name);
+            }
+
+            _roleScreenPermissions[selectedRole.role_id] = normalizedScreens;
+
+            TempData["SuccessMessage"] = "Đã lưu phân quyền theo màn hình.";
+            return RedirectToAction(nameof(RolePermissions), new { roleId = selectedRole.role_id });
+        }
+
+        private static List<ScreenPermissionItem> BuildDefaultScreensForRole(string roleName)
+        {
+            var screens = new List<ScreenPermissionItem>
+            {
+                new() { ScreenKey = "patients", ScreenName = "Patient Management" },
+                new() { ScreenKey = "appointments", ScreenName = "Appointment Scheduling" },
+                new() { ScreenKey = "inventory", ScreenName = "Inventory & Billing" }
+            };
+
+            foreach (var s in screens)
+            {
+                if (roleName == "Admin")
+                {
+                    s.CanView = s.CanCreate = s.CanUpdate = true;
+                    s.CanBan = s.ScreenKey == "patients";
+                }
+                else if (roleName == "Staff")
+                {
+                    s.CanView = true;
+                    s.CanCreate = s.ScreenKey != "inventory";
+                    s.CanUpdate = s.ScreenKey != "inventory";
+                    s.CanBan = false;
+                }
+                else if (roleName == "Doctor")
+                {
+                    s.CanView = true;
+                    s.CanCreate = s.ScreenKey == "patients" || s.ScreenKey == "appointments";
+                    s.CanUpdate = s.CanCreate;
+                    s.CanBan = false;
+                }
+                else
+                {
+                    s.CanView = s.ScreenKey != "inventory";
+                    s.CanCreate = s.CanUpdate = s.CanBan = false;
+                }
+            }
+
+            return screens;
         }
 
         [HttpPost]

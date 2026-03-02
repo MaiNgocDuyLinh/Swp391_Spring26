@@ -12,7 +12,7 @@
 <!-- CSS -->
 <style>
     :root {
-        --btn-bg: #7EB6FF; 
+        --btn-bg: #7EB6FF;
         --btn-bg-hover: #ff3e6c;
         --btn-text: #ffffff;
     }
@@ -75,27 +75,27 @@
                 }
 
     /* ===== Search bar ===== */
-.pc-searchbar .form-control {
-    height: 52px;
-    border-radius: 999px !important;
-    padding: 0 18px;
-    min-width: 320px;
-    border: 1px solid rgba(0,0,0,0.10);
-}
+    .pc-searchbar .form-control {
+        height: 52px;
+        border-radius: 999px !important;
+        padding: 0 18px;
+        min-width: 320px;
+        border: 1px solid rgba(0,0,0,0.10);
+    }
 
-.pc-searchbar .pc-btn {
-    height: 52px;
-    border-radius: 999px !important;
-    padding: 0 22px;
-    background: var(--btn-bg) !important;
-    color: var(--btn-text) !important;
-    border: none !important;
-    font-weight: 800;
-}
+    .pc-searchbar .pc-btn {
+        height: 52px;
+        border-radius: 999px !important;
+        padding: 0 22px;
+        background: var(--btn-bg) !important;
+        color: var(--btn-text) !important;
+        border: none !important;
+        font-weight: 800;
+    }
 
-.pc-searchbar .pc-btn:hover {
-    background: var(--btn-bg-hover) !important;
-}
+        .pc-searchbar .pc-btn:hover {
+            background: var(--btn-bg-hover) !important;
+        }
 
     .pc-searchbar .pc-btn--reset {
         background: #f5f5f5 !important;
@@ -108,7 +108,7 @@
             background: #ececec !important;
             color: #222 !important;
         }
-/* nút làm mới*/
+    /* nút làm mới*/
     /* icon-only buttons: center perfectly */
     .pc-searchbar .pc-btn--icon {
         width: 70px;
@@ -124,48 +124,49 @@
             display: block;
             font-size: 18px;
             line-height: 1;
-            
         }
 
 
-/* ===== Pager ===== */
-.pc-pager .page-link {
-    border-radius: 999px !important;
-    margin: 0 6px;
-    min-width: 44px;
-    height: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(0,0,0,0.10) !important;
-    color: #222 !important;
-    font-weight: 800;
-}
+    /* ===== Pager ===== */
+    .pc-pager .page-link {
+        border-radius: 999px !important;
+        margin: 0 6px;
+        min-width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(0,0,0,0.10) !important;
+        color: #222 !important;
+        font-weight: 800;
+    }
 
-.pc-pager .page-item.active .page-link {
-    background: var(--btn-bg) !important;
-    border-color: var(--btn-bg) !important;
-    color: #fff !important;
-}
+    .pc-pager .page-item.active .page-link {
+        background: var(--btn-bg) !important;
+        border-color: var(--btn-bg) !important;
+        color: #fff !important;
+    }
 
-.pc-pager .page-item.disabled .page-link {
-    opacity: .45;
-}
-
+    .pc-pager .page-item.disabled .page-link {
+        opacity: .45;
+    }
 
 </style>
 
 
 <!-- Hero Area Start -->
-<div class="slider-area2 slider-height2 d-flex align-items-center">
+<div class="slider-area2 slider-height2 d-flex align-items-center" style="max-height: 200px; ">
     <div class="container">
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="hero-cap text-center pt-50">
-                    <h2>Dịch Vụ</h2>
+        <div class="row justify-content-sm-center">
+            <div class="cl-xl-7 col-lg-8 col-md-10">
+                <div class="section-tittle text-center mb-70">
+                    
+                        @* <span>Dịch vụ chuyên nghiệp của chúng tôi</span> *@
+                        <h2 style="padding-top : 80px;">Dịch vụ chăm sóc thú cưng tốt nhất</h2>             
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 <!-- Hero Area End -->
@@ -173,19 +174,8 @@
 
 <div id="servicesArea"></div>
 
-<div class="our-services section-padding30">
+<div style="margin-top : 3%;" class="our-services ">
     <div class="container">
-        <div class="row justify-content-sm-center">
-            <div class="cl-xl-7 col-lg-8 col-md-10">
-                <div class="section-tittle text-center mb-70">
-                    <span>Dịch vụ chuyên nghiệp của chúng tôi</span>
-                    <h2>Dịch vụ chăm sóc thú cưng tốt nhất</h2>
-                </div>
-            </div>
-        </div>
-
-
-
         @{
             var pagerObj = new PagedResult<object>
             {
@@ -277,5 +267,5 @@
             }
         });
     </script>
-    
+
 }

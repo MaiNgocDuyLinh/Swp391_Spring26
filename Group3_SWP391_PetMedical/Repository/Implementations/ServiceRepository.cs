@@ -14,6 +14,12 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             _context = context;
         }
 
+
+        public Task<List<Service>> GetAllAsync()
+           => _context.Services.AsNoTracking()
+        .OrderBy(s => s.service_name)
+        .ToListAsync();
+
         // Xem danh sách dịch vụ (Staff + Manager dùng chung)
         public async Task<PagedResult<Service>> GetPagedAsync(string? search, int page, int pageSize)
         {

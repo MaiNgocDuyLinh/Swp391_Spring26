@@ -1,0 +1,742 @@
+﻿@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusCreateAppointmentVM
+
+@{
+    ViewData["Title"] = "Đặt lịch ngay";
+}
+
+<style>
+    /* ===== PetCare booking page style (local only) ===== */
+    .pc-hero {
+        position: relative;
+        border-radius: 24px;
+        overflow: hidden;
+        background: linear-gradient(90deg, rgba(255, 216, 216, 0.75) 0%, rgba(255,255,255,0.92) 55%, rgba(255,255,255,0.95) 100%);
+        box-shadow: 0 12px 30px rgba(0,0,0,.06);
+        padding: 32px;
+    }
+
+        .pc-hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(rgba(0,0,0,.04) 1px, transparent 1px);
+            background-size: 18px 18px;
+            opacity: .35;
+            pointer-events: none;
+        }
+
+    .pc-hero-inner {
+        position: relative;
+        z-index: 1;
+    }
+
+    .pc-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.85);
+        border: 1px solid rgba(0,0,0,.06);
+        font-weight: 600;
+    }
+
+    .pc-title {
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        margin: 14px 0 8px;
+        color: #111;
+    }
+
+    .pc-sub {
+        color: rgba(0,0,0,.62);
+        max-width: 520px;
+        margin-bottom: 18px;
+        line-height: 1.6;
+    }
+
+    .pc-card {
+        border-radius: 22px;
+        border: 1px solid rgba(0,0,0,.06);
+        box-shadow: 0 12px 30px rgba(0,0,0,.07);
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .pc-card-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid rgba(0,0,0,.06);
+        background: rgba(255, 246, 246, .7);
+        font-weight: 800;
+    }
+
+    .pc-card-body {
+        padding: 20px;
+    }
+
+    .pc-field label {
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .pc-input, .pc-select, .pc-textarea {
+        border-radius: 14px !important;
+        border: 1px solid rgba(0,0,0,.10) !important;
+        padding: 12px 14px !important;
+        box-shadow: none !important;
+    }
+
+        .pc-input:focus, .pc-select:focus, .pc-textarea:focus {
+            border-color: rgba(255, 59, 59, .65) !important;
+            outline: none !important;
+        }
+
+    .pc-services-box {
+        border-radius: 18px;
+        border: 1px solid rgba(0,0,0,.08);
+        padding: 14px 14px;
+        max-height: 260px;
+        overflow: auto;
+        background: rgba(255, 246, 246, .35);
+    }
+
+    .pc-service-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 10px;
+        border-radius: 14px;
+        background: rgba(255,255,255,.85);
+        border: 1px solid rgba(0,0,0,.05);
+        margin-bottom: 10px;
+    }
+
+        .pc-service-item:last-child {
+            margin-bottom: 0;
+        }
+
+    .pc-service-item2 {
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(255,255,255,.90);
+        border: 1px solid rgba(0,0,0,.06);
+        margin-bottom: 10px;
+    }
+
+        .pc-service-item2:last-child {
+            margin-bottom: 0;
+        }
+
+        .pc-service-item2 .form-check-input {
+            margin-top: .25rem;
+        }
+
+    .pc-btn-primary {
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 18px;
+        font-weight: 800;
+        background: #ff2e2e;
+        color: #fff;
+        box-shadow: 0 10px 18px rgba(255,46,46,.20);
+    }
+
+        .pc-btn-primary:hover {
+            filter: brightness(.95);
+            color: #fff;
+        }
+
+    .pc-btn-ghost {
+        border-radius: 999px;
+        padding: 12px 16px;
+        font-weight: 800;
+        border: 1px solid rgba(0,0,0,.12);
+        background: #fff;
+        color: #111;
+    }
+
+    .pc-note {
+        font-size: 13px;
+        color: rgba(0,0,0,.55);
+        margin-top: 10px;
+    }
+
+    /* right visual block */
+    .pc-visual {
+        border-radius: 24px;
+        min-height: 320px;
+        background: radial-gradient(circle at 20% 30%, rgba(255, 46, 46, .12), transparent 55%), radial-gradient(circle at 70% 60%, rgba(0, 0, 0, .06), transparent 60%), linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.35));
+        border: 1px solid rgba(0,0,0,.06);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .pc-visual::after {
+            content: "";
+            position: absolute;
+            right: -80px;
+            bottom: -80px;
+            width: 220px;
+            height: 220px;
+            background: rgba(255,46,46,.12);
+            border-radius: 999px;
+            filter: blur(2px);
+        }
+
+    .pc-visual-inner {
+        position: relative;
+        z-index: 1;
+        padding: 18px;
+    }
+
+    .pc-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .pc-step {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        background: rgba(255,255,255,.86);
+        border: 1px solid rgba(0,0,0,.06);
+        border-radius: 18px;
+        padding: 12px 14px;
+    }
+
+    .pc-step-num {
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        background: rgba(255,46,46,.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        color: #ff2e2e;
+        flex: 0 0 auto;
+    }
+
+    .pc-select {
+        width: 100% !important;
+        height: 48px !important;
+        border-radius: 14px !important;
+        border: 1px solid rgba(0,0,0,.10) !important;
+        padding: 0 14px !important;
+        background-color: #fff !important;
+        line-height: 48px !important; /* text nằm giữa theo dọc */
+    }
+
+    /* Làm select + input giống hệt nhau */
+    .pc-equal-control {
+        width: 100% !important;
+        height: 50px !important;
+        border-radius: 18px !important;
+        border: 1px solid rgba(0,0,0,.12) !important;
+        padding: 0 16px !important;
+        font-size: 15px !important;
+        background-color: #fff !important;
+    }
+
+    /* reset select để giống input */
+    select.pc-equal-control {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+    }
+
+    /* focus giống nhau */
+    .pc-equal-control:focus {
+        outline: none !important;
+        border-color: #ff3b3b !important;
+        box-shadow: none !important;
+    }
+
+    /* label */
+    .pc-field .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+
+    /* ✅ NEW: list style for calendar-like view */
+    .pc-cal-list {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .pc-cal-item {
+        border: 1px solid rgba(0,0,0,.08);
+        border-radius: 14px;
+        background: rgba(255,255,255,.92);
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .pc-cal-date {
+        font-weight: 800;
+    }
+
+    .pc-cal-time {
+        font-weight: 700;
+        color: rgba(0,0,0,.65);
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container my-4">
+
+    <div class="pc-hero" style="margin-top : 150px;">
+        <div class="pc-hero-inner">
+            <div class="row g-4 align-items-stretch">
+                <div class="col-lg-7">
+
+                    <div class="pc-badge">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Đặt lịch khám nhanh • PetCare</span>
+                    </div>
+
+                    <div class="pc-title">Đặt lịch ngay</div>
+                    <div class="pc-sub">
+                        Chọn thú cưng, thời gian khám và dịch vụ mong muốn.
+                        Hệ thống sẽ tạo lịch với trạng thái <b>Chờ xác nhận</b>.
+                    </div>
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="pc-card">
+                        <div class="pc-card-header">
+                            Thông tin lịch hẹn
+                        </div>
+                        <div class="pc-card-body">
+                            <form method="post" asp-action="Book" asp-controller="CusAppointment">
+                                @Html.AntiForgeryToken()
+
+                                <div class="row g-3">
+
+                                    <div class="col-lg-6 pc-field">
+                                        <label class="form-label">Thú cưng</label>
+
+                                        <select class="form-control pc-equal-control"
+                                                asp-for="Form.PetId"
+                                                asp-items="Model.PetOptions">
+                                            <option value="">-- Chọn thú cưng --</option>
+                                        </select>
+
+                                        <span class="text-danger" asp-validation-for="Form.PetId"></span>
+                                    </div>
+
+                                    <div class="col-lg-6 pc-field">
+                                        <label class="form-label">Ngày giờ khám</label>
+
+                                        @{
+                                            var dtVal = Model.Form.AppointmentDate == default
+                                            ? ""
+                                            : Model.Form.AppointmentDate.ToString("yyyy-MM-ddTHH:mm");
+                                        }
+
+                                        <input class="form-control pc-equal-control"
+                                               name="Form.AppointmentDate"
+                                               type="datetime-local"
+                                               value="@dtVal" />
+
+                                        <span class="text-danger" asp-validation-for="Form.AppointmentDate"></span>
+                                    </div>
+
+                                    <div class="col-12 pc-field">
+                                        <label class="form-label">Dịch vụ</label>
+
+                                        <div class="pc-services-box">
+                                            @for (int i = 0; i < Model.ServiceOptions.Count; i++)
+                                            {
+                                                var s = Model.ServiceOptions[i];
+                                                var sid = int.Parse(s.Value);
+                                                var isChecked = Model.Form.ServiceIds != null && Model.Form.ServiceIds.Contains(sid);
+                                                var inputId = $"svc_{sid}";
+
+                                                <div class="pc-service-item2">
+                                                    <div class="form-check m-0">
+                                                        <input class="form-check-input"
+                                                               id="@inputId"
+                                                               type="checkbox"
+                                                               name="Form.ServiceIds"
+                                                               value="@sid"
+                                                               @(isChecked ? "checked" : "") />
+                                                        <label class="form-check-label" for="@inputId">@s.Text</label>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <span class="text-danger" asp-validation-for="Form.ServiceIds"></span>
+                                        <div class="pc-note">Gợi ý: bạn có thể chọn nhiều dịch vụ trong một lần khám.</div>
+                                    </div>
+
+                                    <!--  Doctor select + shifts (ADDED ONLY)  -->
+                                    <div class="col-12 pc-field">
+                                        <label class="form-label">Bác sĩ</label>
+
+                                        <select class="form-control pc-equal-control"
+                                                id="doctorSelect"
+                                                asp-for="Form.DoctorId"
+                                                asp-items="Model.DoctorOptions">
+                                        </select>
+
+                                        <span class="text-danger" asp-validation-for="Form.DoctorId"></span>
+
+                                        <div class="pc-note mt-2" id="doctorHint">
+                                            Không chọn bác sĩ sẽ hiển thị <b>Chưa phân công</b>.
+                                        </div>
+
+                                        <div id="doctorShiftsBox" style="display:none; margin-top:10px;">
+                                            <div style="font-weight:700; margin-bottom:8px;">Ca làm của bác sĩ (trong ngày)</div>
+
+                                            <div class="pc-services-box" style="max-height:160px;">
+                                                <ul id="doctorShiftsList" style="margin:0; padding-left:18px;"></ul>
+                                            </div>
+
+                                            <div class="text-danger mt-2" id="doctorShiftError" style="display:none;"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 pc-field">
+                                        <label>Ghi chú</label>
+                                        <textarea class="form-control pc-textarea" asp-for="Form.Notes" rows="3"
+                                                  placeholder="Mô tả tình trạng thú cưng, yêu cầu đặc biệt..."></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-wrap gap-2 mt-3" style="gap: 30px;">
+
+                                    <button type="submit" class="pc-btn-primary">
+                                        <i class="fas fa-calendar-plus me-1"></i> Đặt lịch
+                                    </button>
+
+                                    <a class="pc-btn-ghost" asp-action="MyAppointments" asp-controller="CusAppointment">
+                                        <i class="far fa-clock me-1"></i> Lịch đã đặt
+                                    </a>
+
+                                    <a class="pc-btn-ghost" asp-action="AppointmentHistory" asp-controller="CusAppointment">
+                                        <i class="fas fa-history me-1"></i> Lịch sử khám
+                                    </a>
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="pc-visual h-100">
+                        <div class="pc-visual-inner">
+                            <div class="pc-badge">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Quy trình đơn giản</span>
+                            </div>
+
+                            <div class="pc-steps">
+                                <div class="pc-step">
+                                    <div class="pc-step-num">1</div>
+                                    <div>
+                                        <div style="font-weight:800;">Chọn thú cưng</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Chỉ hiển thị thú cưng thuộc tài khoản.</div>
+                                    </div>
+                                </div>
+                                <div class="pc-step">
+                                    <div class="pc-step-num">2</div>
+                                    <div>
+                                        <div style="font-weight:800;">Chọn thời gian</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Đặt lịch trước để phòng khám sắp xếp.</div>
+                                    </div>
+                                </div>
+
+                                <!--  choose doctor -->
+                                <div class="pc-step">
+                                    <div class="pc-step-num">3</div>
+                                    <div>
+                                        <div style="font-weight:800;">Chọn bác sĩ</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Xem lịch làm để chọn giờ khám phù hợp.</div>
+                                    </div>
+                                </div>
+
+                                <div class="pc-step">
+                                    <div class="pc-step-num">4</div>
+                                    <div>
+                                        <div style="font-weight:800;">Chọn dịch vụ</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Có thể chọn nhiều dịch vụ một lần.</div>
+                                    </div>
+                                </div>
+                                <div class="pc-step">
+                                    <div class="pc-step-num">5</div>
+                                    <div>
+                                        <div style="font-weight:800;">Chờ xác nhận</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Trạng thái mặc định: <b>Chờ xác nhận</b>.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- =========================
+                                  ✅ UPDATED: show FULL doctor schedule (next N days)
+                                  always show
+                                 ========================= -->
+                            <div id="rightDoctorBox" class="mt-3">
+                                <div class="pc-badge" style="margin-bottom:10px;">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span>Lịch khám / ca làm của bác sĩ</span>
+                                </div>
+
+                                <div class="pc-step" style="flex-direction:column; gap:10px;">
+                                    <div style="font-weight:800;">Các ca sắp tới</div>
+
+                                    <div class="pc-services-box" style="max-height:260px; width:100%;">
+                                        <ul id="rightDoctorShiftsList" class="pc-cal-list"></ul>
+                                    </div>
+
+                                    <div class="pc-note" id="rightDoctorNote">
+                                        Chọn bác sĩ để xem lịch làm. Nếu không chọn sẽ hiển thị ca mặc định của phòng khám (7 ngày tới).
+                                    </div>
+
+                                    <div class="text-danger" id="rightDoctorError" style="display:none;"></div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            const doctorSelect = document.getElementById("doctorSelect");
+            const dateInput = document.querySelector('input[name="Form.AppointmentDate"]');
+
+            // left box (under doctor select) - still per-day
+            const shiftsBox = document.getElementById("doctorShiftsBox");
+            const shiftsList = document.getElementById("doctorShiftsList");
+            const shiftError = document.getElementById("doctorShiftError");
+
+            // right box (always visible) - full schedule (range)
+            const rightList = document.getElementById("rightDoctorShiftsList");
+            const rightErr = document.getElementById("rightDoctorError");
+
+            const form = document.querySelector("form");
+
+            // per-day shifts (for validation)
+            let dayShifts = [];
+
+            // clinic default shifts for any day
+            const defaultClinicShifts = [
+                { label: "Sáng", start: "08:00", end: "12:00" },
+                { label: "Chiều", start: "13:00", end: "17:00" },
+                { label: "Tối", start: "18:00", end: "21:00" }
+            ];
+
+            const RANGE_DAYS = 7;
+
+            function pad2(n) { return String(n).padStart(2, '0'); }
+
+            function formatDateVN(d) {
+                return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
+            }
+
+            function toISODate(d) {
+                return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+            }
+
+            function parseLocalDateTime(val) {
+                if (!val) return null;
+                const d = new Date(val);
+                return isNaN(d.getTime()) ? null : d;
+            }
+
+            function renderRightDefaultSchedule() {
+                rightList.innerHTML = "";
+
+                const base = parseLocalDateTime(dateInput?.value) || new Date();
+                const baseDay = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+
+                for (let i = 0; i < RANGE_DAYS; i++) {
+                    const d = new Date(baseDay);
+                    d.setDate(baseDay.getDate() + i);
+
+                    defaultClinicShifts.forEach(s => {
+                        const li = document.createElement("li");
+                        li.className = "pc-cal-item";
+                        li.innerHTML = `<span class="pc-cal-date">${formatDateVN(d)} • ${s.label}</span>
+                                        <span class="pc-cal-time">${s.start} - ${s.end}</span>`;
+                        rightList.appendChild(li);
+                    });
+                }
+            }
+
+            function renderLeftDayShifts() {
+                shiftsList.innerHTML = "";
+
+                function addLi(text) {
+                    const li = document.createElement("li");
+                    li.textContent = text;
+                    shiftsList.appendChild(li);
+                }
+
+                if (!dayShifts.length) {
+                    addLi("Không có ca làm trong ngày này.");
+                    return;
+                }
+
+                dayShifts.forEach(s => addLi(s.display));
+            }
+
+            function renderRightDoctorSchedule(allShifts) {
+                rightList.innerHTML = "";
+
+                if (!allShifts.length) {
+                    const li = document.createElement("li");
+                    li.className = "pc-cal-item";
+                    li.innerHTML = `<span class="pc-cal-date">Không có ca làm trong khoảng ngày này.</span>
+                                    <span class="pc-cal-time"></span>`;
+                    rightList.appendChild(li);
+                    return;
+                }
+
+                allShifts.forEach(s => {
+                    const li = document.createElement("li");
+                    li.className = "pc-cal-item";
+                    const d = s.start;
+                    li.innerHTML = `<span class="pc-cal-date">${formatDateVN(d)}</span>
+                                    <span class="pc-cal-time">${s.display}</span>`;
+                    rightList.appendChild(li);
+                });
+            }
+
+            async function fetchDoctorShifts(doctorId, dayStr) {
+                const url = `@Url.Action("DoctorShifts", "CusAppointment")?doctorId=${doctorId}&day=${encodeURIComponent(dayStr)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                return (data || []).map(x => ({
+                    start: new Date(x.start),
+                    end: new Date(x.end),
+                    display: x.display
+                }));
+            }
+
+            async function loadDayShiftsAndValidate() {
+                shiftError.style.display = "none";
+                shiftError.textContent = "";
+                rightErr.style.display = "none";
+                rightErr.textContent = "";
+
+                const docId = doctorSelect?.value;
+
+                // if no doctor => hide left, allow submit, show default right
+                if (!docId) {
+                    dayShifts = [];
+                    shiftsBox.style.display = "none";
+                    renderRightDefaultSchedule();
+                    return;
+                }
+
+                // day for validation = day of appointment input (or today)
+                const appt = parseLocalDateTime(dateInput?.value) || new Date();
+                const dayStr = toISODate(appt);
+
+                dayShifts = await fetchDoctorShifts(docId, dayStr);
+
+                // show left day shifts
+                shiftsBox.style.display = "block";
+                renderLeftDayShifts();
+
+                validateAgainstDayShifts();
+            }
+
+            async function loadRightFullSchedule() {
+                const docId = doctorSelect?.value;
+
+                // no doctor => show clinic default schedule for next RANGE_DAYS
+                if (!docId) {
+                    renderRightDefaultSchedule();
+                    return;
+                }
+
+                // build range start based on selected appointment day (or today)
+                const base = parseLocalDateTime(dateInput?.value) || new Date();
+                const baseDay = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+
+                const all = [];
+                for (let i = 0; i < RANGE_DAYS; i++) {
+                    const d = new Date(baseDay);
+                    d.setDate(baseDay.getDate() + i);
+                    const dayStr = toISODate(d);
+
+                    const oneDay = await fetchDoctorShifts(docId, dayStr);
+                    // attach day to display if needed: DoctorShiftVM already includes date
+                    all.push(...oneDay);
+                }
+
+                // sort by start
+                all.sort((a, b) => a.start - b.start);
+
+                renderRightDoctorSchedule(all);
+            }
+
+            function validateAgainstDayShifts() {
+                const docId = doctorSelect?.value;
+                if (!docId) return true;
+
+                const appt = parseLocalDateTime(dateInput?.value);
+                if (!appt) return true;
+
+                const ok = dayShifts.some(s => appt >= s.start && appt <= s.end);
+
+                if (!ok) {
+                    shiftError.style.display = "block";
+                    shiftError.textContent = "Giờ đặt không nằm trong ca làm của bác sĩ đã chọn.";
+
+                    rightErr.style.display = "block";
+                    rightErr.textContent = "Giờ đặt không nằm trong ca làm của bác sĩ đã chọn.";
+                } else {
+                    shiftError.style.display = "none";
+                    shiftError.textContent = "";
+
+                    rightErr.style.display = "none";
+                    rightErr.textContent = "";
+                }
+
+                return ok;
+            }
+
+            async function reloadAll() {
+                await loadRightFullSchedule();
+                await loadDayShiftsAndValidate();
+            }
+
+            doctorSelect?.addEventListener("change", reloadAll);
+            dateInput?.addEventListener("change", reloadAll);
+
+            form?.addEventListener("submit", function (e) {
+                if (!validateAgainstDayShifts()) e.preventDefault();
+            });
+
+            // init
+            reloadAll();
+        })();
+    </script>
+}
