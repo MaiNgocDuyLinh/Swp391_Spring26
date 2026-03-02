@@ -44,5 +44,18 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
 
         public Task<bool> IsDoctorWorkingAtAsync(int doctorId, DateTime appointmentDateTime)
             => _repo.IsDoctorWorkingAtAsync(doctorId, appointmentDateTime);
+
+        // Details / Edit / Cancel
+        public Task<CusAppointmentDetailVM?> GetCusAppointmentDetailAsync(int customerId, int appointmentId)
+            => _repo.GetCusAppointmentDetailAsync(customerId, appointmentId);
+
+        public Task<CusEditAppointmentVM?> GetCusEditAppointmentAsync(int customerId, int appointmentId)
+            => _repo.GetCusEditAppointmentAsync(customerId, appointmentId);
+
+        public Task<bool> UpdateCusAppointmentAsync(int customerId, CusEditAppointmentVM vm)
+            => _repo.UpdateCusAppointmentAsync(customerId, vm);
+
+        public Task<bool> CancelCusAppointmentAsync(int customerId, int appointmentId, string reason)
+            => _repo.CancelCusAppointmentAsync(customerId, appointmentId, reason);
     }
 }

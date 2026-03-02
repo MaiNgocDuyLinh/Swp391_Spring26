@@ -27,9 +27,7 @@
             --pc-border: rgba(0,0,0,0.06);
         }
 
-        /* wrapper */
         .pc-wrap {
-            /* background: linear-gradient(180deg, var(--pc-pink), #fff); */
             background: #f3d7d5;
             border: 1px solid var(--pc-border);
             border-radius: 18px;
@@ -47,7 +45,6 @@
             margin: 0;
         }
 
-        /* filter */
         .pc-filter {
             background: #fff;
             border: 1px solid var(--pc-border);
@@ -63,7 +60,6 @@
             margin-bottom: 6px;
         }
 
-        /* inputs */
         .pc-input, .pc-select {
             border-radius: 12px;
             border: 1px solid rgba(0,0,0,0.10);
@@ -71,7 +67,6 @@
             padding: 0 12px;
         }
 
-            /* FIX dropdown căn giữa */
             .pc-select.form-select {
                 line-height: 42px !important;
                 padding-top: 0 !important;
@@ -79,7 +74,6 @@
                 background-position: right 12px center;
             }
 
-        /* buttons */
         .pc-btn {
             border-radius: 999px;
             padding: 0 18px;
@@ -111,7 +105,6 @@
             white-space: nowrap;
         }
 
-        /* table */
         .pc-table {
             border-radius: 16px;
             overflow: hidden;
@@ -145,7 +138,6 @@
             font-weight: 900;
         }
 
-        /* ==== nút & khoảng cách ==== */
         .pc-actions {
             display: flex;
             align-items: center;
@@ -157,7 +149,6 @@
                 min-width: 110px;
             }
 
-        /* ==== Pager override ==== */
         .pc-pager.pagination {
             gap: 10px;
             margin: 0;
@@ -203,14 +194,12 @@
             }
         }
 
-        /* ===== Ghi chú gộp chung ===== */
         .pc-note-inline {
             margin-top: 6px;
             font-size: 0.9rem;
             color: var(--pc-muted);
         }
 
-        /* Hover toàn bộ record */
         tbody.pc-record {
             transition: background 0.25s ease;
         }
@@ -218,6 +207,142 @@
             tbody.pc-record:hover tr {
                 background: #fff3f3 !important;
             }
+
+        .pc-action-icons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .pc-ico {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0,0,0,0.10);
+            background: #fff;
+            color: var(--pc-text);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+            .pc-ico:hover {
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+                color: var(--pc-red-dark);
+            }
+
+        /* =========================================================
+                   ✅ MODAL to rộng + header click được
+                ========================================================== */
+        .pc-modal .modal-dialog {
+            max-width: 1050px;
+        }
+
+        @@media (min-width: 1400px) {
+            .pc-modal .modal-dialog {
+                max-width: 1150px;
+            }
+        }
+
+        .pc-modal .modal-content {
+            border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.06);
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+        }
+
+        .pc-modal .modal-header {
+            background: #fff;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            padding: 18px 22px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .pc-modal-title {
+            font-weight: 900;
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .pc-modal-sub {
+            color: var(--pc-muted);
+            font-weight: 600;
+            margin-top: 4px;
+            font-size: 0.95rem;
+        }
+
+        /* =========================================================
+                   ✅ NÚT X ĐỎ (override btn-close)
+                   - Không dùng icon mặc định của bootstrap
+                   - Vẽ dấu × đỏ bằng pseudo-element
+                ========================================================== */
+        .pc-modal .btn-close {
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,59,59,0.30);
+            background: #fff;
+            opacity: 1;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+            position: relative;
+            z-index: 6;
+            /* kill bootstrap default background svg */
+            background-image: none !important;
+        }
+
+            .pc-modal .btn-close::before {
+                content: "×";
+                position: absolute;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 28px;
+                font-weight: 900;
+                line-height: 1;
+                color: var(--pc-red);
+            }
+
+            .pc-modal .btn-close:hover {
+                border-color: rgba(255,59,59,0.70);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+                background: #fff7f7;
+            }
+
+                .pc-modal .btn-close:hover::before {
+                    color: var(--pc-red-dark);
+                }
+
+            .pc-modal .btn-close:focus {
+                outline: none;
+                box-shadow: 0 0 0 0.2rem rgba(255,59,59,0.18);
+            }
+
+        .pc-modal .modal-body {
+            padding: 0;
+            background: #fff;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pc-modal iframe {
+            width: 100%;
+            height: 72vh;
+            border: 0;
+            background: #fff;
+            display: block;
+        }
+
+        @@media (max-width: 992px) {
+            .pc-modal iframe {
+                height: 78vh;
+            }
+        }
     </style>
 }
 
@@ -227,7 +352,6 @@
         <h3 class="pc-title">Lịch khám đã đặt</h3>
         <p class="pc-sub">Tra cứu lịch sắp tới theo ngày và dịch vụ</p>
 
-        <!-- FILTER -->
         <div class="pc-filter">
             <form method="get" asp-controller="CusAppointment" asp-action="MyAppointments" class="row g-3">
                 <div class="col-lg-4 col-md-6">
@@ -278,7 +402,6 @@
             </form>
         </div>
 
-        <!-- LIST -->
         @if (!Model.Page.Data.Items.Any())
         {
             <div class="alert alert-info mb-0" style="border-radius:14px;">
@@ -297,6 +420,7 @@
                             <th>Dịch vụ</th>
                             <th style="width:140px;">Trạng thái</th>
                             <th style="width:140px;" class="text-end">Tổng tiền</th>
+                            <th style="width:140px;" class="text-end">Thao tác</th>
                         </tr>
                     </thead>
 
@@ -305,7 +429,7 @@
                         <tbody class="pc-record">
                             <tr>
                                 <td>
-                                    @item.AppointmentDate.ToString("HH:mm dd/MM/yyyy")
+                                    <strong>@item.AppointmentDate.ToString("HH:mm dd/MM/yyyy")</strong>
                                     @if (!string.IsNullOrWhiteSpace(item.Notes))
                                     {
                                         <div class="pc-note-inline">
@@ -328,6 +452,30 @@
                                 <td class="text-end pc-money">
                                     @((item.TotalAmount ?? 0).ToString("N0"))
                                 </td>
+
+                                <td class="text-end">
+                                    <div class="pc-action-icons">
+                                        <a class="pc-ico"
+                                           title="Chi tiết"
+                                           href="javascript:void(0)"
+                                           onclick="openDetail(@item.AppointmentId)">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+
+                                        <a class="pc-ico"
+                                           title="Chỉnh sửa"
+                                           href="@Url.Action("Edit", "CusAppointment", new { id = item.AppointmentId })">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+
+                                        <a class="pc-ico"
+                                           title="Hủy lịch"
+                                           href="javascript:void(0)"
+                                           onclick="openCancel(@item.AppointmentId)">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     }
@@ -348,3 +496,113 @@
                 }
     </div>
 </section>
+
+<div class="modal fade pc-modal" id="detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div class="pc-modal-title">Chi tiết lịch hẹn</div>
+                    <div class="pc-modal-sub">Thông tin đầy đủ về lịch hẹn bạn đã chọn</div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                        onclick="forceCloseModal('detailModal')"></button>
+            </div>
+
+            <div class="modal-body">
+                <iframe id="detailFrame" src="about:blank"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade pc-modal" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div class="pc-modal-title">Hủy lịch hẹn</div>
+                    <div class="pc-modal-sub">Vui lòng nêu rõ lý do để phòng khám hỗ trợ tốt hơn</div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                        onclick="forceCloseModal('cancelModal')"></button>
+            </div>
+
+            <div class="modal-body">
+                <iframe id="cancelFrame" src="about:blank"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openDetail(id) {
+            const url = '@Url.Action("Details", "CusAppointment")' + '?id=' + id + '&popup=1';
+            document.getElementById('detailFrame').src = url;
+
+            const modalEl = document.getElementById('detailModal');
+            if (window.bootstrap && bootstrap.Modal) {
+                const modal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+                modal.show();
+            } else {
+                modalEl.classList.add('show');
+                modalEl.style.display = 'block';
+                modalEl.removeAttribute('aria-hidden');
+                document.body.classList.add('modal-open');
+            }
+        }
+
+        function openCancel(id) {
+            const url = '@Url.Action("Cancel", "CusAppointment")' + '?id=' + id + '&popup=1';
+            document.getElementById('cancelFrame').src = url;
+
+            const modalEl = document.getElementById('cancelModal');
+            if (window.bootstrap && bootstrap.Modal) {
+                const modal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+                modal.show();
+            } else {
+                modalEl.classList.add('show');
+                modalEl.style.display = 'block';
+                modalEl.removeAttribute('aria-hidden');
+                document.body.classList.add('modal-open');
+            }
+        }
+
+        function forceCloseModal(id) {
+            const modalEl = document.getElementById(id);
+            if (!modalEl) return;
+
+            if (window.bootstrap && bootstrap.Modal) {
+                const inst = bootstrap.Modal.getInstance(modalEl);
+                if (inst) inst.hide();
+                else new bootstrap.Modal(modalEl).hide();
+            } else {
+                modalEl.classList.remove('show');
+                modalEl.style.display = 'none';
+                modalEl.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('modal-open');
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            }
+        }
+
+        document.addEventListener('hidden.bs.modal', function (e) {
+            if (!e || !e.target) return;
+
+            if (e.target.id === 'detailModal') {
+                document.getElementById('detailFrame').src = 'about:blank';
+            }
+            if (e.target.id === 'cancelModal') {
+                document.getElementById('cancelFrame').src = 'about:blank';
+            }
+        });
+    </script>
+}

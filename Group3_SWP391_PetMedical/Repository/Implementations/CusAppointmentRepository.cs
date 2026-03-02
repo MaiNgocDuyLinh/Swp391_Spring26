@@ -11,6 +11,10 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
     {
         private readonly PetClinicContext _context;
 
+        // ⚠️ ĐỔI TÊN FIELD này đúng với cột "ngày tạo" thật trong Appointments của bạn
+        // Ví dụ: "CreatedAt", "created_date", "createdAt", ...
+        private const string CREATED_AT_FIELD = "created_at";
+
         public CusAppointmentRepository(PetClinicContext context)
         {
             _context = context;
@@ -161,9 +165,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
         // ==========================================================
         // ✅ NEW: Get doctor shifts (2 overloads)
-        // - Fix status mismatch: "Đang làm" vs "Active"
-        // - Add shift "Cả ngày"
-        // - DO NOT assign Display (read-only)
         // ==========================================================
 
         public Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime day)
@@ -173,7 +174,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         {
             var targetDate = DateOnly.FromDateTime(from.Date);
 
-            // ✅ status linh hoạt để khớp dữ liệu bạn INSERT (Đang làm)
             var schedules = await _context.Schedules
                 .AsNoTracking()
                 .Where(s => s.doctor_id == doctorId
@@ -231,7 +231,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 {
                     Start = startDt,
                     End = endDt
-                    // ✅ Display là computed => không set
                 });
             }
 
@@ -244,8 +243,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         public async Task<bool> IsDoctorWorkingAtAsync(int doctorId, DateTime appointmentDateTime)
         {
             var shifts = await GetDoctorShiftsAsync(doctorId, appointmentDateTime.Date);
-
-            // ✅ dùng < End để tránh dính biên giữa 2 ca
             return shifts.Any(x => appointmentDateTime >= x.Start && appointmentDateTime < x.End);
         }
 
@@ -254,7 +251,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         // =========================
         public async Task<int> CreateAppointmentAsync(int customerId, CusCreateAppointmentCommand cmd)
         {
-            // Validate pet thuộc customer
             var petOk = await _context.Pets
                 .AsNoTracking()
                 .AnyAsync(p => p.pet_id == cmd.PetId && p.owner_id == customerId);
@@ -262,7 +258,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (!petOk)
                 throw new Exception("Thú cưng không hợp lệ (không thuộc tài khoản).");
 
-            // Validate dịch vụ tồn tại
             var serviceCount = await _context.Services
                 .AsNoTracking()
                 .CountAsync(s => cmd.ServiceIds.Contains(s.service_id));
@@ -270,11 +265,9 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (serviceCount != cmd.ServiceIds.Count)
                 throw new Exception("Danh sách dịch vụ không hợp lệ.");
 
-            // Validate ngày giờ
             if (cmd.AppointmentDate <= DateTime.Now)
                 throw new Exception("Ngày giờ khám phải lớn hơn hiện tại.");
 
-            // chống trùng lịch cùng pet + thời điểm
             var duplicated = await _context.Appointments
                 .AsNoTracking()
                 .AnyAsync(a => a.customer_id == customerId
@@ -284,7 +277,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (duplicated)
                 throw new Exception("Bạn đã có lịch cho thú cưng này tại thời điểm đó.");
 
-            // ✅ Nếu có chọn bác sĩ => kiểm tra ca làm
             if (cmd.DoctorId.HasValue)
             {
                 var doctorOk = await _context.Users.AsNoTracking()
@@ -321,6 +313,109 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             await _context.SaveChangesAsync();
 
             return appt.appointment_id;
+        }
+
+        // ==========================================================
+        // ✅ NEW: Appointment Details / Edit / Cancel (Customer)
+        // ==========================================================
+
+        public async Task<CusAppointmentDetailVM?> GetCusAppointmentDetailAsync(int customerId, int appointmentId)
+        {
+            var q = _context.Appointments
+                .AsNoTracking()
+                .Where(a => a.customer_id == customerId && a.appointment_id == appointmentId)
+                .Select(a => new CusAppointmentDetailVM
+                {
+                    AppointmentId = a.appointment_id,
+                    AppointmentDate = a.appointment_date,
+                    CreatedAt = EF.Property<DateTime>(a, CREATED_AT_FIELD),
+                    Status = a.status ?? "",
+                    Notes = a.notes,
+                    PetName = a.pet.name,
+                    DoctorName =
+                        (a.doctor_id != null && a.doctor != null && a.doctor.role_id == 3)
+                            ? a.doctor.full_name
+                            : "Chưa phân công",
+                    Services = a.AppointmentDetails
+                        .Select(d => d.service.service_name)
+                        .ToList(),
+                    TotalAmount = a.Invoice != null ? a.Invoice.total_amount : null
+                });
+
+            return await q.FirstOrDefaultAsync();
+        }
+
+        public async Task<CusEditAppointmentVM?> GetCusEditAppointmentAsync(int customerId, int appointmentId)
+        {
+            var q = _context.Appointments
+                .AsNoTracking()
+                .Where(a => a.customer_id == customerId && a.appointment_id == appointmentId)
+                .Select(a => new CusEditAppointmentVM
+                {
+                    AppointmentId = a.appointment_id,
+                    AppointmentDate = a.appointment_date,
+                    Notes = a.notes,
+                    Status = a.status ?? "",
+                    CreatedAt = EF.Property<DateTime>(a, CREATED_AT_FIELD),
+                    ServiceIds = a.AppointmentDetails.Select(d => d.service_id).ToList()
+                });
+
+            return await q.FirstOrDefaultAsync();
+        }
+
+        public async Task<bool> UpdateCusAppointmentAsync(int customerId, CusEditAppointmentVM vm)
+        {
+            var appt = await _context.Appointments
+                .Include(a => a.AppointmentDetails)
+                .FirstOrDefaultAsync(a => a.customer_id == customerId && a.appointment_id == vm.AppointmentId);
+
+            if (appt == null) return false;
+
+            // ✅ KHÔNG CHO SỬA STATUS
+
+            appt.appointment_date = vm.AppointmentDate;
+            appt.notes = vm.Notes;
+
+            // ✅ Update services: remove old + add new (đảm bảo xóa thật trong DB)
+            if (vm.ServiceIds != null && vm.ServiceIds.Count > 0)
+            {
+                var validCount = await _context.Services.AsNoTracking()
+                    .CountAsync(s => vm.ServiceIds.Contains(s.service_id));
+
+                if (validCount != vm.ServiceIds.Count)
+                    throw new Exception("Danh sách dịch vụ không hợp lệ.");
+
+                if (appt.AppointmentDetails != null && appt.AppointmentDetails.Count > 0)
+                    _context.AppointmentDetails.RemoveRange(appt.AppointmentDetails);
+
+                var newDetails = vm.ServiceIds.Distinct().Select(sid => new AppointmentDetail
+                {
+                    appointment_id = appt.appointment_id,
+                    service_id = sid
+                }).ToList();
+
+                await _context.AppointmentDetails.AddRangeAsync(newDetails);
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> CancelCusAppointmentAsync(int customerId, int appointmentId, string reason)
+        {
+            var appt = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.customer_id == customerId && a.appointment_id == appointmentId);
+
+            if (appt == null) return false;
+
+            appt.status = "đã hủy";
+
+            var old = appt.notes ?? "";
+            var line = $"[Lý do hủy]: {reason}";
+            appt.notes = string.IsNullOrWhiteSpace(old) ? line : (old + "\n" + line);
+
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

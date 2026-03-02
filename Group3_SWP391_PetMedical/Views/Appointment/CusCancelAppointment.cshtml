@@ -1,0 +1,152 @@
+﻿@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusCancelAppointmentVM
+
+@{
+    var isPopup = Context.Request.Query["popup"] == "1";
+    if (isPopup) { Layout = null; }
+
+    ViewData["Title"] = "Hủy lịch hẹn";
+}
+
+@if (isPopup)
+{
+    <style>
+        :root {
+            --pc-red: #ff3b3b;
+            --pc-red-dark: #e83434;
+            --pc-text: #2b2b2b;
+            --pc-muted: #7a7a7a;
+            --pc-border: rgba(0,0,0,0.06);
+        }
+
+        body {
+            margin: 0;
+            background: #fff;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        }
+
+        .pc-wrap {
+            padding: 18px;
+        }
+
+        .pc-card {
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+        .pc-title {
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .pc-sub {
+            color: var(--pc-muted);
+            margin: 6px 0 0 0;
+        }
+
+        .pc-box {
+            margin-top: 14px;
+            background: #fff7f7;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 14px;
+            padding: 12px;
+        }
+
+        .pc-label {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: var(--pc-muted);
+            margin-bottom: 6px;
+        }
+
+        .pc-desc {
+            font-weight: 700;
+            color: var(--pc-text);
+            white-space: pre-line;
+        }
+
+        .pc-input {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.10);
+            padding: 10px 12px;
+            min-height: 120px;
+            outline: none;
+        }
+
+        .pc-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 14px;
+        }
+
+        .pc-btn {
+            border-radius: 999px;
+            height: 42px;
+            padding: 0 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 900;
+            border: 1px solid rgba(0,0,0,0.10);
+            background: #fff;
+            color: var(--pc-text);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .pc-btn--danger {
+            background: var(--pc-red);
+            border-color: var(--pc-red);
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(255,59,59,0.20);
+        }
+
+            .pc-btn--danger:hover {
+                background: var(--pc-red-dark);
+                color: #fff;
+            }
+
+        .text-danger {
+            color: #dc3545;
+            font-weight: 700;
+        }
+    </style>
+}
+
+<div class="pc-wrap">
+    <div class="pc-card">
+        <h3 class="pc-title">Hủy lịch hẹn</h3>
+        <p class="pc-sub">Xác nhận hủy và nêu rõ lý do</p>
+
+        <div class="pc-box">
+            <div class="pc-label">Mô tả / ghi chú lịch hẹn</div>
+            <div class="pc-desc">@(!string.IsNullOrWhiteSpace(Model.Description) ? Model.Description : "—")</div>
+        </div>
+
+        <form method="post" asp-controller="CusAppointment" asp-action="Cancel">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="AppointmentId" />
+
+            <div class="pc-box">
+                <div class="pc-label">Lý do hủy</div>
+                <textarea class="pc-input" asp-for="Reason" placeholder="Ví dụ: bận đột xuất, đổi lịch, thú cưng không khỏe..."></textarea>
+                <div class="text-danger">@Html.ValidationMessageFor(m => m.Reason)</div>
+            </div>
+
+            <div class="pc-actions">
+                <a class="pc-btn" href="@Url.Action("Details", "CusAppointment", new { id = Model.AppointmentId, popup = 1 })">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+
+                <button type="submit" class="pc-btn pc-btn--danger">
+                    <i class="fas fa-times"></i> Xác nhận hủy
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

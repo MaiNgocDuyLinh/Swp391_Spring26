@@ -30,6 +30,17 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
 
         Task<bool> IsDoctorWorkingAtAsync(int doctorId, DateTime appointmentDateTime);
 
+        //details
+        Task<CusAppointmentDetailVM?> GetCusAppointmentDetailAsync(int customerId, int appointmentId);
 
+        // edit-get (lấy dữ liệu lên form chỉnh sửa)
+        Task<CusEditAppointmentVM?> GetCusEditAppointmentAsync(int customerId, int appointmentId);
+
+        //edit
+        Task<bool> UpdateCusAppointmentAsync(int customerId, CusEditAppointmentVM vm);
+        // không cho sửa status
+
+        // cancel
+        Task<bool> CancelCusAppointmentAsync(int customerId, int appointmentId, string reason);
     }
 }
