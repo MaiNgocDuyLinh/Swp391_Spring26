@@ -370,13 +370,15 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             TempData["msg"] = "Đã hủy lịch hẹn thành công!";
 
+            // ✅ Sau khi hủy: luôn quay về lịch sử khám bệnh
             if (popup == 1)
             {
-                ViewBag.GoBackUrl = Url.Action(nameof(MyAppointments), "CusAppointment");
+                // URL trang cha cần quay về
+                ViewBag.GoBackUrl = Url.Action(nameof(AppointmentHistory), "CusAppointment");
                 return View("~/Views/Appointment/_PopupRedirectParent.cshtml");
             }
 
-            return RedirectToAction(nameof(MyAppointments));
+            return RedirectToAction(nameof(AppointmentHistory));
         }
 
         // =========================
