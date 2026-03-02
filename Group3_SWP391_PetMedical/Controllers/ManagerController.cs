@@ -24,7 +24,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             ViewBag.TotalItems = result.TotalItems;
             ViewBag.Search = search;
             return View(result.Items.ToList());
-        }
+        }  
 
         public async Task<IActionResult> EditService(int id)
         {
