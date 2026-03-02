@@ -6,6 +6,7 @@ namespace Group3_SWP391_PetMedical.ViewModels.Appointment
     {
         public int AppointmentId { get; set; }
         public DateTime AppointmentDate { get; set; }
+        public DateTime CreatedAt { get; set; }
         public string PetName { get; set; } = "";
         public string DoctorName { get; set; } = "";
         public string Status { get; set; } = "";

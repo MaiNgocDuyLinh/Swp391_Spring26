@@ -114,6 +114,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 {
                     AppointmentId = a.appointment_id,
                     AppointmentDate = a.appointment_date,
+                    CreatedAt = EF.Property<DateTime>(a, "created_at"),
                     PetName = a.pet.name,
                     DoctorName =
                         (a.doctor_id != null && a.doctor != null && a.doctor.role_id == 3)
@@ -327,7 +328,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     AppointmentDate = a.appointment_date,
                     Notes = a.notes,
                     Status = a.status ?? "",
-                    CreatedAt = EF.Property<DateTime>(a, CREATED_AT_FIELD),
+                    //CreatedAt = EF.Property<DateTime>(a, CREATED_AT_FIELD),
+                    CreatedAt = a.created_at ?? a.appointment_date,
                     ServiceIds = a.AppointmentDetails.Select(d => d.service_id).ToList()
                 });
 
@@ -342,11 +344,47 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (appt == null) return false;
 
-            // ✅ KHÔNG CHO SỬA STATUS
+            // ==========================================================
+            // ✅ CHẶN EDIT: chỉ được sửa trong 24h kể từ lúc tạo lịch
+            // (Nếu trong 24h thì vẫn lưu edit bình thường)
+            // ==========================================================
+            DateTime createdAt;
+            try
+            {
+                // Ưu tiên đọc theo đúng "created_at" trong DB (có thể là nullable)
+                DateTime? createdAtNullable;
+                try
+                {
+                    createdAtNullable = _context.Entry(appt).Property<DateTime?>(CREATED_AT_FIELD).CurrentValue;
+                }
+                catch
+                {
+                    // Nếu DB không nullable mà code đọc nullable bị lỗi, fallback sang DateTime
+                    createdAtNullable = _context.Entry(appt).Property<DateTime>(CREATED_AT_FIELD).CurrentValue;
+                }
 
+                createdAt = createdAtNullable ?? appt.created_at ?? appt.appointment_date;
+            }
+            catch
+            {
+                throw new Exception($"Không đọc được cột ngày tạo '{CREATED_AT_FIELD}'. Hãy kiểm tra tên cột created_at trong bảng Appointments.");
+            }
+
+            if (DateTime.Now - createdAt > TimeSpan.FromHours(24))
+                throw new Exception("Chỉ được chỉnh sửa lịch hẹn trong vòng 24 giờ kể từ lúc đặt lịch.");
+
+            // ✅ thêm validate cơ bản: không cho chỉnh về quá khứ
+            if (vm.AppointmentDate <= DateTime.Now)
+                throw new Exception("Ngày giờ khám phải lớn hơn hiện tại.");
+
+            // ✅ KHÔNG CHO SỬA STATUS
+            // appt.status = ... (KHÔNG LÀM)
+
+            // ✅ Update các field cho phép
             appt.appointment_date = vm.AppointmentDate;
             appt.notes = vm.Notes;
 
+            // ✅ Update services: remove old + add new
             if (vm.ServiceIds != null && vm.ServiceIds.Count > 0)
             {
                 var validCount = await _context.Services.AsNoTracking()
@@ -355,9 +393,11 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 if (validCount != vm.ServiceIds.Count)
                     throw new Exception("Danh sách dịch vụ không hợp lệ.");
 
+                // ✅ xoá cũ trong DB
                 if (appt.AppointmentDetails != null && appt.AppointmentDetails.Count > 0)
                     _context.AppointmentDetails.RemoveRange(appt.AppointmentDetails);
 
+                // ✅ thêm mới
                 var newDetails = vm.ServiceIds.Distinct().Select(sid => new AppointmentDetail
                 {
                     appointment_id = appt.appointment_id,

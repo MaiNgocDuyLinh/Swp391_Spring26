@@ -283,10 +283,10 @@
                         Hệ thống sẽ tạo lịch với trạng thái <b>Chờ xác nhận</b>.
                     </div>
 
-                    @if (TempData["msg"] != null)
+                    @* @if (TempData["msg"] != null)
                     {
                         <div class="alert alert-success mb-3">@TempData["msg"]</div>
-                    }
+                    } *@
 
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -359,7 +359,7 @@
                                     </div>
 
                                     <!-- =========================
-                                         ✅ NEW: Doctor select + shifts (ADDED ONLY)
+                                          NEW: Doctor select + shifts (ADDED ONLY)
                                          ========================= -->
                                     <div class="col-12 pc-field">
                                         <label class="form-label">Bác sĩ</label>

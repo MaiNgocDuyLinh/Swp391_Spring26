@@ -143,7 +143,6 @@ namespace Group3_SWP391_PetMedical.Controllers
         public async Task<IActionResult> Book(CusCreateAppointmentVM vm)
         {
             int customerId = GetCurrentUserId();
-
             vm.Form.ServiceIds ??= new List<int>();
 
             if (!ModelState.IsValid)
@@ -203,98 +202,185 @@ namespace Group3_SWP391_PetMedical.Controllers
             }));
         }
 
-        // =========================
+        // =========================================================
         // ✅ DETAILS (popup)
-        // /CusAppointment/Details?id=44&popup=1
-        // =========================
+        // /CusAppointment/Details?id=34&popup=1
+        // =========================================================
         [HttpGet]
-        public async Task<IActionResult> Details(int id, int popup = 0)
+        public async Task<IActionResult> Details(int id, int? popup)
         {
             int customerId = GetCurrentUserId();
 
             var vm = await _cusAppointmentService.GetCusAppointmentDetailAsync(customerId, id);
             if (vm == null) return NotFound();
 
-            if (popup == 1) ViewBag.Popup = true;
+            if (popup == 1) ViewBag.IsPopup = true;
 
             return View("~/Views/Appointment/CusAppointmentDetails.cshtml", vm);
         }
 
-        // =========================
-        // ✅ CANCEL (GET popup)  <<< FIX CHÍNH Ở ĐÂY
-        // /CusAppointment/Cancel?id=44&popup=1
-        // =========================
+        // ✅ EDIT Get
         [HttpGet]
-        public async Task<IActionResult> Cancel(int id, int popup = 0)
+        public async Task<IActionResult> Edit(int id)
         {
             int customerId = GetCurrentUserId();
 
-            // ✅ LẤY ĐÚNG DATA (Ngày giờ / Thú cưng / Dịch vụ / Mô tả)
-            var vm = await _cusAppointmentService.GetCusCancelAppointmentAsync(customerId, id);
+            var vm = await _cusAppointmentService.GetCusEditAppointmentAsync(customerId, id);
+            if (vm == null) return NotFound();
 
-            if (vm == null)
-                return NotFound();
+            // 🔴 CHẶN SAU 24H (dựa trên CreatedAt lấy từ DB trong vm)
+            // Lưu ý: nếu CreatedAt bị default (DB null) thì coi như không chặn
+            if (vm.CreatedAt != default && DateTime.Now > vm.CreatedAt.AddHours(24))
+            {
+                TempData["error"] = "Không thể thay đổi lịch hẹn sau 24h.";
+                return RedirectToAction(nameof(MyAppointments));
+            }
 
-            if (popup == 1) ViewBag.Popup = true;
+            var services = await _serviceService.GetAllAsync();
+            ViewBag.ServiceOptions = services.Select(s => new SelectListItem
+            {
+                Value = s.service_id.ToString(),
+                Text = s.service_name,
+                Selected = vm.ServiceIds != null && vm.ServiceIds.Contains(s.service_id)
+            }).ToList();
+
+            return View("~/Views/Appointment/CusEditAppointment.cshtml", vm);
+        }
+
+        // =========================================================
+        // ✅ EDIT POST  (FIX: check 24h dùng DB, không dùng vm.CreatedAt từ form)
+        // =========================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(CusEditAppointmentVM vm)
+        {
+            int customerId = GetCurrentUserId();
+
+            // ✅ đảm bảo list không null
+            vm.ServiceIds ??= new List<int>();
+
+            // ✅ Lấy lại bản ghi hiện tại từ DB để:
+            // - lấy CreatedAt thật (form không submit CreatedAt)
+            // - chống bypass 24h
+            var current = await _cusAppointmentService.GetCusEditAppointmentAsync(customerId, vm.AppointmentId);
+            if (current == null) return NotFound();
+
+            // ✅ gán lại CreatedAt/Status để view hiển thị đúng nếu trả về View do lỗi
+            vm.CreatedAt = current.CreatedAt;
+            vm.Status = current.Status;
+
+            // 🔴 CHẶN SAU 24H (DÙNG current.CreatedAt)
+            if (current.CreatedAt != default && DateTime.Now > current.CreatedAt.AddHours(24))
+            {
+                TempData["error"] = "Không thể thay đổi lịch hẹn sau 24h.";
+                return RedirectToAction(nameof(MyAppointments));
+            }
+
+            // ✅ Bắt buộc chọn ít nhất 1 dịch vụ
+            if (vm.ServiceIds.Count == 0)
+            {
+                ModelState.AddModelError("ServiceIds", "Vui lòng chọn ít nhất 1 dịch vụ.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var services = await _serviceService.GetAllAsync();
+                ViewBag.ServiceOptions = services.Select(s => new SelectListItem
+                {
+                    Value = s.service_id.ToString(),
+                    Text = s.service_name,
+                    Selected = vm.ServiceIds.Contains(s.service_id)
+                }).ToList();
+
+                return View("~/Views/Appointment/CusEditAppointment.cshtml", vm);
+            }
+
+            try
+            {
+                var ok = await _cusAppointmentService.UpdateCusAppointmentAsync(customerId, vm);
+                if (!ok) return NotFound();
+
+                TempData["msg"] = "Cập nhật lịch hẹn thành công!";
+                return RedirectToAction(nameof(MyAppointments));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+
+                var services = await _serviceService.GetAllAsync();
+                ViewBag.ServiceOptions = services.Select(s => new SelectListItem
+                {
+                    Value = s.service_id.ToString(),
+                    Text = s.service_name,
+                    Selected = vm.ServiceIds.Contains(s.service_id)
+                }).ToList();
+
+                return View("~/Views/Appointment/CusEditAppointment.cshtml", vm);
+            }
+        }
+
+        // =========================================================
+        // ✅ CANCEL GET (popup)
+        // /CusAppointment/Cancel?id=34&popup=1
+        // =========================================================
+        [HttpGet]
+        public async Task<IActionResult> Cancel(int id, int? popup)
+        {
+            int customerId = GetCurrentUserId();
+
+            var detail = await _cusAppointmentService.GetCusAppointmentDetailAsync(customerId, id);
+            if (detail == null) return NotFound();
+
+            var vm = new CusCancelAppointmentVM
+            {
+                AppointmentId = detail.AppointmentId,
+                AppointmentDate = detail.AppointmentDate,
+                PetName = detail.PetName,
+                ServiceNames = (detail.Services != null ? string.Join(", ", detail.Services) : ""),
+                Reason = ""
+            };
+
+            if (popup == 1) ViewBag.IsPopup = true;
 
             return View("~/Views/Appointment/CusCancelAppointment.cshtml", vm);
         }
 
-        // POST: /CusAppointment/Cancel
+        // =========================================================
+        // ✅ CANCEL POST
+        // =========================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Cancel(CusCancelAppointmentVM vm, int popup = 0)
+        public async Task<IActionResult> Cancel(CusCancelAppointmentVM vm, int? popup)
         {
             int customerId = GetCurrentUserId();
 
             if (string.IsNullOrWhiteSpace(vm.Reason))
+            {
                 ModelState.AddModelError(nameof(vm.Reason), "Vui lòng nhập lý do hủy.");
+            }
 
             if (!ModelState.IsValid)
             {
-                // reload tóm tắt để không bị trống khi validate fail
-                var reload = await _cusAppointmentService.GetCusCancelAppointmentAsync(customerId, vm.AppointmentId);
-                if (reload != null)
-                {
-                    vm.AppointmentDate = reload.AppointmentDate;
-                    vm.PetName = reload.PetName;
-                    vm.ServiceNames = reload.ServiceNames;
-                    vm.Description = reload.Description;
-                }
-
-                if (popup == 1) ViewBag.Popup = true;
+                if (popup == 1) ViewBag.IsPopup = true;
                 return View("~/Views/Appointment/CusCancelAppointment.cshtml", vm);
             }
 
-            var ok = await _cusAppointmentService
-     .CancelCusAppointmentAsync(customerId, vm.AppointmentId, vm.Reason);
-
+            var ok = await _cusAppointmentService.CancelCusAppointmentAsync(customerId, vm.AppointmentId, vm.Reason);
             if (!ok) return NotFound();
 
-            // ✅ Nếu là popup → chuyển parent về MyAppointments (reload luôn)
+            TempData["msg"] = "Đã hủy lịch hẹn thành công!";
+
             if (popup == 1)
             {
-                var backUrl = Url.Action("MyAppointments", "CusAppointment");
-
-                return Content($@"
-                                    <!doctype html>
-                                    <html>
-                                    <head><meta charset='utf-8'></head>
-                                    <body>
-                                    <script>
-                                        window.parent.location.href = '{backUrl}';
-                                    </script>
-                                    </body>
-                                    </html>
-                                    ", "text/html");
+                ViewBag.GoBackUrl = Url.Action(nameof(MyAppointments), "CusAppointment");
+                return View("~/Views/Appointment/_PopupRedirectParent.cshtml");
             }
 
-            // không popup
             return RedirectToAction(nameof(MyAppointments));
         }
 
         // =========================
-        // helper: reload options for Book view
+        // ✅ helper: reload options for Book view
         // =========================
         private async Task ReloadBookOptions(int customerId, CusCreateAppointmentVM vm)
         {

@@ -462,8 +462,9 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
 
-                                        <a class="pc-ico"
+                                        <a class="pc-ico edit-check"
                                            title="Chỉnh sửa"
+                                           data-created="@item.CreatedAt.ToString("o")"
                                            href="@Url.Action("Edit", "CusAppointment", new { id = item.AppointmentId })">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -594,15 +595,35 @@
             }
         }
 
-        document.addEventListener('hidden.bs.modal', function (e) {
-            if (!e || !e.target) return;
 
-            if (e.target.id === 'detailModal') {
-                document.getElementById('detailFrame').src = 'about:blank';
-            }
-            if (e.target.id === 'cancelModal') {
-                document.getElementById('cancelFrame').src = 'about:blank';
-            }
-        });
+
+
+
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+             document.querySelectorAll(".edit-check").forEach(function (btn) {
+
+                 btn.addEventListener("click", function (e) {
+
+                     const created = new Date(this.getAttribute("data-created"));
+                     const now = new Date();
+
+                     const diffHours = (now - created) / (1000 * 60 * 60);
+
+                     if (diffHours > 24) {
+                         e.preventDefault();
+                         alert("Không thể chỉnh sửa lịch hẹn sau 24h.");
+                         return false;
+                     }
+                 });
+
+             });
+
+         });
     </script>
+
+
+   
 }
