@@ -5,6 +5,9 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
 {
     public interface IServiceRepository
     {
+        // Lấy tất cả dịch vụ
+        Task<List<Service>> GetAllAsync();
+
         // Xem danh sách dịch vụ (Staff + Manager dùng chung)
         Task<PagedResult<Service>> GetPagedAsync(string? search, int page, int pageSize);
         
