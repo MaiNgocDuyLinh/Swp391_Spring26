@@ -46,7 +46,7 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             var result = await _staffService.GetAppointmentsByDatePagedAsync(selectedDate, search, page, PageSize);
             ViewBag.CurrentPage = result.Page;
-            ViewBag.TotalPages = result.TotalPages;
+            ViewBag.TotalPages = result.TotalPages;   
             ViewBag.TotalItems = result.TotalItems;
             return View(result.Items.ToList());
         }
