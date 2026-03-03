@@ -106,10 +106,22 @@
                                                         <li><a href="@Url.Action("ListServices", "Staff")">Danh sách dịch vụ</a></li>
                                                         <li><a href="@Url.Action("ListCustomers", "Staff")">Danh sách khách hàng</a></li>
                                                         <li><a href="@Url.Action("AppointmentList", "Staff")">Lịch khám theo ngày</a></li>
+                                                        <li><a href="@Url.Action("AllAppointments", "Staff")">Tất cả lịch hẹn</a></li>
                                                     </ul>
                                                 </li>
                                             }
-
+                                            @* --- PHẦN MENU DOCTOR (MỚI THÊM) --- *@
+        @if (User.Identity?.IsAuthenticated == true &&
+             (User.IsInRole("Doctor") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Doctor")))
+        {
+            <li>
+                <a href="@Url.Action("Index", "Doctor")">Bác Sĩ</a>
+                <ul class="submenu">
+                    <li><a href="@Url.Action("Index", "Doctor")">Lịch Khám Hôm Nay</a></li>
+                    <li><a href="@Url.Action("MySchedule", "Doctor")">Lịch Trực Tuần</a></li>
+                </ul>
+            </li>
+        }
                                             @* Menu Manager trên navbar *@
                                             @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Manager"))
                                             {
@@ -117,6 +129,7 @@
                                                     <a href="#">Manager</a>
                                                     <ul class="submenu">
                                                         <li><a href="@Url.Action("ListServices", "Manager")">Quản lý dịch vụ</a></li>
+                                                        <li><a href="@Url.Action("AppointmentList", "Manager")">Quản lý lịch hẹn</a></li>
                                                     </ul>
                                                 </li>
                                             }

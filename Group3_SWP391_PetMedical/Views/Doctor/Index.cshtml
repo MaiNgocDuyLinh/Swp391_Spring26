@@ -1,0 +1,153 @@
+﻿@model IEnumerable<Group3_SWP391_PetMedical.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Quản Lý Lịch Khám";
+}
+
+<style>
+    .main-content-doctor {
+        padding-top: 150px;
+        padding-bottom: 80px;
+        background-color: #fffafa;
+        min-height: 100vh;
+    }
+
+    .doctor-card {
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(255, 77, 77, 0.05);
+        background: #fff;
+        border: 1px solid #ffebeb;
+    }
+
+    .status-badge {
+        padding: 6px 15px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .bg-arrived {
+        background-color: #fff0f0;
+        color: #ff4d4d;
+    }
+
+    .bg-progress {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .bg-completed {
+        background-color: #ebffef;
+        color: #28a745;
+    }
+
+    .bg-pending {
+        background-color: #f8f9fa;
+        color: #6c757d;
+    }
+
+    /* CSS ĐỒNG BỘ THEO KÍCH THƯỚC NÚT CẬP NHẬT */
+    .btn-pet-pink {
+        background-color: #ff4d4d;
+        color: white !important;
+        border-radius: 25px; /* Giữ bo tròn theo mẫu */
+        transition: 0.3s;
+        border: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        /* Sử dụng padding chuẩn của btn-sm Bootstrap để giữ kích thước nhỏ */
+        padding: 0.25rem 1rem !important;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        white-space: nowrap;
+    }
+
+        .btn-pet-pink:hover {
+            background-color: #e63939;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(255, 77, 77, 0.2);
+        }
+
+    .filter-section {
+        background: white;
+        padding: 15px 25px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        border: 1px solid #ffebeb;
+    }
+</style>
+
+<div class="main-content-doctor">
+    <div class="container">
+        <div class="filter-section d-flex justify-content-between align-items-center shadow-sm">
+            <div>
+                <h3 class="font-weight-bold mb-0" style="color: #4a4a4a;">
+                    <i class="fas fa-calendar-check mr-2" style="color: #ff4d4d;"></i>Lịch Khám
+                </h3>
+            </div>
+            <form method="get" class="form-inline">
+                <input type="date" name="date" class="form-control border-danger shadow-sm"
+                       value="@ViewBag.SelectedDate" onchange="this.form.submit()"
+                       style="border-radius: 10px; border-color: #ff4d4d !important;" />
+            </form>
+        </div>
+
+        <div class="card doctor-card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead style="background-color: #fffafa;">
+                            <tr class="text-muted">
+                                <th class="pl-4 py-4 border-0">GIỜ KHÁM</th>
+                                <th class="border-0">THÚ CƯNG</th>
+                                <th class="border-0">CHỦ NUÔI</th>
+                                <th class="border-0">TRẠNG THÁI</th>
+                                <th class="text-center pr-4 border-0">HÀNH ĐỘNG</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="pl-4 font-weight-bold">@item.appointment_date.ToString("HH:mm")</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle mr-3 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; background: #fff0f0;">
+                                                <i class="fas fa-paw" style="color: #ff4d4d; font-size: 0.8rem;"></i>
+                                            </div>
+                                            <span class="font-weight-bold">@item.pet?.name</span>
+                                        </div>
+                                    </td>
+                                    <td>@item.customer?.full_name</td>
+                                    <td>
+                                        @{
+                                            var statusClass = item.status == "Arrived" ? "bg-arrived" : item.status == "In-Progress" ? "bg-progress" : "bg-completed";
+                                            var statusText = item.status == "Arrived" ? "Đã đến" : item.status == "In-Progress" ? "Đang khám" : "Hoàn thành";
+                                        }
+                                        <span class="status-badge @statusClass">@statusText</span>
+                                    </td>
+                                    <td class="text-center pr-4">
+                                        @if (item.status == "Arrived" || item.status == "In-Progress")
+                                        {
+                                            <a asp-action="PerformExamination" asp-route-id="@item.appointment_id" class="btn btn-pet-pink shadow-sm">
+                                                @(item.status == "Arrived" ? "Tiếp nhận" : "Cập nhật")
+                                            </a>
+                                        }
+                                        else if (item.status == "Completed")
+                                        {
+                                            <a asp-action="ViewRecord" asp-route-id="@item.appointment_id" class="btn btn-pet-pink shadow-sm">
+                                                <i class="fas fa-eye mr-2"></i> Xem bệnh án
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

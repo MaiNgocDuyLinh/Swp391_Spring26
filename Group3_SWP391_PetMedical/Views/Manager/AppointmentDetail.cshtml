@@ -1,0 +1,215 @@
+@model Group3_SWP391_PetMedical.Models.Appointment
+@using Group3_SWP391_PetMedical.Models
+@{
+    ViewData["Title"] = "Chi tiết Lịch hẹn";
+    var doctors = ViewBag.Doctors as List<User> ?? new List<User>();
+
+    string NormalizeStatus(string? s) => (s ?? "").Trim().ToLower() switch {
+        "chờ xác nhận"  => "Pending",
+        "đã đặt cọc"    => "Deposited",
+        "đã xác nhận"   => "Confirmed",
+        "đã đến"        => "Arrived",
+        "hoàn thành"    => "Completed",
+        "đã hủy"        => "Cancelled",
+        "không đến"     => "NoShow",
+        "đã thanh toán" => "Completed",
+        _ => s ?? ""
+    };
+
+    var normalizedStatus = NormalizeStatus(Model.status);
+
+    string StatusViet(string? s) => NormalizeStatus(s) switch {
+        "Pending"   => "Chờ xác nhận",
+        "Deposited" => "Đã đặt cọc",
+        "Confirmed" => "Đã xác nhận",
+        "Arrived"   => "Đã đến",
+        "Completed" => "Hoàn thành",
+        "Cancelled" => "Đã hủy",
+        "NoShow"    => "Không đến",
+        _ => s ?? "-"
+    };
+}
+
+@section Styles {
+    <style>
+        :root { --pc-red:#ff3b3b; --pc-red-dark:#e83434; --pc-text:#2b2b2b; --pc-muted:#7a7a7a; --pc-border:rgba(0,0,0,0.06); }
+        .pc-wrap { background:#f3d7d5; border:1px solid var(--pc-border); border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(0,0,0,0.06); }
+        .pc-title { font-weight:800; margin:0; } .pc-sub { color:var(--pc-muted); margin:0; }
+
+        .pc-card { background:#fff; border:1px solid var(--pc-border); border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.04); margin-bottom:18px; }
+        .pc-card-head { padding:14px 18px; background:#fff7f7; border-bottom:1px solid var(--pc-border); border-radius:16px 16px 0 0; font-weight:800; font-size:0.95rem; color:var(--pc-text); }
+        .pc-card-head i { margin-right:8px; color:var(--pc-red); }
+        .pc-card-body { padding:18px; }
+
+        .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight:800; font-size:0.85rem; border:1px solid rgba(0,0,0,0.06); background:#fff; }
+        .pc-badge i { color:var(--pc-red); }
+        .pc-btn { border-radius:999px; padding:0 18px; height:42px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; text-decoration:none; cursor:pointer; }
+        .pc-btn--primary { background:var(--pc-red); color:#fff; box-shadow:0 10px 20px rgba(255,59,59,0.25); }
+        .pc-btn--primary:hover { background:var(--pc-red-dark); color:#fff; }
+        .pc-btn--ghost { background:#fff; border:1px solid rgba(0,0,0,0.10); color:var(--pc-text) !important; }
+        .pc-btn--success { background:#22c55e; color:#fff; }
+        .pc-btn--success:hover { background:#16a34a; color:#fff; }
+        .pc-btn--danger { background:var(--pc-red); color:#fff; }
+        .pc-label { font-weight:700; font-size:0.9rem; margin-bottom:6px; }
+        .pc-input { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; height:42px !important; padding:0 12px !important; }
+        .pc-select { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; height:42px !important; padding:0 12px !important; appearance:auto !important; -webkit-appearance:menulist !important; background:#fff !important; }
+        .pc-readonly { background:#f8f8f8; border-left:4px solid var(--pc-red); border-radius:0 12px 12px 0; padding:14px; }
+        .pc-readonly-row { display:flex; margin-bottom:6px; font-size:0.95rem; }
+        .pc-readonly-row:last-child { margin-bottom:0; }
+        .pc-readonly-label { width:120px; color:var(--pc-muted); font-weight:700; flex-shrink:0; }
+        .pc-readonly-val { font-weight:600; }
+        .pc-money { font-weight:900; }
+
+        .pc-modal .modal-content { border-radius:16px; overflow:hidden; border:1px solid var(--pc-border); box-shadow:0 20px 60px rgba(0,0,0,0.18); }
+        .pc-modal .modal-header { background:var(--pc-red); color:#fff; }
+        .pc-modal .modal-header .close { color:#fff; opacity:1; }
+
+        .nice-select { height:42px !important; line-height:40px !important; border-radius:12px !important; padding-left:14px !important; padding-right:36px !important; float:none !important; display:inline-flex !important; align-items:center !important; width:auto !important; min-width:200px; background:#fff !important; border:1px solid rgba(0,0,0,0.10) !important; }
+        .nice-select .current { font-weight:400; color:#495057; }
+        .nice-select::after { right:14px !important; }
+        .nice-select .list { width:100% !important; border-radius:12px !important; box-shadow:0 4px 12px rgba(0,0,0,0.1) !important; z-index:9999 !important; }
+    </style>
+}
+
+<section class="container py-4">
+    <div class="pc-wrap" style="margin-top:150px;">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="pc-title">Chi tiết Lịch hẹn #@Model.appointment_id</h3>
+                <p class="pc-sub">Xem và quản lý thông tin lịch hẹn</p>
+            </div>
+            <a class="pc-btn pc-btn--ghost" href="@Url.Action("AppointmentList", "Manager")">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success mb-3" style="border-radius:14px;">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <div class="row">
+            <!-- Col 1: Thông tin -->
+            <div class="col-md-6">
+                <div class="pc-card">
+                    <div class="pc-card-head"><i class="fas fa-info-circle"></i>Thông tin lịch hẹn</div>
+                    <div class="pc-card-body">
+                        <div class="pc-readonly">
+                            <div class="pc-readonly-row"><span class="pc-readonly-label">Trạng thái:</span><span class="pc-readonly-val"><span class="pc-badge"><i class="fas fa-calendar-check"></i> @StatusViet(Model.status)</span></span></div>
+                            <div class="pc-readonly-row"><span class="pc-readonly-label">Ngày giờ:</span><span class="pc-readonly-val">@Model.appointment_date.ToString("dd/MM/yyyy HH:mm")</span></div>
+                            <div class="pc-readonly-row"><span class="pc-readonly-label">Khách hàng:</span><span class="pc-readonly-val">@(Model.customer?.full_name ?? "N/A") <small class="text-muted">@(Model.customer?.phone ?? "")</small></span></div>
+                            <div class="pc-readonly-row"><span class="pc-readonly-label">Thú cưng:</span><span class="pc-readonly-val">@(Model.pet?.name ?? "N/A") <small class="text-muted">(@(Model.pet?.species ?? ""))</small></span></div>
+                            <div class="pc-readonly-row"><span class="pc-readonly-label">Bác sĩ:</span><span class="pc-readonly-val">@(Model.doctor?.full_name ?? "Chưa phân công")</span></div>
+                            <div class="pc-readonly-row"><span class="pc-readonly-label">Ghi chú:</span><span class="pc-readonly-val">@(Model.notes ?? "-")</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pc-card">
+                    <div class="pc-card-head"><i class="fas fa-list"></i>Dịch vụ đăng ký</div>
+                    <div class="pc-card-body p-0">
+                        @if (Model.AppointmentDetails != null && Model.AppointmentDetails.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead><tr><th style="padding:10px 16px; background:#fff7f7; font-weight:800;">Dịch vụ</th><th class="text-end" style="padding:10px 16px; background:#fff7f7; font-weight:800;">Giá</th></tr></thead>
+                                    <tbody>
+                                        @foreach (var d in Model.AppointmentDetails)
+                                        {
+                                            <tr><td style="padding:10px 16px;">@(d.service?.service_name ?? "N/A")</td>
+                                                <td class="text-end pc-money" style="padding:10px 16px;">@((d.actual_price ?? d.service?.base_price ?? 0).ToString("N0")) đ</td></tr>
+                                        }
+                                        <tr style="background:#fff7f7;">
+                                            <td style="padding:10px 16px; font-weight:800;">Tổng cộng</td>
+                                            <td class="text-end pc-money" style="padding:10px 16px; color:var(--pc-red);">
+                                                @(Model.AppointmentDetails.Sum(d => d.actual_price ?? d.service?.base_price ?? 0).ToString("N0")) đ
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else { <div class="p-3 text-muted">Chưa có dịch vụ nào.</div> }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Col 2: Actions -->
+            <div class="col-md-6">
+                @if (normalizedStatus == "Pending" || normalizedStatus == "Deposited")
+                {
+                    <div class="pc-card">
+                        <div class="pc-card-head"><i class="fas fa-gavel"></i>Duyệt / Hủy</div>
+                        <div class="pc-card-body d-flex gap-3 flex-wrap">
+                            <form asp-action="ApproveAppointment" asp-controller="Manager" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.appointment_id" />
+                                <button type="submit" class="pc-btn pc-btn--success" onclick="return confirm('Xác nhận duyệt?')">
+                                    <i class="fas fa-check"></i> Xác nhận
+                                </button>
+                            </form>
+                            <button class="pc-btn pc-btn--danger" data-toggle="modal" data-target="#rejectModal">
+                                <i class="fas fa-times"></i> Hủy lịch
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                @if (normalizedStatus != "Cancelled" && normalizedStatus != "Completed")
+                {
+                    <div class="pc-card">
+                        <div class="pc-card-head"><i class="fas fa-user-md"></i>Chỉ định Bác sĩ</div>
+                        <div class="pc-card-body" style="overflow:visible;">
+                            @if (doctors.Any())
+                            {
+                                <form asp-action="AssignDoctor" asp-controller="Manager" method="post" class="d-flex align-items-center gap-2 flex-wrap">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="appointmentId" value="@Model.appointment_id" />
+                                    <select name="doctorId" class="form-control pc-select" style="max-width:220px;" required>
+                                        <option value="">-- Chọn bác sĩ --</option>
+                                        @foreach (var doc in doctors)
+                                        { <option value="@doc.user_id" selected="@(Model.doctor_id == doc.user_id)">@doc.full_name</option> }
+                                    </select>
+                                    <button type="submit" class="pc-btn pc-btn--primary">
+                                        <i class="fas fa-user-check"></i> Chỉ định
+                                    </button>
+                                </form>
+                            }
+                            else { <p class="text-muted mb-0">Chưa có bác sĩ nào.</p> }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal Reject -->
+<div class="modal fade pc-modal" id="rejectModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-times-circle mr-2"></i>Hủy lịch hẹn</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <form asp-action="RejectAppointment" asp-controller="Manager" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.appointment_id" />
+                <div class="modal-body" style="padding:20px;">
+                    <div class="pc-label">Lý do hủy (tùy chọn):</div>
+                    <textarea class="form-control pc-input" name="reason" rows="3"
+                              placeholder="Nhập lý do hủy..." style="height:auto !important;"></textarea>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--pc-border);">
+                    <button type="button" class="pc-btn pc-btn--ghost" data-dismiss="modal">Đóng</button>
+                    <button type="submit" class="pc-btn pc-btn--danger">
+                        <i class="fas fa-times"></i> Xác nhận Hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

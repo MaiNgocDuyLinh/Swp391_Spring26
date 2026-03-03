@@ -8,26 +8,41 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
     public class ManagerService : IManagerService
     {
         private readonly IServiceRepository _serviceRepo;
+        private readonly IAppointmentRepository _appointmentRepo;
 
-        public ManagerService(IServiceRepository serviceRepo)
+        public ManagerService(IServiceRepository serviceRepo, IAppointmentRepository appointmentRepo)
         {
             _serviceRepo = serviceRepo;
+            _appointmentRepo = appointmentRepo;
         }
 
-        // ========== SERVICES ==========
+        // ========== Services ==========
         public Task<PagedResult<Service>> GetServicesPagedAsync(string? search, int page, int pageSize)
-        {
-            return _serviceRepo.GetPagedAsync(search, page, pageSize);
-        }
+            => _serviceRepo.GetPagedAsync(search, page, pageSize);
 
         public Task<Service?> GetServiceByIdAsync(int id)
-        {
-            return _serviceRepo.GetByIdAsync(id);
-        }
+            => _serviceRepo.GetByIdAsync(id);
 
-        public Task<bool> UpdateServiceAsync(int id, decimal basePrice, string? description)
-        {
-            return _serviceRepo.UpdateAsync(id, basePrice, description);
-        }
+        public Task<bool> UpdateServiceAsync(int id, string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService, bool status)
+            => _serviceRepo.UpdateAsync(id, serviceName, basePrice, description, duration, isHomeService, status);
+
+        // ========== Appointments ==========
+        public Task<PagedResult<Appointment>> GetAllAppointmentsPagedAsync(string? search, string? statusFilter, int page, int pageSize)
+            => _appointmentRepo.GetAllAppointmentsPagedAsync(search, statusFilter, page, pageSize);
+
+        public Task<Appointment?> GetAppointmentByIdAsync(int id)
+            => _appointmentRepo.GetByIdAsync(id);
+
+        public Task<bool> ApproveAppointmentAsync(int id)
+            => _appointmentRepo.ApproveAsync(id);
+
+        public Task<bool> RejectAppointmentAsync(int id, string? reason)
+            => _appointmentRepo.RejectAsync(id, reason);
+
+        public Task<bool> AssignDoctorAsync(int appointmentId, int doctorId)
+            => _appointmentRepo.AssignDoctorAsync(appointmentId, doctorId);
+
+        public Task<List<User>> GetDoctorsAsync()
+            => _appointmentRepo.GetDoctorsAsync();
     }
 }

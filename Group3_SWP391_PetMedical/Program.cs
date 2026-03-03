@@ -4,6 +4,7 @@ using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Group3_SWP391_PetMedical.Repository.Implementations;
 using Group3_SWP391_PetMedical.Services.Interfaces;
 using Group3_SWP391_PetMedical.Services.Implementations;
+using Group3_SWP391_PetMedical.Services;
 
 namespace Group3_SWP391_PetMedical
 {
@@ -12,7 +13,9 @@ namespace Group3_SWP391_PetMedical
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            
+
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<AuditService>();
             // Đăng ký DbContext với SQL Server
             builder.Services.AddDbContext<PetClinicContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
