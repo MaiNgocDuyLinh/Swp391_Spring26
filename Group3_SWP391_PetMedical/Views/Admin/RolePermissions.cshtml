@@ -1,0 +1,230 @@
+@using Group3_SWP391_PetMedical.ViewModels.Admin
+@model RolePermissionScreenViewModel
+@{
+    ViewData["Title"] = "Phân quyền theo màn hình";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" />
+    <style>
+        .role-list {
+            background: #fff;
+            border-radius: 20px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,.05);
+        }
+
+        .role-list .list-group-item {
+            border: none;
+            border-radius: 999px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .role-list .list-group-item.active {
+            background: #ff4b5c;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .role-permission-tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #64748b;
+        }
+
+        .permission-table th,
+        .permission-table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .permission-table th {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #94a3b8;
+        }
+
+        .permission-select-all {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            cursor: pointer;
+            color: #fff;
+            background: #ff4d4d;
+            border-radius: 30px;
+            padding: 6px 16px;
+        }
+
+            .permission-select-all:hover {
+                background: #e63b3b;
+                text-decoration: none;
+            }
+    </style>
+}
+
+<div class="admin-page">
+    <div class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle mr-2"></i>@TempData["SuccessMessage"]
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+        }
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle mr-2"></i>@ViewBag.Error
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+        }
+
+        <div class="admin-title-bar">
+            <h1><i class="fas fa-shield-alt"></i> Phân quyền theo màn hình</h1>
+            <a href="@Url.Action("Index", "Admin")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left mr-1"></i> Quay lại Quản lý tài khoản
+            </a>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-3 mb-4 mb-lg-0">
+                <div class="role-list">
+                    <h6 class="mb-2 text-muted">Vai trò</h6>
+                    <small class="text-muted d-block mb-3">Chọn 1 vai trò để cấu hình quyền.</small>
+                    <div class="list-group">
+                        @foreach (var role in Model.Roles)
+                        {
+                            var active = role.RoleId == Model.SelectedRoleId ? "active" : "";
+                            <a href="@Url.Action("RolePermissions", "Admin", new { roleId = role.RoleId })"
+                               class="list-group-item list-group-item-action @active">
+                                @role.RoleName
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div class="admin-filter mb-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <div>
+                            <div class="role-permission-tag text-uppercase">Phân quyền theo vai trò</div>
+                            <h4 class="mb-0">Role: @Model.SelectedRoleName</h4>
+                        </div>
+                        <span class="badge badge-pill badge-warning mt-2 mt-md-0">
+                            <i class="fas fa-clock mr-1"></i> Thay đổi chỉ lưu khi bấm "Save changes"
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mb-3 d-none">
+                    <div>
+                        <div class="role-permission-tag">Role Permissions</div>
+                        <h4 class="mb-0">Role: @Model.SelectedRoleName</h4>
+                    </div>
+                </div>
+
+                <form asp-action="RolePermissions" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="SelectedRoleId" />
+
+                    @for (var i = 0; i < Model.Screens.Count; i++)
+                    {
+                        var screen = Model.Screens[i];
+                        <div class="admin-card card role-permission-card mb-4" data-screen-key="@screen.ScreenKey">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@screen.ScreenName</strong>
+                                </div>
+                                <div class="permission-select-all text-right text-uppercase">
+                                    Select all
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table mb-0 permission-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-left pl-4">Quyền</th>
+                                            <th>View</th>
+                                            <th>Create</th>
+                                            <th>Update</th>
+                                            <th>Ban</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-left pl-4">Mức truy cập</td>
+                                            <td>
+                                                <input type="checkbox"
+                                                       name="Screens[@i].CanView"
+                                                       value="true"
+                                                       @(screen.CanView ? "checked=\"checked\"" : "") />
+                                                <input type="hidden" name="Screens[@i].CanView" value="false" />
+                                            </td>
+                                            <td>
+                                                <input type="checkbox"
+                                                       name="Screens[@i].CanCreate"
+                                                       value="true"
+                                                       @(screen.CanCreate ? "checked=\"checked\"" : "") />
+                                                <input type="hidden" name="Screens[@i].CanCreate" value="false" />
+                                            </td>
+                                            <td>
+                                                <input type="checkbox"
+                                                       name="Screens[@i].CanUpdate"
+                                                       value="true"
+                                                       @(screen.CanUpdate ? "checked=\"checked\"" : "") />
+                                                <input type="hidden" name="Screens[@i].CanUpdate" value="false" />
+                                            </td>
+                                            <td>
+                                                <input type="checkbox"
+                                                       name="Screens[@i].CanBan"
+                                                       value="true"
+                                                       @(screen.CanBan ? "checked=\"checked\"" : "") />
+                                                <input type="hidden" name="Screens[@i].CanBan" value="false" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <input type="hidden" asp-for="Screens[@i].ScreenKey" />
+                            <input type="hidden" asp-for="Screens[@i].ScreenName" />
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <button type="button" class="btn btn-light" id="btnResetLocal">
+                            <i class="fas fa-undo mr-1"></i> Reset trên giao diện
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save mr-1"></i> Save changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('.role-permission-card .permission-select-all').on('click', function () {
+                var card = $(this).closest('.role-permission-card');
+                var checkboxes = card.find('input[type="checkbox"]');
+                var allChecked = checkboxes.length && checkboxes.filter(':checked').length === checkboxes.length;
+                checkboxes.prop('checked', !allChecked);
+            });
+
+            $('#btnResetLocal').on('click', function () {
+                // reload lại trang để reset về trạng thái đã lưu lần cuối
+                location.reload();
+            });
+        });
+    </script>
+}
+

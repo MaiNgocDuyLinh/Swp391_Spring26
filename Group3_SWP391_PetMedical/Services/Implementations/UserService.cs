@@ -8,10 +8,81 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepo;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(IUserRepository userRepo)
+        public UserService(IUserRepository userRepo, ILogger<UserService> logger)
         {
             _userRepo = userRepo;
+            _logger = logger;
+        }
+
+        public async Task<(bool success, User? user, string? errorMessage)> AuthenticateAsync(string username, string password)
+        {
+            var loginName = username?.Trim();
+            if (string.IsNullOrEmpty(loginName) || string.IsNullOrEmpty(password))
+                return (false, null, "Vui lòng nhập đầy đủ thông tin!");
+
+            var user = await _userRepo.GetByUsernameWithRoleAsync(loginName);
+            if (user == null)
+                return (false, null, "Sai tài khoản hoặc mật khẩu!");
+
+            if (user.password != password)
+                return (false, null, "Sai tài khoản hoặc mật khẩu!");
+
+            if (user.status != "Active" && user.status != "Unactive")
+                return (false, null, "Tài khoản của bạn đã bị khóa hoặc không hoạt động.");
+
+            return (true, user, null);
+        }
+
+        public async Task<(bool success, string? errorMessage)> RegisterAsync(RegisterViewModel model)
+        {
+            var username = model.Username?.Trim();
+            var email = model.Email?.Trim();
+
+            if (string.IsNullOrEmpty(username))
+                return (false, "Vui lòng nhập tên đăng nhập.");
+
+            if (string.IsNullOrWhiteSpace(email))
+                return (false, "Vui lòng nhập email.");
+
+            if (await _userRepo.ExistsUsernameAsync(username))
+                return (false, "Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác.");
+
+            if (await _userRepo.ExistsEmailAsync(email!))
+                return (false, "Email này đã được sử dụng. Vui lòng chọn email khác.");
+
+            if (model.Password != model.RePassword)
+                return (false, "Mật khẩu xác nhận không khớp.");
+
+            if (!model.AgreeTerm)
+                return (false, "Vui lòng đồng ý với điều khoản dịch vụ.");
+
+            var defaultRole = await _userRepo.GetDefaultRoleAsync();
+            if (defaultRole == null)
+                return (false, "Hệ thống chưa được cấu hình đúng. Vui lòng liên hệ quản trị viên.");
+
+            var newUser = new User
+            {
+                username = username,
+                email = email,
+                password = model.Password,
+                full_name = model.Name.Trim(),
+                role_id = defaultRole.role_id,
+                status = "Unactive",
+                created_at = DateTime.Now
+            };
+
+            try
+            {
+                await _userRepo.AddAsync(newUser);
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error registering user");
+                return (false, "Có lỗi xảy ra khi đăng ký. Vui lòng thử lại sau.");
+            }
         }
 
         public async Task<User?> GetProfileAsync(int userId)
@@ -32,6 +103,15 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                 return (false, "Số điện thoại này đã được sử dụng bởi tài khoản khác.");
 
             var ok = await _userRepo.UpdateProfileAsync(userId, fullName, email, phone);
+            return ok ? (true, null) : (false, "Không tìm thấy tài khoản.");
+        }
+
+        public async Task<(bool success, string? errorMessage)> UpdateAvatarAsync(int userId, string avatarPath)
+        {
+            if (string.IsNullOrWhiteSpace(avatarPath))
+                return (false, "Đường dẫn ảnh không hợp lệ.");
+
+            var ok = await _userRepo.UpdateAvatarAsync(userId, avatarPath);
             return ok ? (true, null) : (false, "Không tìm thấy tài khoản.");
         }
 

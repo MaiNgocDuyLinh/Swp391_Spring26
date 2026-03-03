@@ -21,22 +21,44 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             _appointmentRepo = appointmentRepo;
         }
 
-        // ========== SERVICES (view only) ==========
+        // ========== Services (view only) ==========
         public Task<PagedResult<Service>> GetServicesPagedAsync(string? search, int page, int pageSize)
-        {
-            return _serviceRepo.GetPagedAsync(search, page, pageSize);
-        }
+            => _serviceRepo.GetPagedAsync(search, page, pageSize);
 
-        // ========== CUSTOMERS ==========
+        // ========== Customers ==========
         public Task<PagedResult<User>> GetCustomersPagedAsync(string? search, int page, int pageSize)
-        {
-            return _userRepo.GetCustomersPagedAsync(search, page, pageSize);
-        }
+            => _userRepo.GetCustomersPagedAsync(search, page, pageSize);
 
-        // ========== APPOINTMENTS ==========
+        // ========== Appointments ==========
         public Task<PagedResult<Appointment>> GetAppointmentsByDatePagedAsync(DateTime date, string? search, int page, int pageSize)
-        {
-            return _appointmentRepo.GetAppointmentsByDatePagedAsync(date, search, page, pageSize);
-        }
+            => _appointmentRepo.GetAppointmentsByDatePagedAsync(date, search, page, pageSize);
+
+        public Task<PagedResult<Appointment>> GetAllAppointmentsPagedAsync(string? search, string? statusFilter, int page, int pageSize)
+            => _appointmentRepo.GetAllAppointmentsPagedAsync(search, statusFilter, page, pageSize);
+
+        public Task<Appointment?> GetAppointmentByIdAsync(int id)
+            => _appointmentRepo.GetByIdAsync(id);
+
+        public Task<bool> ApproveAppointmentAsync(int id)
+            => _appointmentRepo.ApproveAsync(id);
+
+        public Task<bool> RejectAppointmentAsync(int id, string? reason)
+            => _appointmentRepo.RejectAsync(id, reason);
+
+        public Task<bool> AssignDoctorAsync(int appointmentId, int doctorId)
+            => _appointmentRepo.AssignDoctorAsync(appointmentId, doctorId);
+
+        public Task<List<User>> GetDoctorsAsync()
+            => _appointmentRepo.GetDoctorsAsync();
+
+        public Task<bool> UpdateAppointmentStatusAsync(int id, string newStatus)
+            => _appointmentRepo.UpdateStatusAsync(id, newStatus);
+
+        // ========== Invoice ==========
+        public Task<Invoice?> GetInvoiceByAppointmentIdAsync(int appointmentId)
+            => _appointmentRepo.GetInvoiceByAppointmentIdAsync(appointmentId);
+
+        public Task<bool> CreateInvoiceAsync(int appointmentId)
+            => _appointmentRepo.CreateInvoiceAsync(appointmentId);
     }
 }
