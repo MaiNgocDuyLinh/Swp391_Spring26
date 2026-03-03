@@ -7,12 +7,12 @@ using Group3_SWP391_PetMedical.ViewModels.Manager;
 
 namespace Group3_SWP391_PetMedical.Services.Implementations
 {
-    public class ManagerModuleService : IManagerModuleService
+    public class ManagerServiceHung : IManagerModuleService
     {
         private readonly IServiceRepository _serviceRepo;
         private readonly PetClinicContext _context;
 
-        public ManagerModuleService(IServiceRepository serviceRepo, PetClinicContext context)
+        public ManagerServiceHung(IServiceRepository serviceRepo, PetClinicContext context)
         {
             _serviceRepo = serviceRepo;
             _context = context;
