@@ -64,14 +64,19 @@
                                     @{
                                         var avatarSrc = !string.IsNullOrEmpty(Model.avatar) ? Model.avatar : "/uploads/userAvatar/default.png";
                                     }
-                                    <img src="@avatarSrc" alt="@Model.full_name" class="avatar-img p-1 bg-primary">
+                                    <img id="avatarPreview" src="@avatarSrc" alt="@Model.full_name" class="avatar-img p-1 bg-primary">
                                     <div class="mt-3">
                                         <label class="upload-label">
                                             Chọn ảnh
-                                            <input type="file" name="avatarFile" accept="image/*" hidden />
+                                            <input type="file"
+                                                   id="avatarFileInput"
+                                                   name="avatarFile"
+                                                   accept="image/*"
+                                                   hidden
+                                                   onchange="previewAvatar(event)" />
                                         </label>
                                         <div class="mt-1">
-                                            <small class="text-muted">Chọn ảnh đại diện (jpg, png, tối đa 20 MB)</small>
+                                            <small class="text-muted">Chọn ảnh đại diện (jpg, png, tối đa 2 MB)</small>
                                         </div>
                                         <div class="mt-2">
                                             <button type="submit" class="btn btn-sm btn-primary">Lưu ảnh</button>
@@ -161,3 +166,33 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function previewAvatar(event) {
+            const input = event.target;
+            const preview = document.getElementById('avatarPreview');
+            if (!preview) return;
+
+            if (!input.files || input.files.length === 0) {
+                return;
+            }
+
+            const file = input.files[0];
+
+            if (!file.type || !file.type.startsWith('image/')) {
+                alert('Vui lòng chọn đúng tệp hình ảnh.');
+                input.value = '';
+                const defaultAvatar = '@( !string.IsNullOrEmpty(Model.avatar) ? Model.avatar : "/uploads/userAvatar/default.png")';
+                preview.src = defaultAvatar;
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+}

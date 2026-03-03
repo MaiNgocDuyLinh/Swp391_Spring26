@@ -28,6 +28,9 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         /// <summary>Lấy user theo username, có Include role (dùng cho login).</summary>
         Task<User?> GetByUsernameWithRoleAsync(string username);
 
+        /// <summary>Lấy user theo username + email (dùng cho quên mật khẩu).</summary>
+        Task<User?> GetByUsernameAndEmailAsync(string username, string email);
+
         /// <summary>Kiểm tra username đã tồn tại.</summary>
         Task<bool> ExistsUsernameAsync(string username);
 

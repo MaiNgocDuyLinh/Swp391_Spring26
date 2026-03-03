@@ -2,6 +2,9 @@ using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Group3_SWP391_PetMedical.Services.Interfaces;
 using Group3_SWP391_PetMedical.ViewModels.Account;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System.Security.Cryptography;
 
 namespace Group3_SWP391_PetMedical.Services.Implementations
 {
@@ -9,11 +12,18 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
     {
         private readonly IUserRepository _userRepo;
         private readonly ILogger<UserService> _logger;
+        private readonly IWebHostEnvironment _env;
+        private readonly IEmailSender _emailSender;
 
-        public UserService(IUserRepository userRepo, ILogger<UserService> logger)
+        private const long MaxAvatarSizeBytes = 2 * 1024 * 1024; // 2 MB
+        private static readonly string[] AllowedAvatarExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+
+        public UserService(IUserRepository userRepo, ILogger<UserService> logger, IWebHostEnvironment env, IEmailSender emailSender)
         {
             _userRepo = userRepo;
             _logger = logger;
+            _env = env;
+            _emailSender = emailSender;
         }
 
         public async Task<(bool success, User? user, string? errorMessage)> AuthenticateAsync(string username, string password)
@@ -106,10 +116,68 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             return ok ? (true, null) : (false, "Không tìm thấy tài khoản.");
         }
 
-        public async Task<(bool success, string? errorMessage)> UpdateAvatarAsync(int userId, string avatarPath)
+        public async Task<(bool success, string? errorMessage)> UpdateAvatarAsync(int userId, IFormFile avatarFile)
         {
-            var ok = await _userRepo.UpdateAvatarAsync(userId, avatarPath);
-            return ok ? (true, null) : (false, "Không tìm thấy tài khoản.");
+            if (avatarFile == null || avatarFile.Length == 0)
+                return (false, "Vui lòng chọn một ảnh để tải lên.");
+
+            var error = ValidateAvatarFile(avatarFile);
+            if (error != null)
+                return (false, error);
+
+            var user = await _userRepo.GetByIdWithRoleAsync(userId);
+            if (user == null)
+                return (false, "Không tìm thấy tài khoản.");
+
+            var safeUsername = new string((user.username ?? string.Empty).Where(char.IsLetterOrDigit).ToArray());
+            if (string.IsNullOrWhiteSpace(safeUsername))
+                safeUsername = "user";
+            var extension = Path.GetExtension(avatarFile.FileName).ToLowerInvariant();
+            var fileName = $"{safeUsername}_{user.user_id}{extension}";
+
+            var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "userAvatar");
+            Directory.CreateDirectory(uploadsDir);
+            var filePath = Path.Combine(uploadsDir, fileName);
+
+            DeleteOldAvatarIfAny(user.avatar, filePath);
+
+            await using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await avatarFile.CopyToAsync(stream);
+            }
+
+            var virtualPath = $"/uploads/userAvatar/{fileName}";
+            var ok = await _userRepo.UpdateAvatarAsync(userId, virtualPath);
+            return ok ? (true, null) : (false, "Cập nhật ảnh đại diện thất bại.");
+        }
+
+        private static string? ValidateAvatarFile(IFormFile file)
+        {
+            if (file.Length > MaxAvatarSizeBytes)
+                return "Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 2 MB.";
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (string.IsNullOrEmpty(ext) || !AllowedAvatarExtensions.Contains(ext))
+                return "Định dạng ảnh không hợp lệ. Chỉ hỗ trợ jpg, jpeg, png, gif, webp.";
+            return null;
+        }
+
+        private void DeleteOldAvatarIfAny(string? avatarVirtualPath, string newFilePath)
+        {
+            if (string.IsNullOrWhiteSpace(avatarVirtualPath) ||
+                !avatarVirtualPath.StartsWith("/uploads/userAvatar/", StringComparison.OrdinalIgnoreCase))
+                return;
+            var oldPhysical = Path.Combine(_env.WebRootPath,
+                avatarVirtualPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            try
+            {
+                if (File.Exists(oldPhysical) &&
+                    !string.Equals(oldPhysical, newFilePath, StringComparison.OrdinalIgnoreCase))
+                    File.Delete(oldPhysical);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Không thể xóa ảnh avatar cũ.");
+            }
         }
 
         public async Task<ChangePasswordViewModel?> GetChangePasswordModelAsync(int userId)
@@ -127,6 +195,92 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public async Task<(bool success, string? errorMessage)> ChangePasswordAsync(int userId, ChangePasswordViewModel model)
         {
             return await _userRepo.UpdatePasswordAsync(userId, model.CurrentPassword, model.NewPassword);
+        }
+
+        public async Task<(bool success, string? errorMessage)> SendResetPasswordOtpAsync(string username, string email)
+        {
+            username = username?.Trim() ?? "";
+            email = email?.Trim() ?? "";
+
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
+                return (false, "Vui lòng nhập đầy đủ tài khoản và email.");
+
+            var user = await _userRepo.GetByUsernameAndEmailAsync(username, email);
+            if (user == null)
+                return (false, "Tài khoản hoặc email không đúng.");
+
+            var otp = GenerateOtp6Digits();
+            user.reset_password_token = otp;
+            user.reset_password_expiry = DateTime.UtcNow.AddMinutes(15);
+
+            await _userRepo.UpdateAsync(user);
+
+            try
+            {
+                var subject = "Mã OTP đặt lại mật khẩu";
+                var body = $@"
+<div style='font-family:Segoe UI,Arial,sans-serif;line-height:1.5'>
+  <h2 style='margin:0 0 8px;color:#0b1c39'>PetMedical - Quên mật khẩu</h2>
+  <p>Mã OTP của bạn là:</p>
+  <div style='font-size:28px;font-weight:800;letter-spacing:6px;color:#ff3d1c'>{otp}</div>
+  <p style='color:#5d6b82'>Mã có hiệu lực trong 15 phút. Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
+</div>";
+
+                await _emailSender.SendAsync(user.email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Send reset OTP email failed for user {UserId}", user.user_id);
+                return (false, "Không thể gửi email OTP lúc này. Vui lòng thử lại sau.");
+            }
+
+            return (true, null);
+        }
+
+        public async Task<(bool success, string? errorMessage)> ResetPasswordWithOtpAsync(string username, string email, string otp, string newPassword)
+        {
+            username = username?.Trim() ?? "";
+            email = email?.Trim() ?? "";
+            otp = otp?.Trim() ?? "";
+
+            if (string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(otp) ||
+                string.IsNullOrWhiteSpace(newPassword))
+            {
+                return (false, "Vui lòng nhập đầy đủ thông tin.");
+            }
+
+            var user = await _userRepo.GetByUsernameAndEmailAsync(username, email);
+            if (user == null)
+                return (false, "Tài khoản hoặc email không đúng.");
+
+            if (string.IsNullOrEmpty(user.reset_password_token) ||
+                !string.Equals(user.reset_password_token, otp, StringComparison.Ordinal))
+            {
+                return (false, "Mã OTP không đúng.");
+            }
+
+            if (user.reset_password_expiry == null || user.reset_password_expiry < DateTime.UtcNow)
+            {
+                return (false, "Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.");
+            }
+
+            user.password = newPassword;
+            user.reset_password_token = null;
+            user.reset_password_expiry = null;
+
+            await _userRepo.UpdateAsync(user);
+            return (true, null);
+        }
+
+        private static string GenerateOtp6Digits() // tạo opt 6 số
+        {
+            // secure random 000000-999999
+            Span<byte> bytes = stackalloc byte[4];
+            RandomNumberGenerator.Fill(bytes);
+            var n = BitConverter.ToUInt32(bytes) % 1_000_000;
+            return n.ToString("D6");
         }
     }
 }

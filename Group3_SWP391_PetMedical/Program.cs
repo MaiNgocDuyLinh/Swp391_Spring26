@@ -42,6 +42,10 @@ namespace Group3_SWP391_PetMedical
             builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IUserService,
                                        Group3_SWP391_PetMedical.Services.Implementations.UserService>();
 
+            // Email (SMTP)
+            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+            builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+
             // Staff Module DI
             builder.Services.AddScoped<Group3_SWP391_PetMedical.Repository.Interfaces.IAppointmentRepository,
                                        Group3_SWP391_PetMedical.Repository.Implementations.AppointmentRepository>();

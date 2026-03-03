@@ -1,0 +1,85 @@
+@model Group3_SWP391_PetMedical.ViewModels.ForgetPassword.ConfirmResetPasswordVm
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Nhập OTP & đặt lại mật khẩu";
+}
+
+<main class="fp-page">
+    <div class="container">
+        <div class="fp-hero">
+            <div class="fp-hero-bg"></div>
+            <div class="fp-hero-overlay">
+                <div class="fp-text">
+                    <div class="fp-title">Nhập mã OTP</div>
+                    <div class="fp-subtitle">
+                        Vui lòng nhập đúng tài khoản, email, mã OTP đã được gửi tới hộp thư của bạn
+                        và mật khẩu mới để hoàn tất đặt lại mật khẩu.
+                    </div>
+                    <p class="fp-note">
+                        Nếu bạn chưa nhận được mã OTP, hãy quay lại bước trước để gửi lại mã.
+                    </p>
+                </div>
+                <div class="fp-form-box">
+                    <div class="fp-form-title">Xác nhận OTP và mật khẩu mới</div>
+                    <div class="fp-form-sub">Điền đầy đủ thông tin bên dưới.</div>
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger" role="alert" style="border-radius:14px;">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+
+                    <form asp-controller="ForgetPassword" asp-action="ConfirmReset" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom:10px;"></div>
+
+                        <div class="fp-field">
+                            <label asp-for="Username"></label>
+                            <input asp-for="Username" class="form-control" style="border-radius:999px;" placeholder="Tên đăng nhập" />
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                        </div>
+
+                        <div class="fp-field">
+                            <label asp-for="Email"></label>
+                            <input asp-for="Email" class="form-control" style="border-radius:999px;" placeholder="Email đã đăng ký" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="fp-field">
+                            <label asp-for="Otp"></label>
+                            <input asp-for="Otp" class="form-control" style="border-radius:999px;" placeholder="Mã OTP" />
+                            <span asp-validation-for="Otp" class="text-danger"></span>
+                        </div>
+
+                        <div class="fp-field">
+                            <label asp-for="NewPassword"></label>
+                            <input asp-for="NewPassword" class="form-control" style="border-radius:999px;" placeholder="Mật khẩu mới" />
+                            <span asp-validation-for="NewPassword" class="text-danger"></span>
+                        </div>
+
+                        <div class="fp-field">
+                            <label asp-for="ConfirmPassword"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" style="border-radius:999px;" placeholder="Nhập lại mật khẩu mới" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+
+                        <div class="fp-actions">
+                            <button type="submit" class="fp-btn fp-btn-primary">
+                                Xác nhận đặt lại mật khẩu
+                            </button>
+                            <a href="@Url.Action("ResetPassword","ForgetPassword")" class="fp-btn fp-btn-ghost">
+                                Quay lại gửi OTP
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+

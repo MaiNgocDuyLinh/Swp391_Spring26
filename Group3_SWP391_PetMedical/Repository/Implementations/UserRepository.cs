@@ -111,6 +111,20 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .FirstOrDefaultAsync(u => u.username == username);
         }
 
+        public async Task<User?> GetByUsernameAndEmailAsync(string username, string email) // lay user dựa vào username và email
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
+                return null;
+
+            var normalizedUsername = username.Trim();
+            var normalizedEmail = email.Trim().ToLower();
+
+            return await _context.Users
+                .FirstOrDefaultAsync(u =>
+                    u.username == normalizedUsername &&
+                    u.email.Trim().ToLower() == normalizedEmail);
+        }
+
         public async Task<bool> ExistsUsernameAsync(string username)
         {
             if (string.IsNullOrWhiteSpace(username)) return false;
