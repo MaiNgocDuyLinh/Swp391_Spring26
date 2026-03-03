@@ -48,8 +48,8 @@ namespace Group3_SWP391_PetMedical
             builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IStaffService,
                                        Group3_SWP391_PetMedical.Services.Implementations.StaffService>();
             // Manager Module DI (uses shared IServiceRepository)
-            builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IManagerService,
-                                       Group3_SWP391_PetMedical.Services.Implementations.ManagerService>();
+            builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IManagerModuleService,
+                                       Group3_SWP391_PetMedical.Services.Implementations.ManagerModuleService>();
 
             builder.Services.AddAuthentication("MyCookieAuth")
             .AddCookie("MyCookieAuth", options =>

@@ -11,11 +11,11 @@ namespace Group3_SWP391_PetMedical.Controllers
     [Authorize(Roles = "Manager")]
     public class ManagerController : Controller
     {
-        private readonly IManagerService _managerService;
+        private readonly IManagerModuleService _managerService;
         private readonly PetClinicContext _context;
         private const int PageSize = 5;
 
-        public ManagerController(IManagerService managerService, PetClinicContext context)
+        public ManagerController(IManagerModuleService managerService, PetClinicContext context)
         {
             _managerService = managerService;
             _context = context;
