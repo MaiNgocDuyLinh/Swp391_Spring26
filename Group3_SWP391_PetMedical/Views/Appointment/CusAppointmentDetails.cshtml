@@ -94,12 +94,9 @@
         }
 
         @@media (max-width: 900px) {
-            .pc-grid
-
-        {
-            grid-template-columns: 1fr;
-        }
-
+            .pc-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .pc-item {
@@ -300,10 +297,16 @@
             </a>
 
             <a class="pc-btn pc-btn--primary"
-               href="@Url.Action("Edit", "CusAppointment", new { id = Model.AppointmentId })">
+               asp-controller="CusAppointment"
+               asp-action="Edit"
+               asp-route-id="@Model.AppointmentId"
+               target="_top">
                 Chỉnh sửa lịch hẹn
             </a>
         </div>
+
+
+
     </div>
 </div>
 

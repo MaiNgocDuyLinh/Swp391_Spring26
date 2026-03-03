@@ -53,22 +53,26 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 );
             }
 
+
             var projected = q
-                .OrderByDescending(a => EF.Property<DateTime>(a, CREATED_AT_FIELD))
-                .Select(a => new CusAppointmentHistoryItemVM
-                {
-                    AppointmentId = a.appointment_id,
-                    AppointmentDate = a.appointment_date,
-                    PetName = a.pet.name,
-                    DoctorName =
+                     .OrderByDescending(a => a.status != null && a.status.Trim().ToLower() == "đã hủy") 
+                     .ThenByDescending(a => EF.Property<DateTime?>(a, CREATED_AT_FIELD) != null)        
+                     .ThenByDescending(a => EF.Property<DateTime?>(a, CREATED_AT_FIELD))                
+                     .ThenByDescending(a => a.appointment_id)                                          
+                     .Select(a => new CusAppointmentHistoryItemVM
+                     {
+                         AppointmentId = a.appointment_id,
+                         AppointmentDate = a.appointment_date,
+                         PetName = a.pet.name,
+                         DoctorName =
                         (a.doctor_id != null && a.doctor != null && a.doctor.role_id == 3)
                             ? a.doctor.full_name
                             : "Chưa phân công",
-                    Status = a.status ?? "",
-                    Notes = a.notes,
-                    ServiceNames = string.Join(", ", a.AppointmentDetails.Select(d => d.service.service_name)),
-                    TotalAmount = a.Invoice != null ? a.Invoice.total_amount : null
-                });
+                         Status = a.status ?? "",
+                         Notes = a.notes,
+                         ServiceNames = string.Join(", ", a.AppointmentDetails.Select(d => d.service.service_name)),
+                         TotalAmount = a.Invoice != null ? a.Invoice.total_amount : null
+                     });
 
             return await projected.ToPagedResultAsync(query.Page, query.PageSize);
         }
@@ -81,9 +85,9 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .Where(a => a.customer_id == customerId);
 
             q = q.Where(a => a.status == null
-                || (a.status.Trim().ToLower() != "Đã thanh toán"
-                    && a.status.Trim().ToLower() != "Đã hủy"
-                    && a.status.Trim().ToLower() != "Không đến"));
+             || (a.status.Trim().ToLower() != "đã thanh toán"
+                 && a.status.Trim().ToLower() != "đã hủy"
+                 && a.status.Trim().ToLower() != "không đến"));
 
             if (query.FromDate.HasValue)
                 q = q.Where(a => a.appointment_date >= query.FromDate.Value);
@@ -106,12 +110,15 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             }
 
             var projected = q
-                .OrderByDescending(a => EF.Property<DateTime>(a, CREATED_AT_FIELD))
+                .OrderByDescending(a => EF.Property<DateTime?>(a, CREATED_AT_FIELD) != null)
+                .ThenByDescending(a => EF.Property<DateTime?>(a, CREATED_AT_FIELD))
+                .ThenByDescending(a => a.appointment_id)
                 .Select(a => new CusBookedAppointmentItemVM
                 {
                     AppointmentId = a.appointment_id,
                     AppointmentDate = a.appointment_date,
-                    CreatedAt = EF.Property<DateTime>(a, "created_at"),
+                    //CreatedAt = EF.Property<DateTime>(a, "created_at"),
+                    CreatedAt = EF.Property<DateTime?>(a, "created_at") ?? a.appointment_date,
                     PetName = a.pet.name,
                     DoctorName =
                         (a.doctor_id != null && a.doctor != null && a.doctor.role_id == 3)
@@ -152,27 +159,27 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
         public async Task<List<DoctorAppointmentEventVM>>
             GetDoctorAppointmentsAsync(int doctorId, DateTime from, DateTime to)
+        {
+            var q = _context.Appointments
+                .AsNoTracking()
+                .Where(a => a.doctor_id == doctorId
+                            && a.appointment_date >= from
+                            && a.appointment_date <= to
+                            && (a.status == null || a.status.Trim().ToLower() != "đã hủy"));
+
+            var list = await q
+                .OrderBy(a => a.appointment_date)
+                .Select(a => new DoctorAppointmentEventVM
                 {
-                    var q = _context.Appointments
-                        .AsNoTracking()
-                        .Where(a => a.doctor_id == doctorId
-                                    && a.appointment_date >= from
-                                    && a.appointment_date <= to
-                                    && (a.status == null || a.status.Trim().ToLower() != "đã hủy"));
+                    Title = a.pet != null ? $"Khám - {a.pet.name}" : "Lịch hẹn",
+                    Start = a.appointment_date,
+                    End = a.appointment_date.AddMinutes(30), // duration 30 phút
+                    Status = a.status
+                })
+                .ToListAsync();
 
-                    var list = await q
-                        .OrderBy(a => a.appointment_date)
-                        .Select(a => new DoctorAppointmentEventVM
-                        {
-                            Title = a.pet != null ? $"Khám - {a.pet.name}" : "Lịch hẹn",
-                            Start = a.appointment_date,
-                            End = a.appointment_date.AddMinutes(30), // duration 30 phút
-                            Status = a.status
-                        })
-                        .ToListAsync();
-
-                    return list;
-                }
+            return list;
+        }
         public async Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime from, DateTime to)
         {
             var targetDate = DateOnly.FromDateTime(from.Date);
@@ -294,7 +301,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 appointment_date = cmd.AppointmentDate,
                 notes = cmd.Notes,
                 status = "Chờ xác nhận",
-                doctor_id = cmd.DoctorId
+                doctor_id = cmd.DoctorId,
+                created_at = DateTime.Now
             };
 
             _context.Appointments.Add(appt);
@@ -321,7 +329,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 {
                     AppointmentId = a.appointment_id,
                     AppointmentDate = a.appointment_date,
-                    CreatedAt = EF.Property<DateTime>(a, CREATED_AT_FIELD),
+                    //CreatedAt = EF.Property<DateTime>(a, CREATED_AT_FIELD),
+                    CreatedAt = EF.Property<DateTime?>(a, CREATED_AT_FIELD) ?? a.appointment_date,
                     Status = a.status ?? "",
                     Notes = a.notes,
                     PetName = a.pet.name,
@@ -365,7 +374,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (appt == null) return false;
 
-          
+
             DateTime createdAt;
             try
             {
@@ -395,7 +404,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (vm.AppointmentDate <= DateTime.Now)
                 throw new Exception("Ngày giờ khám phải lớn hơn hiện tại.");
 
-       
+
 
             //  các field cho phép
             appt.appointment_date = vm.AppointmentDate;
