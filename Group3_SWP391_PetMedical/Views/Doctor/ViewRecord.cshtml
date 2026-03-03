@@ -1,0 +1,189 @@
+﻿@model Group3_SWP391_PetMedical.Models.Appointment
+
+@{
+    ViewData["Title"] = "Chi tiết bệnh án - " + Model.pet?.name;
+}
+
+<style>
+    .record-container {
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        padding: 40px;
+        margin-top: 50px;
+        border: 1px solid #eee;
+    }
+
+    .header-title {
+        color: #d9534f;
+        font-weight: 700;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #555;
+        width: 130px;
+        display: inline-block;
+    }
+
+    .section-header {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-left: 5px solid #d9534f;
+        margin: 25px 0 15px 0;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .img-exam {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 1px solid #ddd;
+        margin: 5px;
+    }
+
+    /* NÚT ĐỒNG BỘ VỚI TRANG CHỦ */
+    .btn-pet-pink {
+        background-color: #ff4d4d;
+        color: white !important;
+        border-radius: 25px;
+        transition: 0.3s;
+        border: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 20px !important;
+        font-size: 0.875rem;
+        min-width: 130px;
+    }
+
+        .btn-pet-pink:hover {
+            background-color: #e63939;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 77, 77, 0.2);
+        }
+
+    .btn-pet-secondary {
+        background-color: #6c757d; /* Màu xám cho nút Quay lại */
+    }
+
+    @@media print {
+        .no-print {
+            display: none;
+        }
+
+        .record-container {
+            box-shadow: none;
+            margin: 0;
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="container mb-5">
+    <div class="record-container">
+        <div class="d-flex justify-content-between align-items-center no-print mb-4">
+            <h2 class="header-title mb-0"><i class="fas fa-file-medical"></i> PHIẾU KẾT QUẢ</h2>
+            <div class="d-flex">
+                <button onclick="window.print()" class="btn btn-pet-pink shadow-sm mr-2">
+                    <i class="fas fa-print mr-2"></i> In phiếu
+                </button>
+                <a asp-action="Index" class="btn btn-pet-pink btn-pet-secondary shadow-sm">
+                    <i class="fas fa-arrow-left mr-2"></i> Quay lại
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <p><span class="info-label">Mã bệnh án:</span> <span class="text-danger font-weight-bold">#REC-@Model.appointment_id</span></p>
+                <p><span class="info-label">Ngày khám:</span> @Model.appointment_date.ToString("dd/MM/yyyy HH:mm")</p>
+                <p><span class="info-label">Bác sĩ:</span> <strong>@Model.doctor?.full_name</strong></p>
+            </div>
+            <div class="col-md-6 border-left">
+                <p><span class="info-label">Thú cưng:</span> <span class="text-uppercase font-weight-bold text-primary">@Model.pet?.name</span> (@Model.pet?.species)</p>
+                <p><span class="info-label">Chủ nuôi:</span> @Model.customer?.full_name</p>
+                <p><span class="info-label">Trạng thái:</span> <span class="badge badge-success">Đã hoàn thành</span></p>
+            </div>
+        </div>
+
+        <div class="section-header text-uppercase">Chẩn đoán từ bác sĩ</div>
+        <div class="pl-3 py-2 bg-light rounded">
+            <p class="mb-1"><strong>Kết luận:</strong> @(Model.MedicalRecord?.diagnosis ?? "N/A")</p>
+            <p class="mb-0 font-italic text-muted"><strong>Ghi chú:</strong> @(Model.MedicalRecord?.test_results ?? "Không có ghi chú thêm")</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.MedicalRecord?.result_images))
+        {
+            <div class="section-header text-uppercase">Hình ảnh kết quả</div>
+            <div class="d-flex flex-wrap pl-2">
+                @foreach (var img in Model.MedicalRecord.result_images.Split(';'))
+                {
+                    <img src="@img" class="img-exam shadow-sm" onclick="window.open(this.src)" />
+                }
+            </div>
+        }
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="section-header text-uppercase">Dịch vụ sử dụng</div>
+                <table class="table table-sm table-bordered table-hover">
+                    <thead class="bg-light text-center">
+                        <tr><th>Tên dịch vụ</th><th width="120px">Đơn giá</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in Model.AppointmentDetails)
+                        {
+                            <tr>
+                                <td class="pl-2">@s.service?.service_name</td>
+                                <td class="text-right pr-2 text-danger font-weight-bold">@s.actual_price?.ToString("#,##0") đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <div class="section-header text-uppercase">Đơn thuốc chỉ định</div>
+                <table class="table table-sm table-bordered table-hover">
+                    <thead class="bg-light text-center">
+                        <tr><th>Tên thuốc</th><th width="50px">SL</th><th>Cách dùng</th></tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.MedicalRecord?.Prescriptions?.Any() == true)
+                        {
+                            foreach (var p in Model.MedicalRecord.Prescriptions)
+                            {
+                                <tr>
+                                    <td class="pl-2">@p.medicine?.name</td>
+                                    <td class="text-center">@p.quantity</td>
+                                    <td class="pl-2"><small>@p.dosage</small></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="3" class="text-center text-muted">Không có đơn thuốc</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row mt-5 pt-3 text-center">
+            <div class="col-7"></div>
+            <div class="col-5">
+                <p class="mb-1">Ngày @DateTime.Now.ToString("dd") tháng @DateTime.Now.ToString("MM") năm @DateTime.Now.Year</p>
+                <p class="font-weight-bold text-uppercase">Bác sĩ điều trị</p>
+                <div style="height: 70px;"></div>
+                <p class="font-weight-bold">@Model.doctor?.full_name</p>
+            </div>
+        </div>
+    </div>
+</div>
