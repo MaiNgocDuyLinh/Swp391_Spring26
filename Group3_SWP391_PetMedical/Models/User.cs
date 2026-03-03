@@ -25,7 +25,6 @@ public partial class User
 
     public string? verification_token { get; set; }
 
-
     public string? reset_password_token { get; set; }
 
     public DateTime? reset_password_expiry { get; set; }

@@ -111,31 +111,38 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .FirstOrDefaultAsync(u => u.username == username);
         }
 
+        public async Task<User?> GetByUsernameAndEmailAsync(string username, string email) // lay user dựa vào username và email
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
+                return null;
+
+            var normalizedUsername = username.Trim();
+            var normalizedEmail = email.Trim().ToLower();
+
+            return await _context.Users
+                .FirstOrDefaultAsync(u =>
+                    u.username == normalizedUsername &&
+                    u.email.Trim().ToLower() == normalizedEmail);
+        }
+
         public async Task<bool> ExistsUsernameAsync(string username)
         {
             if (string.IsNullOrWhiteSpace(username)) return false;
-            return await _context.Users.AnyAsync(u => u.username == username.Trim());
+            var normalized = username.Trim();
+            return await _context.Users.AnyAsync(u => u.username == normalized);
         }
 
         public async Task<bool> ExistsEmailAsync(string email)
         {
             if (string.IsNullOrWhiteSpace(email)) return false;
-            return await _context.Users.AnyAsync(u => u.email.Trim().ToLower() == email.Trim().ToLower());
+            var normalized = email.Trim().ToLower();
+            return await _context.Users.AnyAsync(u => u.email.Trim().ToLower() == normalized);
         }
 
         public async Task AddAsync(User user)
         {
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-        }
-
-        public async Task<Role?> GetDefaultRoleAsync()
-        {
-            var role = await _context.Roles
-                .FirstOrDefaultAsync(r => r.role_name == "User" || r.role_name == "Customer");
-            if (role == null)
-                role = await _context.Roles.OrderBy(r => r.role_id).FirstOrDefaultAsync();
-            return role;
         }
 
         public async Task<bool> UpdateAvatarAsync(int userId, string avatarPath)
@@ -147,6 +154,17 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             user.avatar = avatarPath;
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<Role?> GetDefaultRoleAsync()
+        {
+            var role = await _context.Roles
+                .FirstOrDefaultAsync(r => r.role_name == "User" || r.role_name == "Customer");
+            if (role == null)
+            {
+                role = await _context.Roles.OrderBy(r => r.role_id).FirstOrDefaultAsync();
+            }
+            return role;
         }
     }
 }

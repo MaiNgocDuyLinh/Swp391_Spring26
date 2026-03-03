@@ -45,6 +45,7 @@
 
 	<ItemGroup>
 	  <Folder Include="ViewModels\Users\" />
+	  <Folder Include="Views\ForgetPassword\" />
 	</ItemGroup>
 
 </Project>
