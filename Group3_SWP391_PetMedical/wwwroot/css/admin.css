@@ -77,8 +77,76 @@
     }
 
     .admin-table tbody tr:hover {
-        background: #fafafa;
+    background: #fff5f7;
     }
+
+/* ============================= */
+/* GLOBAL PALETTE OVERRIDES (ADMIN) */
+/* Only white / pink / red accents */
+/* ============================= */
+
+.admin-page a,
+.admin-page .page-link,
+.admin-page .dropdown-item {
+    color: #ff4d4d;
+}
+
+.admin-page a:hover,
+.admin-page .dropdown-item:hover {
+    color: #e63b3b;
+}
+
+.admin-page .text-muted {
+    color: #ff7a8a !important;
+}
+
+/* Alerts: remove green/blue/yellow */
+.admin-page .alert {
+    border-radius: 18px;
+    border: 1px solid #ffccd5;
+}
+
+.admin-page .alert-success,
+.admin-page .alert-info,
+.admin-page .alert-warning,
+.admin-page .alert-danger {
+    background: #fff5f7 !important;
+    color: #e53947 !important;
+    border-color: #ffccd5 !important;
+}
+
+.admin-page .alert-success i,
+.admin-page .alert-info i,
+.admin-page .alert-warning i,
+.admin-page .alert-danger i {
+    color: #ff4d4d !important;
+}
+
+/* Bootstrap badge variants (in case any page uses them) */
+.admin-page .badge {
+    border-radius: 20px;
+}
+
+.admin-page .badge-primary,
+.admin-page .badge-info,
+.admin-page .badge-warning,
+.admin-page .badge-success,
+.admin-page .badge-danger,
+.admin-page .badge-secondary {
+    background-color: #ffccd5 !important;
+    color: #e53947 !important;
+}
+
+/* Dropdown hover background */
+.admin-page .dropdown-menu {
+    border-radius: 18px;
+    border-color: #ffccd5;
+}
+
+.admin-page .dropdown-item:hover,
+.admin-page .dropdown-item:focus {
+    background-color: #fff0f3;
+}
 
 /* Phân trang trong admin tông hồng/đỏ */
 
@@ -99,6 +167,15 @@
     background-color: #ffe0e6;
     border-color: #ff4d4d;
     color: #ff4d4d;
+}
+
+/* Table dark header override (if used anywhere) */
+.admin-page .table-dark,
+.admin-page thead.table-dark,
+.admin-page .table thead.table-dark th {
+    background-color: #f3eaea !important;
+    color: #e53947 !important;
+    border-color: #ffccd5 !important;
 }
 
 /* ============================= */

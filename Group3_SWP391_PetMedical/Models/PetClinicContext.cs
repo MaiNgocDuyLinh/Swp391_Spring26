@@ -45,8 +45,10 @@ public partial class PetClinicContext : DbContext
         var httpContext = _httpContextAccessor?.HttpContext;
         var currentUser = httpContext?.User;
 
-        var userIdClaim = currentUser?.FindFirst("user_id")?.Value;
-        var userEmail = currentUser?.Identity?.Name;
+        var userIdClaim = currentUser?.FindFirstValue(ClaimTypes.NameIdentifier)
+                         ?? currentUser?.FindFirstValue("user_id");
+        var userEmail = currentUser?.FindFirstValue(ClaimTypes.Email)
+                        ?? currentUser?.Identity?.Name;
         var ipAddress = httpContext?.Connection?.RemoteIpAddress?.ToString();
 
         var auditLogs = new List<AuditLog>();
