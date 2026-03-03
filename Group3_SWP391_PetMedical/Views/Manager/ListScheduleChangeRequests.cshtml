@@ -1,0 +1,141 @@
+@model List<Group3_SWP391_PetMedical.ViewModels.Manager.ScheduleChangeRequestListVM>
+@{
+    ViewData["Title"] = "Yêu cầu đổi lịch làm việc";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
+    string? filterStatus = ViewBag.FilterStatus as string ?? "Pending";
+}
+
+<!-- Hero Area Start -->
+<div class="slider-area2 slider-height2 d-flex align-items-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="hero-cap text-center pt-50">
+                    <h2>Xác nhận yêu cầu đổi lịch làm việc (Manager)</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Hero Area End -->
+
+<div class="container" style="padding: 50px 0;">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+    @if (TempData["error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["error"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <!-- Bộ lọc trạng thái -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="get" asp-action="ListScheduleChangeRequests" asp-controller="Manager" class="form-inline">
+                        <label class="mr-2 font-weight-bold"><i class="fas fa-filter"></i> Trạng thái:</label>
+                        <select name="status" class="form-control mr-2" style="width: auto;">
+                            <option value="Pending" selected="@(filterStatus == "Pending")">Chờ duyệt</option>
+                            <option value="Approved" selected="@(filterStatus == "Approved")">Đã chấp nhận</option>
+                            <option value="Rejected" selected="@(filterStatus == "Rejected")">Đã từ chối</option>
+                            <option value="" selected="@(string.IsNullOrEmpty(filterStatus))">Tất cả</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Lọc</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-exchange-alt"></i> Danh sách yêu cầu đổi lịch làm việc</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Bác sĩ</th>
+                                    <th>Lịch hiện tại</th>
+                                    <th>Lịch mong muốn</th>
+                                    <th>Lý do</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    int index = 1;
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@index</td>
+                                            <td><strong>@item.DoctorName</strong></td>
+                                            <td>@item.CurrentWorkDate.ToString("dd/MM/yyyy") - @(item.CurrentShift ?? "—")</td>
+                                            <td>@item.RequestedWorkDate.ToString("dd/MM/yyyy") - @item.RequestedShift</td>
+                                            <td>@(item.Reason ?? "—")</td>
+                                            <td>
+                                                @if (item.Status == "Pending")
+                                                { <span class="badge badge-warning">Chờ duyệt</span> }
+                                                else if (item.Status == "Approved")
+                                                { <span class="badge badge-success">Đã chấp nhận</span> }
+                                                else
+                                                { <span class="badge badge-danger">Đã từ chối</span> }
+                                            </td>
+                                            <td>@(item.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "—")</td>
+                                            <td>
+                                                @if (item.Status == "Pending")
+                                                {
+                                                    <a href="@Url.Action("ConfirmScheduleChangeRequest", "Manager", new { id = item.RequestId })"
+                                                       class="btn btn-sm btn-info">
+                                                        <i class="fas fa-check-double"></i> Xử lý
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <span>—</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        index++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="8" class="text-center">Không có yêu cầu nào.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card { border-radius: 10px; }
+    .card-header { border-radius: 10px 10px 0 0; }
+    .table th, .table td { vertical-align: middle; }
+    .badge { padding: 8px 12px; font-size: 0.9em; }
+</style>

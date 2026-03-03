@@ -30,6 +30,7 @@ public partial class PetClinicContext : DbContext
     public virtual DbSet<Prescription> Prescriptions { get; set; }
     public virtual DbSet<Role> Roles { get; set; }
     public virtual DbSet<Schedule> Schedules { get; set; }
+    public virtual DbSet<ScheduleChangeRequest> ScheduleChangeRequests { get; set; }
     public virtual DbSet<Service> Services { get; set; }
     public virtual DbSet<User> Users { get; set; }
 
@@ -146,6 +147,7 @@ public partial class PetClinicContext : DbContext
         modelBuilder.Entity<Prescription>().HasKey(p => p.prescription_id);
         modelBuilder.Entity<Role>().HasKey(r => r.role_id);
         modelBuilder.Entity<Schedule>().HasKey(s => s.schedule_id);
+        modelBuilder.Entity<ScheduleChangeRequest>().HasKey(r => r.request_id);
         modelBuilder.Entity<Service>().HasKey(s => s.service_id);
         modelBuilder.Entity<User>().HasKey(u => u.user_id);
         modelBuilder.Entity<AuditLog>().HasKey(a => a.AuditLogId);
@@ -216,6 +218,24 @@ public partial class PetClinicContext : DbContext
                   .WithMany(u => u.Schedules)
                   .HasForeignKey(s => s.doctor_id)
                   .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        // ScheduleChangeRequest ↔ Schedule, User (doctor), User (decided_by)
+        modelBuilder.Entity<ScheduleChangeRequest>(entity =>
+        {
+            entity.HasOne(r => r.schedule)
+                  .WithMany()
+                  .HasForeignKey(r => r.schedule_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+            entity.HasOne(r => r.doctor)
+                  .WithMany()
+                  .HasForeignKey(r => r.doctor_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+            entity.HasOne(r => r.decidedByUser)
+                  .WithMany()
+                  .HasForeignKey(r => r.decided_by)
+                  .IsRequired(false)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         // AppointmentDetail ↔ Appointment / Service

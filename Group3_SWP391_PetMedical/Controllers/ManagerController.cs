@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,12 @@ namespace Group3_SWP391_PetMedical.Controllers
         {
             _managerService = managerService;
             _context = context;
+        }
+
+        private int? GetCurrentUserId()
+        {
+            var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("user_id");
+            return int.TryParse(idStr, out var id) ? id : null;
         }
 
         // ========== 1. VIEW LIST SERVICE ==========
@@ -158,6 +165,70 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
 
             return View(vm);
+        }
+
+        // ========== 4. CONFIRM JOB CHANGE REQUEST (Yêu cầu đổi lịch làm việc bác sĩ) ==========
+        /// <summary>Danh sách yêu cầu đổi lịch (mặc định: trạng thái Chờ duyệt).</summary>
+        public async Task<IActionResult> ListScheduleChangeRequests(string? status)
+        {
+            // Lần đầu vào trang: mặc định "Pending". Chọn "Tất cả" gửi status="" -> hiển thị tất cả.
+            var filterStatus = status == null ? "Pending" : (string.IsNullOrWhiteSpace(status) ? null : status.Trim());
+            var list = await _managerService.GetScheduleChangeRequestsAsync(filterStatus);
+            ViewBag.FilterStatus = filterStatus ?? "";
+            return View(list);
+        }
+
+        /// <summary>Chi tiết yêu cầu - trang Chấp nhận / Từ chối.</summary>
+        public async Task<IActionResult> ConfirmScheduleChangeRequest(int id)
+        {
+            var detail = await _managerService.GetScheduleChangeRequestByIdAsync(id);
+            if (detail == null) return NotFound();
+            if (!detail.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["InfoMessage"] = "Yêu cầu này đã được xử lý.";
+                return RedirectToAction(nameof(ListScheduleChangeRequests));
+            }
+            return View(detail);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveScheduleChangeRequest(int id, string? managerNote)
+        {
+            var managerId = GetCurrentUserId();
+            if (managerId == null)
+            {
+                TempData["error"] = "Không xác định được Manager.";
+                return RedirectToAction(nameof(ConfirmScheduleChangeRequest), new { id });
+            }
+            var ok = await _managerService.ApproveScheduleChangeRequestAsync(id, managerId.Value, managerNote);
+            if (!ok)
+            {
+                TempData["error"] = "Không thể chấp nhận yêu cầu (đã xử lý hoặc không tồn tại).";
+                return RedirectToAction(nameof(ListScheduleChangeRequests));
+            }
+            TempData["SuccessMessage"] = "Đã chấp nhận yêu cầu đổi lịch.";
+            return RedirectToAction(nameof(ListScheduleChangeRequests));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectScheduleChangeRequest(int id, string? managerNote)
+        {
+            var managerId = GetCurrentUserId();
+            if (managerId == null)
+            {
+                TempData["error"] = "Không xác định được Manager.";
+                return RedirectToAction(nameof(ConfirmScheduleChangeRequest), new { id });
+            }
+            var ok = await _managerService.RejectScheduleChangeRequestAsync(id, managerId.Value, managerNote);
+            if (!ok)
+            {
+                TempData["error"] = "Không thể từ chối yêu cầu (đã xử lý hoặc không tồn tại).";
+                return RedirectToAction(nameof(ListScheduleChangeRequests));
+            }
+            TempData["SuccessMessage"] = "Đã từ chối yêu cầu đổi lịch.";
+            return RedirectToAction(nameof(ListScheduleChangeRequests));
         }
     }
 }
