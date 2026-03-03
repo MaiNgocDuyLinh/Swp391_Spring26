@@ -216,7 +216,7 @@
                             <h5><a href="javascript:void(0)">@s.service_name</a></h5>
                             <p>@(string.IsNullOrWhiteSpace(s.description) ? "Chưa có mô tả cho dịch vụ này." : s.description)</p>
 
-                            <a href="@Url.Action("Create", "Appointment", new { serviceId = s.service_id })"
+                            <a href="@Url.Action("Book", "CusAppointment", new { serviceId = s.service_id })"
                                class="btn btn-sm mt-2"
                                onclick="event.stopPropagation();">
                                 Đặt ngay
@@ -254,7 +254,7 @@
             $('#md_duration').text(duration);
             $('#md_is_home_service').text(isHome);
 
-            $('#md_book_now').attr('href', '@Url.Action("Create", "Appointment")' + '?serviceId=' + id);
+            $('#md_book_now').attr('href', '@Url.Action("Book", "CusAppointment")' + '?serviceId=' + id);
 
             $('#serviceDetailModal').modal('show');
         });
