@@ -322,6 +322,33 @@
                             <form method="post" asp-action="Book" asp-controller="CusAppointment">
                                 @Html.AntiForgeryToken()
 
+
+                                <!--  Doctor select + shifts (ADDED ONLY)  -->
+                                <div class="col-12 pc-field">
+                                    <label class="form-label">Bác sĩ</label>
+
+                                    <select class="form-control pc-equal-control"
+                                            id="doctorSelect"
+                                            asp-for="Form.DoctorId"
+                                            asp-items="Model.DoctorOptions">
+                                    </select>
+
+                                    <span class="text-danger" asp-validation-for="Form.DoctorId"></span>
+
+                                    <div class="pc-note mt-2" id="doctorHint">
+                                        Không chọn bác sĩ sẽ hiển thị <b>Chưa phân công</b>.
+                                    </div>
+
+                                    <div id="doctorShiftsBox" style="display:none; margin-top:10px;">
+                                        <div style="font-weight:700; margin-bottom:8px;">Ca làm của bác sĩ (trong ngày)</div>
+
+                                        <div class="pc-services-box" style="max-height:160px;">
+                                            <ul id="doctorShiftsList" style="margin:0; padding-left:18px;"></ul>
+                                        </div>
+
+                                        <div class="text-danger mt-2" id="doctorShiftError" style="display:none;"></div>
+                                    </div>
+                                </div>
                                 <div class="row g-3">
 
                                     <div class="col-lg-6 pc-field">
@@ -382,32 +409,7 @@
                                         <div class="pc-note">Gợi ý: bạn có thể chọn nhiều dịch vụ trong một lần khám.</div>
                                     </div>
 
-                                    <!--  Doctor select + shifts (ADDED ONLY)  -->
-                                    <div class="col-12 pc-field">
-                                        <label class="form-label">Bác sĩ</label>
-
-                                        <select class="form-control pc-equal-control"
-                                                id="doctorSelect"
-                                                asp-for="Form.DoctorId"
-                                                asp-items="Model.DoctorOptions">
-                                        </select>
-
-                                        <span class="text-danger" asp-validation-for="Form.DoctorId"></span>
-
-                                        <div class="pc-note mt-2" id="doctorHint">
-                                            Không chọn bác sĩ sẽ hiển thị <b>Chưa phân công</b>.
-                                        </div>
-
-                                        <div id="doctorShiftsBox" style="display:none; margin-top:10px;">
-                                            <div style="font-weight:700; margin-bottom:8px;">Ca làm của bác sĩ (trong ngày)</div>
-
-                                            <div class="pc-services-box" style="max-height:160px;">
-                                                <ul id="doctorShiftsList" style="margin:0; padding-left:18px;"></ul>
-                                            </div>
-
-                                            <div class="text-danger mt-2" id="doctorShiftError" style="display:none;"></div>
-                                        </div>
-                                    </div>
+                                  
 
                                     <div class="col-12 pc-field">
                                         <label>Ghi chú</label>
@@ -445,28 +447,29 @@
                                 <span>Quy trình đơn giản</span>
                             </div>
 
+
+                            <div class="pc-step">
+                                <div class="pc-step-num">1</div>
+                                <div>
+                                    <div style="font-weight:800;">Chọn bác sĩ</div>
+                                    <div style="color:rgba(0,0,0,.60); font-size:13px;">Xem lịch làm để chọn giờ khám phù hợp.</div>
+                                </div>
+                            </div>
+
                             <div class="pc-steps">
                                 <div class="pc-step">
-                                    <div class="pc-step-num">1</div>
+                                    <div class="pc-step-num">2</div>
                                     <div>
                                         <div style="font-weight:800;">Chọn thú cưng</div>
                                         <div style="color:rgba(0,0,0,.60); font-size:13px;">Chỉ hiển thị thú cưng thuộc tài khoản.</div>
                                     </div>
                                 </div>
-                                <div class="pc-step">
-                                    <div class="pc-step-num">2</div>
-                                    <div>
-                                        <div style="font-weight:800;">Chọn thời gian</div>
-                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Đặt lịch trước để phòng khám sắp xếp.</div>
-                                    </div>
-                                </div>
 
-                                <!--  choose doctor -->
                                 <div class="pc-step">
                                     <div class="pc-step-num">3</div>
                                     <div>
-                                        <div style="font-weight:800;">Chọn bác sĩ</div>
-                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Xem lịch làm để chọn giờ khám phù hợp.</div>
+                                        <div style="font-weight:800;">Chọn thời gian</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Đặt lịch trước để phòng khám sắp xếp.</div>
                                     </div>
                                 </div>
 
@@ -738,5 +741,33 @@
             // init
             reloadAll();
         })();
+
+
+        //đặt ngay từ dịch vụ 
+             $(document).ready(function () {
+
+            // Lấy serviceId từ query string
+            const params = new URLSearchParams(window.location.search);
+            const serviceId = params.get("serviceId");
+
+            if (serviceId) {
+
+                // Nếu là dropdown (select)
+                const select = document.querySelector("select[name='Form.ServiceIds']");
+                if (select) {
+                    select.value = serviceId;
+                    select.dispatchEvent(new Event('change'));
+                }
+
+                // Nếu là checkbox list
+                const checkbox = document.querySelector(
+                    "input[name='Form.ServiceIds'][value='" + serviceId + "']"
+                );
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            }
+        });
+
     </script>
 }
