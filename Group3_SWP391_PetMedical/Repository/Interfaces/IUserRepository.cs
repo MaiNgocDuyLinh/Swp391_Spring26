@@ -24,5 +24,25 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
 
         /// <summary>Đổi mật khẩu: kiểm tra currentPassword, gán newPassword và lưu. Trả về (success, errorMessage).</summary>
         Task<(bool success, string? errorMessage)> UpdatePasswordAsync(int userId, string currentPassword, string newPassword);
+
+        /// <summary>Lấy user theo username, có Include role (dùng cho login).</summary>
+        Task<User?> GetByUsernameWithRoleAsync(string username);
+
+        /// <summary>Kiểm tra username đã tồn tại.</summary>
+        Task<bool> ExistsUsernameAsync(string username);
+
+        /// <summary>Kiểm tra email đã tồn tại.</summary>
+        Task<bool> ExistsEmailAsync(string email);
+
+        /// <summary>Thêm user mới và lưu.</summary>
+        Task AddAsync(User user);
+
+        /// <summary>Cập nhật đường dẫn avatar cho user. Trả về true nếu thành công.</summary>
+        Task<bool> UpdateAvatarAsync(int userId, string avatarPath);
+
+        /// <summary>
+        /// Lấy role mặc định cho đăng ký: ưu tiên \"User\" hoặc \"Customer\", không có thì lấy role đầu tiên.
+        /// </summary>
+        Task<Role?> GetDefaultRoleAsync();
     }
 }
