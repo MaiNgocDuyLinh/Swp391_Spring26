@@ -80,6 +80,27 @@
         background: #fafafa;
     }
 
+/* Phân trang trong admin tông hồng/đỏ */
+
+.admin-page .pagination .page-link {
+    border-radius: 20px;
+    margin: 0 3px;
+    border: 1px solid #ffccd5;
+    color: #ff4d4d;
+}
+
+.admin-page .pagination .page-item.active .page-link {
+    background-color: #ff4d4d;
+    border-color: #ff4d4d;
+    color: #fff;
+}
+
+.admin-page .pagination .page-link:hover {
+    background-color: #ffe0e6;
+    border-color: #ff4d4d;
+    color: #ff4d4d;
+}
+
 /* ============================= */
 /* BUTTONS */
 /* ============================= */
@@ -108,6 +129,30 @@
         background-color: #ff4d4d;
         border-color: #ff4d4d;
         color: #fff;
+    }
+
+/* Outline buttons in admin (chỉ dùng hồng/đỏ) */
+
+.admin-page .btn-outline-primary,
+.admin-page .btn-outline-secondary,
+.admin-page .btn-outline-success,
+.admin-page .btn-outline-danger,
+.admin-page .btn-outline-warning,
+.admin-page .btn-outline-info {
+    background-color: #fff;
+    color: #ff4d4d;
+    border: 1px solid #ff4d4d;
+}
+
+    .admin-page .btn-outline-primary:hover,
+    .admin-page .btn-outline-secondary:hover,
+    .admin-page .btn-outline-success:hover,
+    .admin-page .btn-outline-danger:hover,
+    .admin-page .btn-outline-warning:hover,
+    .admin-page .btn-outline-info:hover {
+        background-color: #ff4d4d;
+        color: #fff;
+        border-color: #ff4d4d;
     }
 
 /* Biến thể nút khác trong khu admin (chỉ dùng tông hồng/đỏ) */
