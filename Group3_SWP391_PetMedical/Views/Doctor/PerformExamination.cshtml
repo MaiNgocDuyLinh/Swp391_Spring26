@@ -1,0 +1,157 @@
+﻿@model Group3_SWP391_PetMedical.Models.Appointment
+@{
+    var history = ViewBag.History as List<Group3_SWP391_PetMedical.Models.MedicalRecord>;
+    var medList = ViewBag.Medicines as List<Group3_SWP391_PetMedical.Models.Medication>;
+    var serviceList = ViewBag.Services as List<Group3_SWP391_PetMedical.Models.Service>;
+}
+
+<style>
+    :root { --pet-red: #ff4d4d; --pet-border: #ffebeb; }
+    .exam-container { padding-top: 110px; padding-bottom: 60px; background-color: #fcfcfc; }
+    
+    /* Sidebar Bệnh sử */
+    .history-card { background: white; border-radius: 20px; border: 1px solid var(--pet-border); padding: 20px; min-height: 200px; }
+    .timeline-item { border-left: 2px solid var(--pet-red); padding-left: 15px; margin-bottom: 15px; position: relative; }
+    .timeline-dot { position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: var(--pet-red); border-radius: 50%; }
+
+    /* Nút Thêm - Hover cực nhạt */
+    .btn-add-dashed {
+        border: 2px dashed var(--pet-red); color: var(--pet-red); background: transparent;
+        border-radius: 12px; padding: 8px 20px; font-weight: 600;
+    }
+    .btn-add-dashed:hover { background-color: #fffafa !important; }
+
+    /* Nút Hành động */
+    .btn-action-custom {
+        width: 220px; height: 50px; border-radius: 25px; font-weight: 700;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: var(--pet-red); color: white !important; border: none;
+    }
+</style>
+
+<div class="exam-container">
+    <div class="container-fluid px-5">
+        <form asp-action="SaveExamination" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="appointment_id" value="@Model.appointment_id" />
+            <div class="row">
+                <div class="col-md-3">
+                    <div style="background: var(--pet-red); border-radius: 20px; padding: 25px; color: white; text-align: center; margin-bottom: 20px;">
+                        <div style="width:70px; height:70px; background:white; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fas fa-paw fa-2x" style="color: var(--pet-red)"></i>
+                        </div>
+                        <h4 class="font-weight-bold">@Model.pet?.name</h4>
+                        <p class="small mb-0">@Model.pet?.breed</p>
+                    </div>
+                    
+                    <div class="history-card shadow-sm">
+                        <h6 class="font-weight-bold text-secondary mb-3"><i class="fas fa-history mr-2"></i>Bệnh sử cũ</h6>
+                        @if (history != null && history.Any()) {
+                            @foreach (var h in history) {
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <small class="text-danger font-weight-bold">@h.created_at?.ToString("dd/MM/yyyy")</small>
+                                    <p class="small mb-0">@h.diagnosis</p>
+                                </div>
+                            }
+                        } else {
+                            <div class="text-center py-4"><i class="fas fa-folder-open text-muted fa-2x mb-2"></i><p class="small text-muted">Chưa có dữ liệu cũ.</p></div>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-9">
+                    <div class="card p-4 shadow-sm border-0 mb-4" style="border-radius:20px;">
+                        <h5 class="text-danger font-weight-bold mb-4">NỘI DUNG KHÁM</h5>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="font-weight-bold small">Chẩn đoán xác định *</label>
+                                <textarea name="Diagnosis" class="form-control mb-3" rows="3" placeholder="Kết luận bệnh..." required></textarea>
+                                <label class="font-weight-bold small">Lời dặn bác sĩ</label>
+                                <textarea name="DoctorNotes" class="form-control" rows="2" placeholder="Hướng dẫn chăm sóc..."></textarea>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <label class="font-weight-bold small">Hình ảnh lâm sàng</label>
+                                <div style="border:2px dashed #ffcccc; border-radius:15px; padding:20px; cursor:pointer;" onclick="document.getElementById('fileInput').click()">
+                                    <i class="fas fa-camera fa-2x text-danger mb-2"></i>
+                                    <span class="small d-block">Tải ảnh siêu âm/xét nghiệm</span>
+                                    <input type="file" id="fileInput" name="ExamImages" multiple hidden accept="image/*">
+                                </div>
+                                <div id="imagePreview" class="mt-2 d-flex flex-wrap"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-4 shadow-sm border-0 mb-4" style="border-radius:20px;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-danger font-weight-bold mb-0">Dịch Vụ Phát Sinh</h5>
+                            <button type="button" class="btn-add-dashed" onclick="addService()">+ Thêm Dịch Vụ</button>
+                        </div>
+                        <div id="serviceArea"></div>
+                    </div>
+
+                    <div class="card p-4 shadow-sm border-0 mb-4" style="border-radius:20px;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-danger font-weight-bold mb-0">Đơn Thuốc Kèm Theo</h5>
+                            <button type="button" class="btn-add-dashed" onclick="addMed()">+ Thêm Thuốc</button>
+                        </div>
+                        <div id="prescriptionArea"></div>
+
+                        <div class="text-center mt-5 pt-4 border-top">
+                            <a asp-action="Index" class="btn-action-custom mr-3" style="background: #6c757d;">Hủy Bỏ</a>
+                            <button type="submit" class="btn-action-custom">HOÀN TẤT & LƯU</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Preview ảnh
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    preview.insertAdjacentHTML('beforeend', `<img src="${ev.target.result}" style="width:60px; height:60px; object-fit:cover; margin:4px; border-radius:8px;">`);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // Hàm thêm Dịch vụ & Thuốc (Sổ từ Database)
+        let sIdx = 0;
+        function addService() {
+            const html = `<div class="row mb-3 align-items-end p-3 border rounded shadow-sm mx-0">
+                <div class="col-md-6"><label class="small">Tên dịch vụ *</label>
+                <select name="SelectedServices[${sIdx}].service_id" class="form-control" required>
+                    <option value="">-- Chọn dịch vụ --</option>
+                    @if(serviceList != null) { @foreach(var s in serviceList) { <option value="@s.service_id">@s.service_name</option> } }
+                </select></div>
+                <div class="col-md-5"><label class="small">Ghi chú</label><input type="text" name="SelectedServices[${sIdx}].notes" class="form-control" placeholder="Ví dụ: Kiểm tra kỹ phần da"></div>
+                <div class="col-md-1"><i class="fas fa-trash text-danger" style="cursor:pointer" onclick="this.closest('.row').remove()"></i></div>
+            </div>`;
+            document.getElementById('serviceArea').insertAdjacentHTML('beforeend', html);
+            sIdx++;
+        }
+
+        let mIdx = 0;
+        function addMed() {
+            const html = `<div class="row mb-3 align-items-end p-3 border rounded shadow-sm mx-0">
+                <div class="col-md-5"><label class="small">Tên thuốc *</label>
+                <select name="Prescriptions[${mIdx}].medicine_id" class="form-control" required>
+                    <option value="">-- Chọn thuốc --</option>
+                    @if(medList != null) { @foreach(var m in medList) { <option value="@m.medicine_id">@m.name</option> } }
+                </select></div>
+                <div class="col-md-2"><label class="small">SL</label><input type="number" name="Prescriptions[${mIdx}].quantity" class="form-control" value="1"></div>
+                <div class="col-md-4"><label class="small">Liều dùng</label><input type="text" name="Prescriptions[${mIdx}].dosage" class="form-control" placeholder="Sáng 1, chiều 1 sau ăn"></div>
+                <div class="col-md-1"><i class="fas fa-trash text-danger" style="cursor:pointer" onclick="this.closest('.row').remove()"></i></div>
+            </div>`;
+            document.getElementById('prescriptionArea').insertAdjacentHTML('beforeend', html);
+            mIdx++;
+        }
+    </script>
+}
