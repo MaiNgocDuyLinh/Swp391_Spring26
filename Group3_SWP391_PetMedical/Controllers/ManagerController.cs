@@ -89,16 +89,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                             i.payment_status != null && paidStatuses.Contains(i.payment_status))
                 .SumAsync(i => i.total_amount);
 
-            // Lượt đăng nhập khách hàng: AuditLogs Action = Login, user thuộc role Customer
-            var customerRoleId = await _context.Roles
-                .Where(r => r.role_name == "Customer")
-                .Select(r => r.role_id)
-                .FirstOrDefaultAsync();
-            vm.CustomerLoginCount = await _context.AuditLogs
-                .Where(a => a.Action == "Login" && a.CreatedAt >= start && a.CreatedAt <= end && a.UserId != null)
-                .Join(_context.Users.Where(u => u.role_id == customerRoleId),
-                    a => a.UserId, u => u.user_id, (a, u) => a)
-                .CountAsync();
+            vm.CustomerLoginCount = 0; // Chức năng ghi log đăng nhập đã bỏ
 
             // Số lịch khám đã đặt trong kỳ (theo created_at)
             var appointmentsInRange = await _context.Appointments

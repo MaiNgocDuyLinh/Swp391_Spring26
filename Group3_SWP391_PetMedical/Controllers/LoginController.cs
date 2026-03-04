@@ -1,19 +1,20 @@
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Group3_SWP391_PetMedical.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Group3_SWP391_PetMedical.Models;
 
 namespace Group3_SWP391_PetMedical.Controllers
 {
     public class LoginController : Controller
     {
         private readonly ILogger<LoginController> _logger;
-        private readonly IUserService _userService;
+        private readonly PetClinicContext _context;
 
-        public LoginController(ILogger<LoginController> logger, IUserService userService)
+        public LoginController(ILogger<LoginController> logger, PetClinicContext context)
         {
             _logger = logger;
-            _userService = userService;
+            _context = context;
         }
 
         public IActionResult Login()
@@ -26,18 +27,34 @@ namespace Group3_SWP391_PetMedical.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password)
         {
-            var (success, user, errorMessage) = await _userService.AuthenticateAsync(username, password);
-            if (!success || user == null)
+            var loginName = username?.Trim();
+            if (string.IsNullOrEmpty(loginName) || string.IsNullOrEmpty(password))
             {
-                ViewBag.Error = errorMessage ?? "Sai tài khoản hoặc mật khẩu!";
+                ViewBag.Error = "Vui lòng nhập đầy đủ thông tin!";
+                return View();
+            }
+
+            var user = await _context.Users
+                .Include(u => u.role)
+                .FirstOrDefaultAsync(u => u.username == loginName);
+
+            if (user == null || user.password != password)
+            {
+                ViewBag.Error = "Sai tài khoản hoặc mật khẩu!";
+                return View();
+            }
+
+            if (user.status != "Active" && user.status != "Unactive")
+            {
+                ViewBag.Error = "Tài khoản của bạn đã bị khóa hoặc không hoạt động.";
                 return View();
             }
 
             var roleName = user.role?.role_name ?? "User";
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.full_name),
-                new Claim(ClaimTypes.Email, user.email),
+                new Claim(ClaimTypes.Name, user.full_name ?? ""),
+                new Claim(ClaimTypes.Email, user.email ?? ""),
                 new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
                 new Claim(ClaimTypes.Role, roleName)
             };
