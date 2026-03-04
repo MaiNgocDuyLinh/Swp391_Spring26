@@ -1,4 +1,4 @@
-﻿@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusCreateAppointmentVM
+@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusCreateAppointmentVM
 
 @{
     ViewData["Title"] = "Đặt lịch ngay";
@@ -335,9 +335,33 @@
 
                                     <span class="text-danger" asp-validation-for="Form.DoctorId"></span>
 
-                                    <div class="pc-note mt-2" id="doctorHint">
-                                        Không chọn bác sĩ sẽ hiển thị <b>Chưa phân công</b>.
+                                    <div class="mt-3">
+                                        <label class="form-label">Ngày giờ khám</label>
+
+                                        @{
+                                            var dtVal = Model.Form.AppointmentDate == default
+                                                ? ""
+                                                : Model.Form.AppointmentDate.ToString("yyyy-MM-ddTHH:mm");
+                                        }
+
+                                        <input class="form-control pc-equal-control"
+                                               name="Form.AppointmentDate"
+                                               type="datetime-local"
+                                               value="@dtVal" />
+
+                                        <span class="text-danger" asp-validation-for="Form.AppointmentDate"></span>
                                     </div>
+
+                                    <div class="pc-note mt-2" id="doctorHint">
+                                        Không chọn bác sĩ sẽ hiển thị <b>Chưa phân công</b>. Bấm "Xem lịch bác sĩ" để hiển thị ca làm.
+                                    </div>
+
+                                    <button type="submit"
+                                            class="pc-btn-ghost mt-2"
+                                            formmethod="get"
+                                            formaction="@Url.Action("Book","CusAppointment")">
+                                        Xem lịch bác sĩ
+                                    </button>
 
                                     <div id="doctorShiftsBox" style="display:none; margin-top:10px;">
                                         <div style="font-weight:700; margin-bottom:8px;">Ca làm của bác sĩ (trong ngày)</div>
@@ -361,23 +385,6 @@
                                         </select>
 
                                         <span class="text-danger" asp-validation-for="Form.PetId"></span>
-                                    </div>
-
-                                    <div class="col-lg-6 pc-field">
-                                        <label class="form-label">Ngày giờ khám</label>
-
-                                        @{
-                                            var dtVal = Model.Form.AppointmentDate == default
-                                            ? ""
-                                            : Model.Form.AppointmentDate.ToString("yyyy-MM-ddTHH:mm");
-                                        }
-
-                                        <input class="form-control pc-equal-control"
-                                               name="Form.AppointmentDate"
-                                               type="datetime-local"
-                                               value="@dtVal" />
-
-                                        <span class="text-danger" asp-validation-for="Form.AppointmentDate"></span>
                                     </div>
 
                                     <div class="col-12 pc-field">
@@ -452,7 +459,7 @@
                                 <div class="pc-step-num">1</div>
                                 <div>
                                     <div style="font-weight:800;">Chọn bác sĩ</div>
-                                    <div style="color:rgba(0,0,0,.60); font-size:13px;">Xem lịch làm để chọn giờ khám phù hợp.</div>
+                                    <div style="color:rgba(0,0,0,.60); font-size:13px;">Khi bạn chọn bác sĩ, lịch làm trong ngày sẽ được hiển thị.</div>
                                 </div>
                             </div>
 
@@ -500,17 +507,40 @@
                                 </div>
 
                                 <div class="pc-step" style="flex-direction:column; gap:10px;">
-                                    <div style="font-weight:800;">Các ca sắp tới</div>
+                                    <div style="font-weight:800;">Các ca trong ngày đã chọn</div>
 
                                     <div class="pc-services-box" style="max-height:260px; width:100%;">
-                                        <ul id="rightDoctorShiftsList" class="pc-cal-list"></ul>
+                                        <ul class="pc-cal-list">
+                                            @if (Model.Form.DoctorId.HasValue && Model.DoctorShifts.Any())
+                                            {
+                                                foreach (var s in Model.DoctorShifts)
+                                                {
+                                                    <li class="pc-cal-item">
+                                                        <span class="pc-cal-date">@s.Start.ToString("dd/MM/yyyy")</span>
+                                                        <span class="pc-cal-time">@s.Display</span>
+                                                    </li>
+                                                }
+                                            }
+                                            else if (Model.Form.DoctorId.HasValue)
+                                            {
+                                                <li class="pc-cal-item">
+                                                    <span class="pc-cal-date">Không có ca làm cho ngày này.</span>
+                                                    <span class="pc-cal-time"></span>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="pc-cal-item">
+                                                    <span class="pc-cal-date">Chưa chọn bác sĩ.</span>
+                                                    <span class="pc-cal-time"></span>
+                                                </li>
+                                            }
+                                        </ul>
                                     </div>
 
-                                    <div class="pc-note" id="rightDoctorNote">
-                                        Chọn bác sĩ để xem lịch làm. Nếu không chọn sẽ hiển thị ca mặc định của phòng khám (7 ngày tới).
+                                    <div class="pc-note">
+                                        Chọn ngày giờ khám, sau đó chọn bác sĩ để xem các ca làm việc trong ngày đó.
                                     </div>
-
-                                    <div class="text-danger" id="rightDoctorError" style="display:none;"></div>
                                 </div>
                             </div>
 
@@ -528,223 +558,8 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        (function () {
-            const doctorSelect = document.getElementById("doctorSelect");
-            const dateInput = document.querySelector('input[name="Form.AppointmentDate"]');
-
-            // left box (under doctor select) - still per-day
-            const shiftsBox = document.getElementById("doctorShiftsBox");
-            const shiftsList = document.getElementById("doctorShiftsList");
-            const shiftError = document.getElementById("doctorShiftError");
-
-            // right box (always visible) - full schedule (range)
-            const rightList = document.getElementById("rightDoctorShiftsList");
-            const rightErr = document.getElementById("rightDoctorError");
-
-            const form = document.querySelector("form");
-
-            // per-day shifts (for validation)
-            let dayShifts = [];
-
-            // clinic default shifts for any day
-            const defaultClinicShifts = [
-                { label: "Sáng", start: "08:00", end: "12:00" },
-                { label: "Chiều", start: "13:00", end: "17:00" },
-                { label: "Tối", start: "18:00", end: "21:00" }
-            ];
-
-            const RANGE_DAYS = 7;
-
-            function pad2(n) { return String(n).padStart(2, '0'); }
-
-            function formatDateVN(d) {
-                return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
-            }
-
-            function toISODate(d) {
-                return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-            }
-
-            function parseLocalDateTime(val) {
-                if (!val) return null;
-                const d = new Date(val);
-                return isNaN(d.getTime()) ? null : d;
-            }
-
-            function renderRightDefaultSchedule() {
-                rightList.innerHTML = "";
-
-                const base = parseLocalDateTime(dateInput?.value) || new Date();
-                const baseDay = new Date(base.getFullYear(), base.getMonth(), base.getDate());
-
-                for (let i = 0; i < RANGE_DAYS; i++) {
-                    const d = new Date(baseDay);
-                    d.setDate(baseDay.getDate() + i);
-
-                    defaultClinicShifts.forEach(s => {
-                        const li = document.createElement("li");
-                        li.className = "pc-cal-item";
-                        li.innerHTML = `<span class="pc-cal-date">${formatDateVN(d)} • ${s.label}</span>
-                                        <span class="pc-cal-time">${s.start} - ${s.end}</span>`;
-                        rightList.appendChild(li);
-                    });
-                }
-            }
-
-            function renderLeftDayShifts() {
-                shiftsList.innerHTML = "";
-
-                function addLi(text) {
-                    const li = document.createElement("li");
-                    li.textContent = text;
-                    shiftsList.appendChild(li);
-                }
-
-                if (!dayShifts.length) {
-                    addLi("Không có ca làm trong ngày này.");
-                    return;
-                }
-
-                dayShifts.forEach(s => addLi(s.display));
-            }
-
-            function renderRightDoctorSchedule(allShifts) {
-                rightList.innerHTML = "";
-
-                if (!allShifts.length) {
-                    const li = document.createElement("li");
-                    li.className = "pc-cal-item";
-                    li.innerHTML = `<span class="pc-cal-date">Không có ca làm trong khoảng ngày này.</span>
-                                    <span class="pc-cal-time"></span>`;
-                    rightList.appendChild(li);
-                    return;
-                }
-
-                allShifts.forEach(s => {
-                    const li = document.createElement("li");
-                    li.className = "pc-cal-item";
-                    const d = s.start;
-                    li.innerHTML = `<span class="pc-cal-date">${formatDateVN(d)}</span>
-                                    <span class="pc-cal-time">${s.display}</span>`;
-                    rightList.appendChild(li);
-                });
-            }
-
-            async function fetchDoctorShifts(doctorId, dayStr) {
-                const url = `@Url.Action("DoctorShifts", "CusAppointment")?doctorId=${doctorId}&day=${encodeURIComponent(dayStr)}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                return (data || []).map(x => ({
-                    start: new Date(x.start),
-                    end: new Date(x.end),
-                    display: x.display
-                }));
-            }
-
-            async function loadDayShiftsAndValidate() {
-                shiftError.style.display = "none";
-                shiftError.textContent = "";
-                rightErr.style.display = "none";
-                rightErr.textContent = "";
-
-                const docId = doctorSelect?.value;
-
-                // if no doctor => hide left, allow submit, show default right
-                if (!docId) {
-                    dayShifts = [];
-                    shiftsBox.style.display = "none";
-                    renderRightDefaultSchedule();
-                    return;
-                }
-
-                // day for validation = day of appointment input (or today)
-                const appt = parseLocalDateTime(dateInput?.value) || new Date();
-                const dayStr = toISODate(appt);
-
-                dayShifts = await fetchDoctorShifts(docId, dayStr);
-
-                // show left day shifts
-                shiftsBox.style.display = "block";
-                renderLeftDayShifts();
-
-                validateAgainstDayShifts();
-            }
-
-            async function loadRightFullSchedule() {
-                const docId = doctorSelect?.value;
-
-                // no doctor => show clinic default schedule for next RANGE_DAYS
-                if (!docId) {
-                    renderRightDefaultSchedule();
-                    return;
-                }
-
-                // build range start based on selected appointment day (or today)
-                const base = parseLocalDateTime(dateInput?.value) || new Date();
-                const baseDay = new Date(base.getFullYear(), base.getMonth(), base.getDate());
-
-                const all = [];
-                for (let i = 0; i < RANGE_DAYS; i++) {
-                    const d = new Date(baseDay);
-                    d.setDate(baseDay.getDate() + i);
-                    const dayStr = toISODate(d);
-
-                    const oneDay = await fetchDoctorShifts(docId, dayStr);
-                    // attach day to display if needed: DoctorShiftVM already includes date
-                    all.push(...oneDay);
-                }
-
-                // sort by start
-                all.sort((a, b) => a.start - b.start);
-
-                renderRightDoctorSchedule(all);
-            }
-
-            function validateAgainstDayShifts() {
-                const docId = doctorSelect?.value;
-                if (!docId) return true;
-
-                const appt = parseLocalDateTime(dateInput?.value);
-                if (!appt) return true;
-
-                const ok = dayShifts.some(s => appt >= s.start && appt <= s.end);
-
-                if (!ok) {
-                    shiftError.style.display = "block";
-                    shiftError.textContent = "Giờ đặt không nằm trong ca làm của bác sĩ đã chọn.";
-
-                    rightErr.style.display = "block";
-                    rightErr.textContent = "Giờ đặt không nằm trong ca làm của bác sĩ đã chọn.";
-                } else {
-                    shiftError.style.display = "none";
-                    shiftError.textContent = "";
-
-                    rightErr.style.display = "none";
-                    rightErr.textContent = "";
-                }
-
-                return ok;
-            }
-
-            async function reloadAll() {
-                await loadRightFullSchedule();
-                await loadDayShiftsAndValidate();
-            }
-
-            doctorSelect?.addEventListener("change", reloadAll);
-            dateInput?.addEventListener("change", reloadAll);
-
-            form?.addEventListener("submit", function (e) {
-                if (!validateAgainstDayShifts()) e.preventDefault();
-            });
-
-            // init
-            reloadAll();
-        })();
-
-
         //đặt ngay từ dịch vụ
-             $(document).ready(function () {
+        $(document).ready(function () {
 
             // Lấy serviceId từ query string
             const params = new URLSearchParams(window.location.search);
