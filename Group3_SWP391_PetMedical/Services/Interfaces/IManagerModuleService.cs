@@ -14,6 +14,8 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         Task<ScheduleChangeRequestDetailVM?> GetScheduleChangeRequestByIdAsync(int requestId);
         Task<bool> ApproveScheduleChangeRequestAsync(int requestId, int managerUserId, string? managerNote);
         Task<bool> RejectScheduleChangeRequestAsync(int requestId, int managerUserId, string? managerNote);
+
+        Task<OverviewStatsVM> GetOverviewStatsAsync(DateTime? fromDate, DateTime? toDate, string? groupBy);
     }
 }
 

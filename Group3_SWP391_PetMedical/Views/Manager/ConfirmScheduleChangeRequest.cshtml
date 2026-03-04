@@ -61,7 +61,7 @@
 
                     <div class="row mt-4">
                         <div class="col-md-6">
-                            <form method="post" asp-action="ApproveScheduleChangeRequest" asp-controller="Manager" asp-route-id="@Model.RequestId">
+                            <form method="post" asp-action="ApproveScheduleChangeRequest" asp-controller="ManagerModule" asp-route-id="@Model.RequestId">
                                 @Html.AntiForgeryToken()
                                 <div class="form-group">
                                     <label for="approveNote">Ghi chú (khi chấp nhận)</label>
@@ -73,7 +73,7 @@
                             </form>
                         </div>
                         <div class="col-md-6">
-                            <form method="post" asp-action="RejectScheduleChangeRequest" asp-controller="Manager" asp-route-id="@Model.RequestId">
+                            <form method="post" asp-action="RejectScheduleChangeRequest" asp-controller="ManagerModule" asp-route-id="@Model.RequestId">
                                 @Html.AntiForgeryToken()
                                 <div class="form-group">
                                     <label for="rejectNote">Ghi chú (khi từ chối)</label>
@@ -87,7 +87,7 @@
                     </div>
 
                     <hr class="mt-4" />
-                    <a href="@Url.Action("ListScheduleChangeRequests", "Manager")" class="btn btn-secondary">
+                    <a href="@Url.Action("ListScheduleChangeRequests", "ManagerModule")" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Quay lại danh sách
                     </a>
                 </div>

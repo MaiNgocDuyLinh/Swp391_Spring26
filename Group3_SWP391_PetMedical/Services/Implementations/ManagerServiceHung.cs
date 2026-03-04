@@ -132,6 +132,86 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<OverviewStatsVM> GetOverviewStatsAsync(DateTime? fromDate, DateTime? toDate, string? groupBy)
+        {
+            if (!fromDate.HasValue || !toDate.HasValue)
+            {
+                toDate = DateTime.Today;
+                fromDate = DateTime.Today.AddDays(-30);
+            }
+            if (string.IsNullOrWhiteSpace(groupBy)) groupBy = "day";
+
+            var model = new OverviewStatsVM
+            {
+                FromDate = fromDate,
+                ToDate = toDate,
+                GroupBy = groupBy
+            };
+
+            // Revenue: tổng hóa đơn đã thanh toán
+            var invoiceQuery = _context.Invoices.AsNoTracking()
+                .Where(i => i.created_at >= fromDate && i.created_at <= toDate);
+            var paidInvoices = await invoiceQuery
+                .Where(i => i.payment_status != null && i.payment_status.Trim().ToLower() == "paid")
+                .ToListAsync();
+            model.Revenue = paidInvoices.Sum(i => i.total_amount);
+
+            // CustomerLoginCount: số lần đăng nhập của Customer (qua AuditLog Action=Login)
+            var customerUserIds = await _context.Users.AsNoTracking()
+                .Where(u => u.role != null && u.role.role_name == "Customer")
+                .Select(u => u.user_id)
+                .ToListAsync();
+            model.CustomerLoginCount = await _context.AuditLogs.AsNoTracking()
+                .Where(a => a.Action == "Login" && a.UserId != null && customerUserIds.Contains(a.UserId.Value))
+                .Where(a => a.CreatedAt >= fromDate && a.CreatedAt <= toDate)
+                .CountAsync();
+
+            // Appointments
+            var apptQuery = _context.Appointments.AsNoTracking()
+                .Where(a => a.appointment_date >= fromDate && a.appointment_date <= toDate.Value.AddDays(1));
+            var appointments = await apptQuery.ToListAsync();
+            model.TotalAppointments = appointments.Count;
+            model.AppointmentsByStatus = appointments
+                .Where(a => !string.IsNullOrEmpty(a.status))
+                .GroupBy(a => a.status!)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            // Revenue & Appointments by date for charts
+            if (groupBy == "month")
+            {
+                var revByMonth = paidInvoices.Where(i => i.created_at.HasValue)
+                    .GroupBy(i => new DateTime(i.created_at!.Value.Year, i.created_at.Value.Month, 1))
+                    .ToDictionary(g => g.Key, g => g.Sum(x => x.total_amount));
+                var apptByMonth = appointments
+                    .GroupBy(a => new DateTime(a.appointment_date.Year, a.appointment_date.Month, 1))
+                    .ToDictionary(g => g.Key, g => g.Count());
+                var allMonths = revByMonth.Keys.Union(apptByMonth.Keys).OrderBy(d => d).ToList();
+                foreach (var d in allMonths)
+                {
+                    revByMonth.TryGetValue(d, out var rev);
+                    apptByMonth.TryGetValue(d, out var cnt);
+                    model.RevenueByDate.Add(new RevenueByDateItem { Label = d.ToString("MM/yyyy"), Value = rev });
+                    model.AppointmentsByDate.Add(new AppointmentsByDateItem { Label = d.ToString("MM/yyyy"), Count = cnt });
+                }
+            }
+            else
+            {
+                var invoicesByDate = paidInvoices.Where(i => i.created_at.HasValue)
+                    .GroupBy(i => i.created_at!.Value.Date).ToDictionary(g => g.Key, g => g.Sum(x => x.total_amount));
+                var apptsByDate = appointments.GroupBy(a => a.appointment_date.Date).ToDictionary(g => g.Key, g => g.Count());
+                var allDates = invoicesByDate.Keys.Union(apptsByDate.Keys).OrderBy(d => d).ToList();
+                foreach (var d in allDates)
+                {
+                    invoicesByDate.TryGetValue(d, out var rev);
+                    apptsByDate.TryGetValue(d, out var cnt);
+                    model.RevenueByDate.Add(new RevenueByDateItem { Label = d.ToString("dd/MM"), Value = rev });
+                    model.AppointmentsByDate.Add(new AppointmentsByDateItem { Label = d.ToString("dd/MM"), Count = cnt });
+                }
+            }
+
+            return model;
+        }
     }
 }
 

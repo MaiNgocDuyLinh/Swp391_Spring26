@@ -50,6 +50,9 @@ namespace Group3_SWP391_PetMedical
             // Manager Module DI (uses shared IServiceRepository)
             builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IManagerModuleService,
                                        Group3_SWP391_PetMedical.Services.Implementations.ManagerServiceHung>();
+            // ManagerController DI
+            builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IManagerService,
+                                       Group3_SWP391_PetMedical.Services.Implementations.ManagerService>();
 
             builder.Services.AddAuthentication("MyCookieAuth")
                 .AddCookie("MyCookieAuth", options =>

@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Yêu cầu đổi lịch làm việc";
     Layout = "~/Views/Shared/AdminLayout.cshtml";
-    string? filterStatus = ViewBag.FilterStatus as string ?? "Pending";
+    string? filterStatus = ViewBag.StatusFilter as string ?? "Pending";
 }
 
 <!-- Hero Area Start -->
@@ -44,7 +44,7 @@
         <div class="col-md-12">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <form method="get" asp-action="ListScheduleChangeRequests" asp-controller="Manager" class="form-inline">
+                    <form method="get" asp-action="ListScheduleChangeRequests" asp-controller="ManagerModule" class="form-inline">
                         <label class="mr-2 font-weight-bold"><i class="fas fa-filter"></i> Trạng thái:</label>
                         <select name="status" class="form-control mr-2" style="width: auto;">
                             <option value="Pending" selected="@(filterStatus == "Pending")">Chờ duyệt</option>
@@ -104,7 +104,7 @@
                                             <td>
                                                 @if (item.Status == "Pending")
                                                 {
-                                                    <a href="@Url.Action("ConfirmScheduleChangeRequest", "Manager", new { id = item.RequestId })"
+                                                    <a href="@Url.Action("ConfirmScheduleChangeRequest", "ManagerModule", new { id = item.RequestId })"
                                                        class="btn btn-sm btn-info">
                                                         <i class="fas fa-check-double"></i> Xử lý
                                                     </a>
