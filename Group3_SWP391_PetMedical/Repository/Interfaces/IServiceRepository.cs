@@ -1,4 +1,4 @@
-﻿using Group3_SWP391_PetMedical.Models;
+using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Models.Common;
 
 namespace Group3_SWP391_PetMedical.Repository.Interfaces
@@ -14,5 +14,7 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         Task<List<Service>> GetAllAsync();
         // Cập nhật dịch vụ (Manager only)
         Task<bool> UpdateAsync(int id, decimal basePrice, string? description);
+
+        Task<bool> UpdateAsync(int id, string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService, bool status);
     }
 }

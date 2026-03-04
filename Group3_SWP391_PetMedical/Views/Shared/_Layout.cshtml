@@ -202,7 +202,7 @@
                                                 <a class="dropdown-item" href="@Url.Action("ChangePassword", "User")" style="padding: 0.5rem 1rem;">
                                                     <i class="fas fa-key"></i> Đổi mật khẩu
                                                 </a>
-                                                <form asp-controller="UserAuth" asp-action="Logout" method="post" style="margin: 0;">
+                                                <form asp-controller="Login" asp-action="Logout" method="post" style="margin: 0;">
                                                     <button type="submit" class="dropdown-item"
                                                             style="border: none; background: none; width: 100%; text-align: left; cursor: pointer; padding: 0.5rem 1rem;">
                                                         <i class="fas fa-sign-out-alt"></i> Logout
@@ -213,7 +213,7 @@
                                     }
                                     else
                                     {
-                                        <a href="@Url.Action("Login", "UserAuth")" class="header-btn">Login</a>
+                                        <a href="@Url.Action("Login", "Login")" class="header-btn">Login</a>
                                     }
                                 </div>
                             </div>

@@ -1,4 +1,4 @@
-﻿using Group3_SWP391_PetMedical.Models;
+using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Models.Common;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -64,6 +64,22 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             service.base_price = basePrice;
             service.description = description;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateAsync(int id, string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService, bool status)
+        {
+            var service = await _context.Services.FirstOrDefaultAsync(s => s.service_id == id);
+            if (service == null) return false;
+
+            service.service_name = serviceName;
+            service.base_price = basePrice;
+            service.description = description;
+            service.duration = duration;
+            service.is_home_service = isHomeService;
+            service.status = status;
 
             await _context.SaveChangesAsync();
             return true;
