@@ -52,12 +52,12 @@ namespace Group3_SWP391_PetMedical
                                        Group3_SWP391_PetMedical.Services.Implementations.ManagerServiceHung>();
 
             builder.Services.AddAuthentication("MyCookieAuth")
-            .AddCookie("MyCookieAuth", options =>
-            {
-            options.Cookie.Name = "MyLoginCookie";
-            options.LoginPath = "/Login/Login"; // Đường dẫn trả về nếu chưa đăng nhập
-            options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // 30p hết hạn
-            });
+                .AddCookie("MyCookieAuth", options =>
+                {
+                    options.Cookie.Name = "MyLoginCookie";
+                    options.LoginPath = "/UserAuth/Login"; // Đường dẫn trả về nếu chưa đăng nhập
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // 30p hết hạn
+                });
 
             builder.Services.AddControllersWithViews();
 

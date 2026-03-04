@@ -1,73 +1,39 @@
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Group3_SWP391_PetMedical.Models;
-using Microsoft.EntityFrameworkCore;
+using Group3_SWP391_PetMedical.Services.Interfaces;
 
 namespace Group3_SWP391_PetMedical.Controllers
 {
-
-
     public class LoginController : Controller
     {
         private readonly ILogger<LoginController> _logger;
-        private readonly PetClinicContext _context;
+        private readonly IUserService _userService;
 
-        public LoginController(ILogger<LoginController> logger, PetClinicContext context)
+        public LoginController(ILogger<LoginController> logger, IUserService userService)
         {
             _logger = logger;
-            _context = context;
+            _userService = userService;
         }
 
         public IActionResult Login()
         {
-
-            if (User.Identity.IsAuthenticated)
-            {
+            if (User.Identity?.IsAuthenticated == true)
                 return RedirectToAction("Index", "Home");
-            }
             return View();
-
         }
 
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password)
         {
-
-            var loginName = username?.Trim();
-            if (string.IsNullOrEmpty(loginName) || string.IsNullOrEmpty(password))
+            var (success, user, errorMessage) = await _userService.AuthenticateAsync(username, password);
+            if (!success || user == null)
             {
-                ViewBag.Error = "Vui lòng nhập đầy đủ thông tin!";
+                ViewBag.Error = errorMessage ?? "Sai tài khoản hoặc mật khẩu!";
                 return View();
             }
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.username == loginName);
-
-            if (user == null)
-            {
-                ViewBag.Error = "Sai tài khoản hoặc mật khẩu!";
-                return View();
-            }
-
-            // Kiểm tra mật khẩu
-            if (user.password != password)
-            {
-                ViewBag.Error = "Sai tài khoản hoặc mật khẩu!";
-                return View();
-            }
-
-            // Kiểm tra trạng thái tài khoản - chỉ chặn nếu bị khóa hoặc không phải Active/Unactive
-            if (user.status != "Active" && user.status != "Unactive")
-            {
-                ViewBag.Error = "Tài khoản của bạn đã bị khóa hoặc không hoạt động.";
-                return View();
-            }
-
-            // Đăng nhập thành công (cho phép cả Active và Unactive)
-            var role = _context.Roles.FirstOrDefault(r => r.role_id == user.role_id);
-            var roleName = role?.role_name ?? "User";
-
+            var roleName = user.role?.role_name ?? "User";
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.full_name),
@@ -75,32 +41,11 @@ namespace Group3_SWP391_PetMedical.Controllers
                 new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
                 new Claim(ClaimTypes.Role, roleName)
             };
-
             var claimsIdentity = new ClaimsIdentity(claims, "MyCookieAuth");
-
-            // (Ghi Cookie vào trình duyệt)
             await HttpContext.SignInAsync("MyCookieAuth", new ClaimsPrincipal(claimsIdentity));
 
-            // Ghi log đăng nhập để thống kê (Manager Overview)
-            var ipAddress = HttpContext.Connection?.RemoteIpAddress?.ToString();
-            _context.AuditLogs.Add(new AuditLog
-            {
-                Action = "Login",
-                UserId = user.user_id,
-                UserEmail = user.email,
-                EntityName = "User",
-                EntityId = user.user_id.ToString(),
-                Description = "User login",
-                IpAddress = ipAddress,
-                CreatedAt = DateTime.Now
-            });
-            await _context.SaveChangesAsync();
-
-            // Nếu user Unactive, có thể hiển thị thông báo nhắc cập nhật thông tin
             if (user.status == "Unactive")
-            {
                 TempData["InfoMessage"] = "Vui lòng cập nhật thông tin cá nhân để sử dụng đầy đủ các dịch vụ.";
-            }
 
             return RedirectToAction("Index", "Home");
         }
