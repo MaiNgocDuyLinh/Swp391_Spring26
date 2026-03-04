@@ -365,10 +365,9 @@
                                     }
 
                                     <input class="form-control pc-equal-control"
-                                           name="Form.AppointmentDate"
+                                           asp-for="Form.AppointmentDate"
                                            type="datetime-local"
                                            value="@dtVal" />
-
                                     <span class="text-danger" asp-validation-for="Form.AppointmentDate"></span>
                                 </div>
                                 <!--  Doctor select + shifts (ADDED ONLY)  -->
@@ -415,9 +414,8 @@
                                         <select class="form-control pc-equal-control"
                                                 asp-for="Form.PetId"
                                                 asp-items="Model.PetOptions">
-                                            <option value="">-- Chọn thú cưng --</option>
+                                            <option value="0">-- Chọn thú cưng --</option>
                                         </select>
-
                                         <span class="text-danger" asp-validation-for="Form.PetId"></span>
                                     </div>
 
@@ -432,7 +430,7 @@
                                                 var isChecked = Model.Form.ServiceIds != null && Model.Form.ServiceIds.Contains(sid);
                                                 var inputId = $"svc_{sid}";
 
-                                                // ✅ NEW: lấy giá theo service_id
+                                                // lấy giá theo service_id
                                                 var price = _priceMap.ContainsKey(sid) ? _priceMap[sid] : 0m;
 
                                                 <div class="pc-service-item2">
@@ -459,7 +457,7 @@
                                         <span class="text-danger" asp-validation-for="Form.ServiceIds"></span>
                                         <div class="pc-note">Gợi ý: bạn có thể chọn nhiều dịch vụ trong một lần khám.</div>
 
-                                        <!-- ✅ NEW: Total box -->
+                                        <!--   Total box -->
                                         <div class="pc-total-box" id="totalBox">
                                             <div>Tổng tiền</div>
                                             <div id="totalMoney">0 VNĐ</div>
@@ -551,10 +549,8 @@
                                 </div>
                             </div>
 
-                            <!-- =========================
-                                  ✅ UPDATED: show FULL doctor schedule (next N days)
-                                  always show
-                                 ========================= -->
+                            <!--   show FULL doctor schedule (next N days)
+                                  always show -->
                             <div id="rightDoctorBox" class="mt-3">
                                 <div class="pc-badge" style="margin-bottom:10px;">
                                     <i class="far fa-calendar-alt"></i>
@@ -638,7 +634,7 @@
                 }
             }
 
-            // ✅ NEW: tính tổng tiền dịch vụ đã chọn
+            //   tính tổng tiền dịch vụ đã chọn
             function updateTotal() {
                 let total = 0;
 

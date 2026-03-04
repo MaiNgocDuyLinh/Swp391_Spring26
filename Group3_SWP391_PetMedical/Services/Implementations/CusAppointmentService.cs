@@ -28,8 +28,28 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<List<(int PetId, string PetName)>> GetCustomerPetsAsync(int customerId)
             => _repo.GetCustomerPetsAsync(customerId);
 
-        public Task<int> CreateAppointmentAsync(int customerId, CusCreateAppointmentCommand cmd)
-            => _repo.CreateAppointmentAsync(customerId, cmd);
+        // ✅ ADDED: validate đặt lịch (không sửa logic cũ, chỉ thêm trước khi gọi repo)
+        public async Task<int> CreateAppointmentAsync(int customerId, CusCreateAppointmentCommand cmd)
+        {
+           
+            if (cmd == null) throw new Exception("Dữ liệu đặt lịch không hợp lệ.");
+            if (cmd.AppointmentDate == default)
+                throw new Exception("Vui lòng chọn ngày giờ khám.");
+
+            var now = DateTime.Now;
+            var nowTrim = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0);
+            if (cmd.AppointmentDate < nowTrim)
+                throw new Exception("Không được chọn ngày giờ khám ở quá khứ.");
+
+            if (cmd.PetId <= 0)
+                throw new Exception("Vui lòng chọn thú cưng.");
+
+            
+            if (cmd.ServiceIds == null || cmd.ServiceIds.Count == 0)
+                throw new Exception("Vui lòng chọn ít nhất 1 dịch vụ.");
+
+            return await _repo.CreateAppointmentAsync(customerId, cmd);
+        }
 
         public Task<List<(int DoctorId, string DoctorName)>> GetDoctorsAsync()
             => _repo.GetDoctorsAsync();
@@ -41,7 +61,8 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             => _repo.GetDoctorShiftsAsync(doctorId, from.Date, to.Date);
 
         public Task<List<DoctorAppointmentEventVM>> GetDoctorAppointmentsAsync(int doctorId, DateTime from, DateTime to)
-    => _repo.GetDoctorAppointmentsAsync(doctorId, from, to);
+            => _repo.GetDoctorAppointmentsAsync(doctorId, from, to);
+
         public Task<bool> IsDoctorWorkingAtAsync(int doctorId, DateTime appointmentDateTime)
             => _repo.IsDoctorWorkingAtAsync(doctorId, appointmentDateTime);
 

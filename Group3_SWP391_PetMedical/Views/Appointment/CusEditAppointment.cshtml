@@ -1,11 +1,17 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@using Group3_SWP391_PetMedical.Services.Interfaces
 @model Group3_SWP391_PetMedical.ViewModels.Appointment.CusEditAppointmentVM
+@inject IServiceService ServiceService
 
 @{
     ViewData["Title"] = "Chỉnh sửa lịch hẹn";
 
     //   Lấy services từ ViewBag (đúng với controller của bạn)
     var serviceOptions = ViewBag.ServiceOptions as List<SelectListItem> ?? new List<SelectListItem>();
+
+    //  lấy bảng giá dịch vụ (không sửa controller/logic cũ)
+    var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
+    var _priceMap = _allSvcs.ToDictionary(x => x.service_id, x => (decimal)x.base_price);
 }
 
 @section Styles {
@@ -216,6 +222,34 @@
             font-weight: 700;
             font-size: 0.95rem;
         }
+
+        /* ✅ NEW: service row + price + total box */
+        .pc-svc-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .pc-svc-price {
+            font-weight: 900;
+            color: rgba(0,0,0,.70);
+            white-space: nowrap;
+        }
+
+        .pc-total-box {
+            margin-top: 10px;
+            border-radius: 14px;
+            background: #fff7f7;
+            border: 1px solid rgba(0,0,0,0.06);
+            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            font-weight: 900;
+        }
     </style>
 }
 
@@ -273,14 +307,25 @@
                                     <!--  Checkbox bind vào ServiceIds -->
                                     @foreach (var opt in serviceOptions)
                                     {
-                                        <div class="form-check" style="margin-bottom:8px;">
-                                            <input class="form-check-input"
-                                                   type="checkbox"
-                                                   name="ServiceIds"
-                                                   value="@opt.Value"
-                                                   @(opt.Selected ? "checked" : null) />
+                                        // lấy giá theo service_id (opt.Value)
+                                        var sid = 0;
+                                        int.TryParse(opt.Value, out sid);
+                                        var price = (sid > 0 && _priceMap.ContainsKey(sid)) ? _priceMap[sid] : 0m;
 
-                                            <label class="form-check-label">@opt.Text</label>
+                                        <div class="form-check" style="margin-bottom:8px;">
+                                            <div class="pc-svc-row">
+                                                <div>
+                                                    <input class="form-check-input svc-cb"
+                                                           type="checkbox"
+                                                           name="ServiceIds"
+                                                           value="@opt.Value"
+                                                           data-price="@price"
+                                                           @(opt.Selected ? "checked" : null) />
+                                                    <label class="form-check-label">@opt.Text</label>
+                                                </div>
+
+                                                <div class="pc-svc-price">@price.ToString("N0") VNĐ</div>
+                                            </div>
                                         </div>
                                     }
                                 }
@@ -291,6 +336,12 @@
                             </div>
 
                             <div class="text-danger">@Html.ValidationMessage("ServiceIds")</div>
+
+                            <!-- Total box -->
+                            <div class="pc-total-box" id="totalBox">
+                                <div>Tổng tiền</div>
+                                <div id="totalMoney">0 VNĐ</div>
+                            </div>
                         </div>
 
                         <div class="mb-3">
@@ -364,3 +415,34 @@
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // tính tổng tiền dịch vụ đã chọn
+            function updateTotal() {
+                let total = 0;
+
+                document.querySelectorAll("input[name='ServiceIds'].svc-cb:checked").forEach(cb => {
+                    const p = parseFloat(cb.getAttribute("data-price") || "0");
+                    if (!isNaN(p)) total += p;
+                });
+
+                const fmt = new Intl.NumberFormat('vi-VN');
+                const el = document.getElementById("totalMoney");
+                if (el) el.textContent = fmt.format(total) + " VNĐ";
+            }
+
+            // bind change
+            document.querySelectorAll("input[name='ServiceIds'].svc-cb").forEach(cb => {
+                cb.addEventListener("change", updateTotal);
+            });
+
+            // init on load (để trường hợp tick sẵn từ model)
+            updateTotal();
+        });
+    </script>
+}
