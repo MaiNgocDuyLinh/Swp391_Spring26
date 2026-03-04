@@ -147,7 +147,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             vm.DoctorOptions.Insert(0, new SelectListItem
             {
                 Value = "",
-                Text = "Chưa phân công",
+                Text = "Bác sĩ ngẫu nhiên",
                 Selected = !vm.Form.DoctorId.HasValue
             });
 

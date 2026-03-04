@@ -1,7 +1,13 @@
 @model Group3_SWP391_PetMedical.ViewModels.Appointment.CusCreateAppointmentVM
+@using Group3_SWP391_PetMedical.Services.Interfaces
+@inject IServiceService ServiceService
 
 @{
     ViewData["Title"] = "Đặt lịch ngay";
+
+    // ✅ NEW: lấy bảng giá dịch vụ (không sửa controller/logic cũ)
+    var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
+    var _priceMap = _allSvcs.ToDictionary(x => x.service_id, x => (decimal)x.base_price);
 }
 
 <style>
@@ -292,6 +298,33 @@
         color: rgba(0,0,0,.65);
         white-space: nowrap;
     }
+
+    /* ✅ NEW: price + total box */
+    .pc-svc-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .pc-svc-price {
+        font-weight: 800;
+        color: rgba(0,0,0,.70);
+        white-space: nowrap;
+    }
+
+    .pc-total-box {
+        margin-top: 10px;
+        border-radius: 14px;
+        background: rgba(255,255,255,.92);
+        border: 1px solid rgba(0,0,0,.06);
+        padding: 12px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+    }
 </style>
 
 <div class="container my-4">
@@ -322,9 +355,25 @@
                             <form method="post" asp-action="Book" asp-controller="CusAppointment">
                                 @Html.AntiForgeryToken()
 
+                                <div class="mt-3">
+                                    <label class="form-label">Ngày giờ khám</label>
 
+                                    @{
+                                        var dtVal = Model.Form.AppointmentDate == default
+                                        ? ""
+                                        : Model.Form.AppointmentDate.ToString("yyyy-MM-ddTHH:mm");
+                                    }
+
+                                    <input class="form-control pc-equal-control"
+                                           name="Form.AppointmentDate"
+                                           type="datetime-local"
+                                           value="@dtVal" />
+
+                                    <span class="text-danger" asp-validation-for="Form.AppointmentDate"></span>
+                                </div>
                                 <!--  Doctor select + shifts (ADDED ONLY)  -->
                                 <div class="col-12 pc-field">
+
                                     <label class="form-label">Bác sĩ</label>
 
                                     <select class="form-control pc-equal-control"
@@ -335,22 +384,7 @@
 
                                     <span class="text-danger" asp-validation-for="Form.DoctorId"></span>
 
-                                    <div class="mt-3">
-                                        <label class="form-label">Ngày giờ khám</label>
 
-                                        @{
-                                            var dtVal = Model.Form.AppointmentDate == default
-                                                ? ""
-                                                : Model.Form.AppointmentDate.ToString("yyyy-MM-ddTHH:mm");
-                                        }
-
-                                        <input class="form-control pc-equal-control"
-                                               name="Form.AppointmentDate"
-                                               type="datetime-local"
-                                               value="@dtVal" />
-
-                                        <span class="text-danger" asp-validation-for="Form.AppointmentDate"></span>
-                                    </div>
 
                                     <div class="pc-note mt-2" id="doctorHint">
                                         Không chọn bác sĩ sẽ hiển thị <b>Chưa phân công</b>. Bấm "Xem lịch bác sĩ" để hiển thị ca làm.
@@ -359,7 +393,7 @@
                                     <button type="submit"
                                             class="pc-btn-ghost mt-2"
                                             formmethod="get"
-                                            formaction="@Url.Action("Book","CusAppointment")">
+                                            formaction="@Url.Action("Book", "CusAppointment")">
                                         Xem lịch bác sĩ
                                     </button>
 
@@ -398,15 +432,25 @@
                                                 var isChecked = Model.Form.ServiceIds != null && Model.Form.ServiceIds.Contains(sid);
                                                 var inputId = $"svc_{sid}";
 
+                                                // ✅ NEW: lấy giá theo service_id
+                                                var price = _priceMap.ContainsKey(sid) ? _priceMap[sid] : 0m;
+
                                                 <div class="pc-service-item2">
-                                                    <div class="form-check m-0">
-                                                        <input class="form-check-input"
-                                                               id="@inputId"
-                                                               type="checkbox"
-                                                               name="Form.ServiceIds"
-                                                               value="@sid"
-                                                               @(isChecked ? "checked" : "") />
-                                                        <label class="form-check-label" for="@inputId">@s.Text</label>
+                                                    <div class="form-check m-0 pc-svc-row">
+                                                        <div>
+                                                            <input class="form-check-input svc-cb"
+                                                                   id="@inputId"
+                                                                   type="checkbox"
+                                                                   name="Form.ServiceIds"
+                                                                   value="@sid"
+                                                                   data-price="@price"
+                                                                   @(isChecked ? "checked" : "") />
+                                                            <label class="form-check-label" for="@inputId">@s.Text</label>
+                                                        </div>
+
+                                                        <div class="pc-svc-price">
+                                                            @price.ToString("N0") VNĐ
+                                                        </div>
                                                     </div>
                                                 </div>
                                             }
@@ -414,6 +458,12 @@
 
                                         <span class="text-danger" asp-validation-for="Form.ServiceIds"></span>
                                         <div class="pc-note">Gợi ý: bạn có thể chọn nhiều dịch vụ trong một lần khám.</div>
+
+                                        <!-- ✅ NEW: Total box -->
+                                        <div class="pc-total-box" id="totalBox">
+                                            <div>Tổng tiền</div>
+                                            <div id="totalMoney">0 VNĐ</div>
+                                        </div>
                                     </div>
 
 
@@ -455,30 +505,35 @@
                             </div>
 
 
-                            <div class="pc-step">
-                                <div class="pc-step-num">1</div>
-                                <div>
-                                    <div style="font-weight:800;">Chọn bác sĩ</div>
-                                    <div style="color:rgba(0,0,0,.60); font-size:13px;">Khi bạn chọn bác sĩ, lịch làm trong ngày sẽ được hiển thị.</div>
-                                </div>
-                            </div>
+
 
                             <div class="pc-steps">
                                 <div class="pc-step">
+                                    <div class="pc-step-num">1</div>
+                                    <div>
+                                        <div style="font-weight:800;">Chọn thời gian</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Đặt lịch trước(Tháng/Ngày/Năm/Giờ) để phòng khám sắp xếp.</div>
+                                    </div>
+                                </div>
+
+                                <div class="pc-step">
                                     <div class="pc-step-num">2</div>
+                                    <div>
+                                        <div style="font-weight:800;">Chọn bác sĩ</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Chọn bác sĩ mà bạn muốn khám .(Bấm "Xem lịch Bác sĩ" để hiện thị ca làm của bác sĩ trong ngày bạn chọn)</div>
+                                    </div>
+                                </div>
+
+
+                                <div class="pc-step">
+                                    <div class="pc-step-num">3</div>
                                     <div>
                                         <div style="font-weight:800;">Chọn thú cưng</div>
                                         <div style="color:rgba(0,0,0,.60); font-size:13px;">Chỉ hiển thị thú cưng thuộc tài khoản.</div>
                                     </div>
                                 </div>
 
-                                <div class="pc-step">
-                                    <div class="pc-step-num">3</div>
-                                    <div>
-                                        <div style="font-weight:800;">Chọn thời gian</div>
-                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Đặt lịch trước để phòng khám sắp xếp.</div>
-                                    </div>
-                                </div>
+
 
                                 <div class="pc-step">
                                     <div class="pc-step-num">4</div>
@@ -582,6 +637,27 @@
                     checkbox.checked = true;
                 }
             }
+
+            // ✅ NEW: tính tổng tiền dịch vụ đã chọn
+            function updateTotal() {
+                let total = 0;
+
+                document.querySelectorAll("input[name='Form.ServiceIds'].svc-cb:checked").forEach(cb => {
+                    const p = parseFloat(cb.getAttribute("data-price") || "0");
+                    if (!isNaN(p)) total += p;
+                });
+
+                const fmt = new Intl.NumberFormat('vi-VN');
+                document.getElementById("totalMoney").textContent = fmt.format(total) + " VNĐ";
+            }
+
+            // bind change
+            document.querySelectorAll("input[name='Form.ServiceIds'].svc-cb").forEach(cb => {
+                cb.addEventListener("change", updateTotal);
+            });
+
+            // init on load (để trường hợp có tick sẵn từ query string / model)
+            updateTotal();
         });
 
     </script>

@@ -1,5 +1,8 @@
 ﻿@using Group3_SWP391_PetMedical.Models.Common
+@using Group3_SWP391_PetMedical.Services.Interfaces
 @model Group3_SWP391_PetMedical.ViewModels.Appointment.CusBookedAppointmentListVM
+
+@inject IServiceService ServiceService
 
 @{
     ViewData["Title"] = "Lịch khám đã đặt";
@@ -14,6 +17,10 @@
 
     var fromVal = Model.Filter.FromDate?.ToString("yyyy-MM-dd") ?? "";
     var toVal = Model.Filter.ToDate?.ToString("yyyy-MM-dd") ?? "";
+
+    //  map service_id -> base_price
+    var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
+    var _priceMap = _allSvcs.ToDictionary(x => x.service_id, x => (decimal)x.base_price);
 }
 
 @section Styles {
@@ -418,6 +425,27 @@
 
                     @foreach (var item in Model.Page.Data.Items)
                     {
+                        // ✅ NEW: tính tổng theo base_price từ ServiceNames
+                        decimal totalFromServices = 0m;
+                        if (!string.IsNullOrWhiteSpace(item.ServiceNames))
+                        {
+                            var names = item.ServiceNames
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(x => x.Trim())
+                            .ToList();
+
+                            foreach (var n in names)
+                            {
+                                var svc = _allSvcs.FirstOrDefault(x =>
+                                string.Equals(x.service_name?.Trim(), n, StringComparison.OrdinalIgnoreCase));
+
+                                if (svc != null)
+                                {
+                                    totalFromServices += (decimal)svc.base_price;
+                                }
+                            }
+                        }
+
                         <tbody class="pc-record">
                             <tr>
                                 <td>
@@ -442,7 +470,7 @@
                                 </td>
 
                                 <td class="text-end pc-money">
-                                    @((item.TotalAmount ?? 0).ToString("N0"))
+                                    @totalFromServices.ToString("N0")
                                 </td>
 
                                 <td class="text-end">
@@ -587,12 +615,6 @@
             }
         }
 
-
-
-
-
-
-
         document.addEventListener("DOMContentLoaded", function () {
 
              document.querySelectorAll(".edit-check").forEach(function (btn) {
@@ -615,7 +637,4 @@
 
          });
     </script>
-
-
-   
 }
