@@ -1,0 +1,329 @@
+@model IEnumerable<Group3_SWP391_PetMedical.Models.Medication>
+@{
+    ViewData["Title"] = "Danh sách thuốc";
+
+    int currentPage = ViewBag.CurrentPage is int cp ? cp : 1;
+    int totalPages = ViewBag.TotalPages is int tp ? tp : 1;
+    int totalItems = ViewBag.TotalItems is int ti ? ti : (Model?.Count() ?? 0);
+    string? search = ViewBag.Search as string;
+}
+
+@section Styles {
+    <style>
+        :root {
+            --pc-red: #ff3b3b;
+            --pc-red-dark: #e83434;
+            --pc-text: #2b2b2b;
+            --pc-muted: #7a7a7a;
+            --pc-border: rgba(0,0,0,0.06);
+            --pc-bg-soft: #fff7f7;
+        }
+
+        .pc-wrap {
+            background: #f3d7d5;
+            border: 1px solid var(--pc-border);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+            margin-top: 150px;
+        }
+
+        .pc-title {
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .pc-sub {
+            color: var(--pc-muted);
+            margin: 0;
+        }
+
+        .pc-filter {
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            border-radius: 16px;
+            padding: 18px;
+            margin: 18px 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+        .pc-label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .pc-input {
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.1);
+            height: 42px;
+            padding: 0 12px;
+        }
+
+        .pc-btn {
+            border-radius: 999px;
+            padding: 0 18px;
+            height: 42px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            text-decoration: none;
+        }
+
+        .pc-btn--primary {
+            background: var(--pc-red);
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(255,59,59,0.25);
+        }
+
+            .pc-btn--primary:hover {
+                background: var(--pc-red-dark);
+                color: #fff;
+            }
+
+        .pc-btn--ghost {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.1);
+            color: var(--pc-text) !important;
+        }
+
+        .pc-table {
+            border-radius: 16px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+            .pc-table thead th {
+                background: var(--pc-bg-soft);
+                font-weight: 800;
+            }
+
+        .pc-money {
+            font-weight: 900;
+        }
+
+        .pc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .pc-badge--ok {
+            background: #ebffef;
+            color: #1e7e34;
+            border: 1px solid #b7ebc4;
+        }
+
+        .pc-badge--warn {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffe08a;
+        }
+
+        .pc-badge--danger {
+            background: #ffecec;
+            color: #b02a37;
+            border: 1px solid #ffc9cf;
+        }
+
+        .pc-action-icons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .pc-ico {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0,0,0,0.1);
+            background: #fff;
+            color: var(--pc-text);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+            .pc-ico:hover {
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+                color: var(--pc-red-dark);
+            }
+
+        tbody.pc-record {
+            transition: background 0.25s ease;
+        }
+
+            tbody.pc-record:hover tr {
+                background: #fff3f3 !important;
+            }
+
+        .pc-pager.pagination {
+            gap: 10px;
+            margin: 0;
+        }
+
+            .pc-pager.pagination .page-item .page-link {
+                border-radius: 999px !important;
+                width: 44px;
+                height: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 !important;
+                border: 1px solid rgba(0,0,0,0.1);
+                color: var(--pc-text);
+                background: #fff;
+                box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+            }
+
+            .pc-pager.pagination .page-item.active .page-link {
+                background: var(--pc-red) !important;
+                border-color: var(--pc-red) !important;
+                color: #fff !important;
+                box-shadow: 0 12px 24px rgba(255,59,59,0.25);
+            }
+
+            .pc-pager.pagination .page-item.disabled .page-link {
+                opacity: 0.45;
+                pointer-events: none;
+                box-shadow: none;
+            }
+    </style>
+}
+
+<section class="container py-4" id="medicinArea">
+    <div class="pc-wrap">
+        <h3 class="pc-title">Danh sách thuốc</h3>
+        <p class="pc-sub">Quản lý thuốc dùng để kê đơn cho thú cưng</p>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success mt-3 mb-0" style="border-radius:14px;">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <div class="pc-filter">
+            <form method="get" asp-controller="Medicin" asp-action="MedicinList" class="row g-3">
+                <div class="col-lg-7 col-md-8">
+                    <div class="pc-label">Từ khóa</div>
+                    <input class="form-control pc-input" type="text" name="search" value="@search"
+                           placeholder="Tìm tên thuốc..." />
+                </div>
+                <div class="col-lg-5 col-md-4 d-flex align-items-end justify-content-md-end gap-2">
+                    <a class="pc-btn pc-btn--ghost" href="@Url.Action("MedicinList", "Medicin")#medicinArea">
+                        <i class="fas fa-undo-alt"></i> Làm mới
+                    </a>
+                    <button type="submit" class="pc-btn pc-btn--primary">
+                        <i class="fas fa-filter"></i> Lọc
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="d-flex justify-content-end mb-3">
+            <a class="pc-btn pc-btn--primary" asp-controller="Medicin" asp-action="MedicinAddForm">
+                <i class="fas fa-plus"></i> Thêm thuốc
+            </a>
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="alert alert-info mb-0" style="border-radius:14px;">Chưa có thuốc trong hệ thống.</div>
+        }
+        else
+        {
+            <div class="pc-table table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width:60px;">#</th>
+                            <th>Tên thuốc</th>
+                            <th style="width:140px;">Đơn giá</th>
+                            <th style="width:150px;">Tồn kho</th>
+                            <th>Mô tả</th>
+                            <th class="text-end" style="width:180px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    @{int index = (currentPage - 1) * 10 + 1;}
+                    @foreach (var m in Model)
+                    {
+                        var qty = m.stock_quantity ?? 0;
+                        var badgeClass = qty == 0 ? "pc-badge--danger" : qty <= 10 ? "pc-badge--warn" : "pc-badge--ok";
+                        <tbody class="pc-record">
+                            <tr>
+                                <td>@index</td>
+                                <td><strong>@m.name</strong></td>
+                                <td class="pc-money">@m.unit_price.ToString("N0") đ</td>
+                                <td>
+                                    <span class="pc-badge @badgeClass">
+                                        <i class="fas fa-capsules"></i> @qty
+                                    </span>
+                                </td>
+                                <td><small class="text-muted">@(string.IsNullOrWhiteSpace(m.description) ? "-" : m.description)</small></td>
+                                <td class="text-end">
+                                    <div class="pc-action-icons">
+                                        <a class="pc-ico" title="Xem chi tiết"
+                                           asp-controller="Medicin" asp-action="MedicinDetails" asp-route-id="@m.medicine_id">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a class="pc-ico" title="Chỉnh sửa"
+                                           asp-controller="Medicin" asp-action="MedicinEditForm" asp-route-id="@m.medicine_id">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a class="pc-ico" title="Xóa"
+                                           asp-controller="Medicin" asp-action="Delete" asp-route-id="@m.medicine_id"
+                                           onclick="return confirm('Bạn có chắc muốn xóa thuốc này?');">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        index++;
+                    }
+                </table>
+            </div>
+
+            <div class="mt-3 d-flex justify-content-center">
+                <ul class="pagination pc-pager">
+                    <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                        <a class="page-link"
+                           href="@Url.Action("MedicinList", "Medicin", new { search, page = currentPage - 1 })">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    @for (int i = 1; i <= Math.Max(totalPages, 1); i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            <a class="page-link"
+                               href="@Url.Action("MedicinList", "Medicin", new { search, page = i })">@i</a>
+                        </li>
+                    }
+                    <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                        <a class="page-link"
+                           href="@Url.Action("MedicinList", "Medicin", new { search, page = currentPage + 1 })">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="text-center mt-2" style="color:var(--pc-muted); font-size:0.95rem;">
+                Tổng: <strong>@totalItems</strong> thuốc
+            </div>
+        }
+    </div>
+</section>
