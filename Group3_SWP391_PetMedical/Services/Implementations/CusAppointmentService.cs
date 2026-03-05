@@ -28,7 +28,7 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<List<(int PetId, string PetName)>> GetCustomerPetsAsync(int customerId)
             => _repo.GetCustomerPetsAsync(customerId);
 
-        // ✅ ADDED: validate đặt lịch (không sửa logic cũ, chỉ thêm trước khi gọi repo)
+        //validate đặt lịch (không sửa logic cũ, chỉ thêm trước khi gọi repo)
         public async Task<int> CreateAppointmentAsync(int customerId, CusCreateAppointmentCommand cmd)
         {
            
