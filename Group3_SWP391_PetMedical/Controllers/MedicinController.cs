@@ -52,6 +52,31 @@ namespace Group3_SWP391_PetMedical.Controllers
         }
 
         [HttpGet]
+        public IActionResult MedicinAddForm()
+        {
+            return View(new CreateMedicinVm());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MedicinAddForm(CreateMedicinVm vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(vm);
+            }
+
+            var created = await _medicinService.AddAsync(
+                vm.name.Trim(),
+                vm.unit_price,
+                vm.stock_quantity,
+                vm.description?.Trim());
+
+            TempData["SuccessMessage"] = "Thêm thuốc thành công!";
+            return RedirectToAction(nameof(MedicinDetails), new { id = created.medicine_id });
+        }
+
+        [HttpGet]
         public async Task<IActionResult> MedicinEditForm(int id)
         {
             var medicin = await _medicinService.GetByIdAsync(id);

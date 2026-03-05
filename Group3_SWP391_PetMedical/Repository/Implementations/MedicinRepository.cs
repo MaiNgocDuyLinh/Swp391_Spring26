@@ -22,8 +22,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             {
                 var keyword = search.Trim().ToLower();
                 query = query.Where(m =>
-                    m.name.ToLower().Contains(keyword) ||
-                    (m.description ?? "").ToLower().Contains(keyword));
+                    m.name.ToLower().Contains(keyword));
             }
 
             var totalItems = await query.CountAsync();
@@ -46,6 +45,21 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         public Task<Medication?> GetByIdAsync(int id)
             => _context.Medications.AsNoTracking()
                 .FirstOrDefaultAsync(m => m.medicine_id == id);
+
+        public async Task<Medication> AddAsync(string name, decimal unitPrice, int stockQuantity, string? description)
+        {
+            var entity = new Medication
+            {
+                name = name,
+                unit_price = unitPrice,
+                stock_quantity = stockQuantity,
+                description = description
+            };
+
+            _context.Medications.Add(entity);
+            await _context.SaveChangesAsync();
+            return entity;
+        }
 
         public async Task<bool> UpdateAsync(int id, string name, decimal unitPrice, int stockQuantity, string? description)
         {

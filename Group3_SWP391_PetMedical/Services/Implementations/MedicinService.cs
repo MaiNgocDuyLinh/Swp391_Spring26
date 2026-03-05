@@ -20,6 +20,9 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<Medication?> GetByIdAsync(int id)
             => _repo.GetByIdAsync(id);
 
+        public Task<Medication> AddAsync(string name, decimal unitPrice, int stockQuantity, string? description)
+            => _repo.AddAsync(name, unitPrice, stockQuantity, description);
+
         public Task<bool> UpdateAsync(int id, string name, decimal unitPrice, int stockQuantity, string? description)
             => _repo.UpdateAsync(id, name, unitPrice, stockQuantity, description);
     }
