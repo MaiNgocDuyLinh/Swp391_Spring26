@@ -55,32 +55,35 @@
                                 <input asp-for="Phone" class="form-control" placeholder="0123456789" />
                                 <span asp-validation-for="Phone" class="text-danger"></span>
                             </div>
-                            <div class="form-group">
-                                <label for="RoleId">Vai trò <span class="text-danger">*</span></label>
-                                <select name="RoleId" id="RoleId" class="form-control" required>
-                                    @foreach (var r in Model.AvailableRoles)
-                                    {
-                                        if (Model.RoleId == r.RoleId)
-                                        { <option value="@r.RoleId" selected>@r.RoleName</option> }
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="RoleId">Vai trò <span class="text-danger">*</span></label>
+                                    <select name="RoleId" id="RoleId" class="form-control" required>
+                                        @foreach (var r in Model.AvailableRoles)
+                                        {
+                                            if (Model.RoleId == r.RoleId)
+                                            { <option value="@r.RoleId" selected>@r.RoleName</option> }
+                                            else
+                                            { <option value="@r.RoleId">@r.RoleName</option> }
+                                        }
+                                    </select>
+                                    <span asp-validation-for="RoleId" class="text-danger"></span>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="Status">Trạng thái <span class="text-danger">*</span></label>
+                                    <select name="Status" id="Status" class="form-control" required>
+                                        @if (Model.Status == "Active")
+                                        { <option value="Active" selected>Hoạt động</option> }
                                         else
-                                        { <option value="@r.RoleId">@r.RoleName</option> }
-                                    }
-                                </select>
-                                <span asp-validation-for="RoleId" class="text-danger"></span>
-                            </div>
-                            <div class="form-group">
-                                <label for="Status">Trạng thái <span class="text-danger">*</span></label>
-                                <select name="Status" id="Status" class="form-control" required>
-                                    @if (Model.Status == "Active")
-                                    { <option value="Active" selected>Hoạt động</option> }
-                                    else
-                                    { <option value="Active">Hoạt động</option> }
-                                    @if (Model.Status == "Inactive")
-                                    { <option value="Inactive" selected>Đã khóa</option> }
-                                    else
-                                    { <option value="Inactive">Đã khóa</option> }
-                                </select>
-                                <span asp-validation-for="Status" class="text-danger"></span>
+                                        { <option value="Active">Hoạt động</option> }
+                                        @if (Model.Status == "Inactive")
+                                        { <option value="Inactive" selected>Đã khóa</option> }
+                                        else
+                                        { <option value="Inactive">Đã khóa</option> }
+                                    </select>
+                                    <span asp-validation-for="Status" class="text-danger"></span>
+                                </div>
                             </div>
                             <hr class="my-4" />
                             <div class="d-flex justify-content-end">

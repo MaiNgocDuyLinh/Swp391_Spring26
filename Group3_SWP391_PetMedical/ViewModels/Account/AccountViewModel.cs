@@ -36,6 +36,10 @@ namespace Group3_SWP391_PetMedical.ViewModels.Account
 
     public class CreateAccountViewModel
     {
+        [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập.")]
+        [StringLength(50, ErrorMessage = "Tên đăng nhập không được vượt quá 50 ký tự.")]
+        public string Username { get; set; } = null!;
+
         [Required(ErrorMessage = "Vui lòng nhập email.")]
         [EmailAddress(ErrorMessage = "Email không hợp lệ.")]
         public string Email { get; set; } = null!;
@@ -43,6 +47,10 @@ namespace Group3_SWP391_PetMedical.ViewModels.Account
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu.")]
         [MinLength(6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự.")]
         public string Password { get; set; } = null!;
+
+        [Required(ErrorMessage = "Vui lòng nhập lại mật khẩu.")]
+        [Compare("Password", ErrorMessage = "Mật khẩu xác nhận không khớp.")]
+        public string ConfirmPassword { get; set; } = null!;
 
         [Required(ErrorMessage = "Vui lòng nhập họ tên.")]
         [StringLength(100)]

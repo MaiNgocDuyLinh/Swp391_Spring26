@@ -1,4 +1,4 @@
-@model List<Group3_SWP391_PetMedical.Models.AuditLog>
+@model List<Group3_SWP391_PetMedical.ViewModels.Admin.AuditLogListItemVM>
 @using System.Text.Json
 
 @{
@@ -25,7 +25,7 @@
             <div class="filter-row">
                 <div class="filter-item">
                     <label for="logSearch">Từ khóa</label>
-                    <input id="logSearch" type="text" class="form-control" placeholder="User, hành động, đối tượng, IP..." />
+                    <input id="logSearch" type="text" class="form-control" placeholder="ID, email, họ tên, vai trò, hành động, đối tượng..." />
                 </div>
             </div>
         </div>
@@ -36,11 +36,13 @@
                     <table class="table admin-table" id="logsTable">
                         <thead>
                             <tr>
-                                <th>User</th>
+                                <th>ID</th>
+                                <th>Email</th>
+                                <th>Họ tên</th>
+                                <th>Vai trò</th>
                                 <th>Hành động</th>
                                 <th>Đối tượng</th>
                                 <th style="min-width:300px">Thay đổi</th>
-                                <th>IP</th>
                                 <th>Thời gian</th>
                             </tr>
                         </thead>
@@ -48,9 +50,24 @@
                             @foreach (var log in Model)
                             {
                                 <tr>
-                                    <!-- User -->
+                                    <!-- ID -->
                                     <td>
-                                        @(string.IsNullOrEmpty(log.UserEmail) ? "System" : log.UserEmail)
+                                        @(log.UserId.HasValue ? log.UserId.Value.ToString() : "")
+                                    </td>
+
+                                    <!-- Email -->
+                                    <td>
+                                        @(string.IsNullOrEmpty(log.Email) ? "System" : log.Email)
+                                    </td>
+
+                                    <!-- Full name -->
+                                    <td>
+                                        @(string.IsNullOrEmpty(log.FullName) ? "" : log.FullName)
+                                    </td>
+
+                                    <!-- Role -->
+                                    <td>
+                                        @(string.IsNullOrEmpty(log.RoleName) ? "" : log.RoleName)
                                     </td>
 
                                     <!-- Action -->
@@ -117,9 +134,6 @@
                                         }
                                     </td>
 
-                                    <!-- IP -->
-                                    <td>@log.IpAddress</td>
-
                                     <!-- Time -->
                                     <td>
                                         @(log.CreatedAt.HasValue 
@@ -147,10 +161,11 @@
                 var keyword = this.value.toLowerCase();
                 var rows = document.querySelectorAll('#logsTable tbody tr');
 
-                rows.forEach(function (row) {
-                    var text = row.textContent.toLowerCase();
+                for (var i = 0; i < rows.length; i++) {
+                    var row = rows[i];
+                    var text = (row.textContent || '').toLowerCase();
                     row.style.display = text.indexOf(keyword) !== -1 ? '' : 'none';
-                });
+                }
             });
         })();
     </script>

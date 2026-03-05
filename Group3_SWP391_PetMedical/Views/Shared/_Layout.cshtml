@@ -84,7 +84,7 @@
                                             <li><a href="@Url.Action("About", "Home")">About</a></li>
                                             <li><a href="@Url.Action("Service", "Service")">Dịch vụ </a></li>
 
-                                            @* Menu Admin trên navbar (tuỳ bạn muốn giữ hay bỏ) *@
+                                            @* Menu Admin trên navbar *@
                                             @if (User.Identity?.IsAuthenticated == true &&
                                             (User.IsInRole("Admin") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Admin")))
                                             {
@@ -93,6 +93,8 @@
                                                     <ul class="submenu">
                                                         <li><a href="@Url.Action("Index", "Admin")">Quản lý Tài khoản</a></li>
                                                         <li><a href="@Url.Action("Create", "Admin")">Tạo Tài khoản</a></li>
+                                                        <li><a href="@Url.Action("RolePermissions", "Admin")">Phân quyền theo màn hình</a></li>
+                                                        <li><a href="@Url.Action("Index", "AuditLogs")">Nhật ký hệ thống</a></li>
                                                     </ul>
                                                 </li>
                                             }
@@ -107,6 +109,7 @@
                                                         <li><a href="@Url.Action("ListCustomers", "Staff")">Danh sách khách hàng</a></li>
                                                         <li><a href="@Url.Action("AppointmentList", "Staff")">Lịch khám theo ngày</a></li>
                                                         <li><a href="@Url.Action("AllAppointments", "Staff")">Tất cả lịch hẹn</a></li>
+                                                        <li><a href="@Url.Action("Index", "Reports")">Export dữ liệu</a></li>
                                                     </ul>
                                                 </li>
                                             }
@@ -128,8 +131,11 @@
                                                 <li>
                                                     <a href="#">Manager</a>
                                                     <ul class="submenu">
+                                                        <li><a href="@Url.Action("ListScheduleChangeRequests", "ManagerModule")">Yêu cầu đổi lịch (duyệt/từ chối)</a></li>
+                                                        <li><a href="@Url.Action("Overview", "ManagerModule")">Thống kê tổng quan</a></li>
                                                         <li><a href="@Url.Action("ListServices", "Manager")">Quản lý dịch vụ</a></li>
                                                         <li><a href="@Url.Action("AppointmentList", "Manager")">Quản lý lịch hẹn</a></li>
+                                                        <li><a href="@Url.Action("Index", "Reports")">Export dữ liệu</a></li>
                                                     </ul>
                                                 </li>
                                             }
@@ -196,6 +202,12 @@
                                                     </a>
                                                     <a class="dropdown-item" href="@Url.Action("Create", "Admin")" style="padding: 0.5rem 1rem;">
                                                         <i class="fas fa-user-plus"></i> Tạo Tài khoản
+                                                    </a>
+                                                    <a class="dropdown-item" href="@Url.Action("RolePermissions", "Admin")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-shield-alt"></i> Phân quyền màn hình
+                                                    </a>
+                                                    <a class="dropdown-item" href="@Url.Action("Index", "AuditLogs")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-history"></i> Nhật ký hệ thống
                                                     </a>
                                                 }
 

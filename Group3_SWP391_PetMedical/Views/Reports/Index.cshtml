@@ -1,0 +1,324 @@
+@model Group3_SWP391_PetMedical.Models.ReportExportViewModel
+@{
+    ViewData["Title"] = "Export dữ liệu";
+    var fromDate = Model.FromDate;
+    var toDate = Model.ToDate;
+}
+
+<!-- Hero Area Start -->
+<div class="slider-area2 slider-height2 d-flex align-items-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="hero-cap text-center pt-50">
+                    <h2>Export dữ liệu (Staff / Manager)</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Hero Area End -->
+
+<div class="container mt-4 mb-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-3">
+                        <i class="fas fa-filter"></i> Chọn khoảng thời gian & loại dữ liệu
+                    </h5>
+                    <form method="get" asp-action="Index" asp-controller="Reports" class="form-row align-items-end">
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold" for="fromDate">
+                                Từ ngày
+                            </label>
+                            <input type="date" class="form-control" id="fromDate" name="fromDate"
+                                   value="@(fromDate?.ToString("yyyy-MM-dd") ?? "")" />
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold" for="toDate">
+                                Đến ngày
+                            </label>
+                            <input type="date" class="form-control" id="toDate" name="toDate"
+                                   value="@(toDate?.ToString("yyyy-MM-dd") ?? "")" />
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold" for="exportType">
+                                Loại dữ liệu
+                            </label>
+                            <select class="form-control" id="exportType" name="exportType">
+                                @if (Model.ExportType == "Invoices")
+                                {
+                                    <option value="Invoices" selected>Hóa đơn</option>
+                                }
+                                else
+                                {
+                                    <option value="Invoices">Hóa đơn</option>
+                                }
+
+                                @if (Model.ExportType == "Prescriptions")
+                                {
+                                    <option value="Prescriptions" selected>Đơn thuốc</option>
+                                }
+                                else
+                                {
+                                    <option value="Prescriptions">Đơn thuốc</option>
+                                }
+
+                                @if (Model.ExportType == "Statistics")
+                                {
+                                    <option value="Statistics" selected>Thống kê doanh thu & lịch khám</option>
+                                }
+                                else
+                                {
+                                    <option value="Statistics">Thống kê doanh thu & lịch khám</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group col-md-12 mt-3 d-flex flex-wrap export-actions">
+                            <button type="submit" class="btn btn-dark mr-2 mb-2">
+                                <i class="fas fa-search"></i> Xem danh sách
+                            </button>
+
+                            @if (Model.ExportType == "Invoices")
+                            {
+                                <a class="btn btn-dark mb-2"
+                                   href="@Url.Action("ExportInvoices", "Reports", new { fromDate = fromDate?.ToString("yyyy-MM-dd"), toDate = toDate?.ToString("yyyy-MM-dd") })">
+                                    <i class="fas fa-file-invoice"></i> Export Hóa đơn (CSV)
+                                </a>
+                            }
+                            else if (Model.ExportType == "Prescriptions")
+                            {
+                                <a class="btn btn-dark mb-2"
+                                   href="@Url.Action("ExportPrescriptions", "Reports", new { fromDate = fromDate?.ToString("yyyy-MM-dd"), toDate = toDate?.ToString("yyyy-MM-dd") })">
+                                    <i class="fas fa-prescription"></i> Export Đơn thuốc (CSV)
+                                </a>
+                            }
+                            else if (Model.ExportType == "Statistics")
+                            {
+                                <a class="btn btn-dark mb-2"
+                                   href="@Url.Action("ExportStatistics", "Reports", new { fromDate = fromDate?.ToString("yyyy-MM-dd"), toDate = toDate?.ToString("yyyy-MM-dd") })">
+                                    <i class="fas fa-chart-line"></i> Export Thống kê (CSV)
+                                </a>
+                            }
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mt-3 mt-md-0">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="font-weight-bold mb-3">
+                        <i class="fas fa-info-circle"></i> Ghi chú
+                    </h6>
+                    <ul class="mb-0">
+                        <li>Staff và Manager có thể export theo khoảng thời gian.</li>
+                        <li>Nhấn <strong>Xem danh sách</strong> để xem những bản ghi sẽ được export.</li>
+                        <li>Sau đó chọn nút <strong>Export ... (CSV)</strong> để tải file.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách dữ liệu sẽ được export -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i>
+                        Danh sách dữ liệu được export
+                        @if (fromDate.HasValue || toDate.HasValue)
+                        {
+                            <small class="d-block mt-1">
+                                Khoảng thời gian:
+                                @fromDate?.ToString("dd/MM/yyyy") - @toDate?.ToString("dd/MM/yyyy")
+                            </small>
+                        }
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ExportType == "Invoices")
+                    {
+                        if (Model.Invoices != null && Model.Invoices.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Mã HĐ</th>
+                                            <th>Khách hàng</th>
+                                            <th>Thú cưng</th>
+                                            <th>Tổng tiền</th>
+                                            <th>Trạng thái</th>
+                                            <th>Hình thức thanh toán</th>
+                                            <th>Ngày tạo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            var index = 1;
+                                        }
+                                        @foreach (var invoice in Model.Invoices)
+                                        {
+                                            <tr>
+                                                <td>@index</td>
+                                                <td>@invoice.invoice_id</td>
+                                                <td>@invoice.appointment?.customer?.full_name</td>
+                                                <td>@invoice.appointment?.pet?.name</td>
+                                                <td>@invoice.total_amount.ToString("N0")</td>
+                                                <td>@invoice.payment_status</td>
+                                                <td>@invoice.payment_method</td>
+                                                <td>@invoice.created_at?.ToString("dd/MM/yyyy HH:mm")</td>
+                                            </tr>
+                                            index++;
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-center text-muted mb-0">
+                                <i class="fas fa-info-circle"></i> Không có hóa đơn nào trong khoảng thời gian đã chọn.
+                            </p>
+                        }
+                    }
+                    else if (Model.ExportType == "Prescriptions")
+                    {
+                        if (Model.Prescriptions != null && Model.Prescriptions.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Mã đơn thuốc</th>
+                                            <th>Khách hàng</th>
+                                            <th>Thú cưng</th>
+                                            <th>Thuốc</th>
+                                            <th>Liều dùng</th>
+                                            <th>Số lượng</th>
+                                            <th>Ngày tạo hồ sơ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            var index = 1;
+                                        }
+                                        @foreach (var p in Model.Prescriptions)
+                                        {
+                                            var appointment = p.record.appointment;
+                                            <tr>
+                                                <td>@index</td>
+                                                <td>@p.prescription_id</td>
+                                                <td>@appointment?.customer?.full_name</td>
+                                                <td>@appointment?.pet?.name</td>
+                                                <td>@p.medicine?.name</td>
+                                                <td>@p.dosage</td>
+                                                <td>@p.quantity</td>
+                                                <td>@p.record.created_at?.ToString("dd/MM/yyyy HH:mm")</td>
+                                            </tr>
+                                            index++;
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-center text-muted mb-0">
+                                <i class="fas fa-info-circle"></i> Không có đơn thuốc nào trong khoảng thời gian đã chọn.
+                            </p>
+                        }
+                    }
+                    else if (Model.ExportType == "Statistics")
+                    {
+                        if (Model.Statistics != null && Model.Statistics.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Ngày</th>
+                                            <th>Tổng doanh thu</th>
+                                            <th>Số lịch khám</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            var index = 1;
+                                        }
+                                        @foreach (var row in Model.Statistics)
+                                        {
+                                            <tr>
+                                                <td>@index</td>
+                                                <td>@row.Date.ToString("dd/MM/yyyy")</td>
+                                                <td>@row.TotalRevenue.ToString("N0")</td>
+                                                <td>@row.AppointmentCount</td>
+                                            </tr>
+                                            index++;
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-center text-muted mb-0">
+                                <i class="fas fa-info-circle"></i> Không có dữ liệu thống kê trong khoảng thời gian đã chọn.
+                            </p>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+    }
+
+    .card-header {
+        border-radius: 10px 10px 0 0;
+    }
+
+    .table th,
+    .table td {
+        vertical-align: middle;
+    }
+
+    .form-control {
+        height: 45px;
+    }
+
+    .btn {
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .export-actions .btn {
+        background-color: #000;
+        border-color: #000;
+        color: #fff;
+        border-radius: 999px;
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+
+    .export-actions .btn:hover {
+        background-color: #222;
+        border-color: #222;
+        color: #fff;
+    }
+</style>
+

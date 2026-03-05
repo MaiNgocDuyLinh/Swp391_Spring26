@@ -21,10 +21,10 @@ namespace Group3_SWP391_PetMedical.Controllers
             var result = await _managerService.GetServicesPagedAsync(search, page, 5);
             ViewBag.CurrentPage = result.Page;
             ViewBag.TotalPages = result.TotalPages;
-            ViewBag.TotalItems = result.TotalItems;    
+            ViewBag.TotalItems = result.TotalItems;
             ViewBag.Search = search;
             return View(result.Items.ToList());
-        }  
+        }
 
         public async Task<IActionResult> EditService(int id)
         {
