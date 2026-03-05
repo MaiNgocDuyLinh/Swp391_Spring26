@@ -42,5 +42,23 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 TotalItems = totalItems
             };
         }
+
+        public Task<Medication?> GetByIdAsync(int id)
+            => _context.Medications.AsNoTracking()
+                .FirstOrDefaultAsync(m => m.medicine_id == id);
+
+        public async Task<bool> UpdateAsync(int id, string name, decimal unitPrice, int stockQuantity, string? description)
+        {
+            var entity = await _context.Medications.FirstOrDefaultAsync(m => m.medicine_id == id);
+            if (entity == null) return false;
+
+            entity.name = name;
+            entity.unit_price = unitPrice;
+            entity.stock_quantity = stockQuantity;
+            entity.description = description;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

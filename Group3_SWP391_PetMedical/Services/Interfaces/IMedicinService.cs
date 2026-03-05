@@ -6,5 +6,7 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
     public interface IMedicinService
     {
         Task<PagedResult<Medication>> GetMedicinListAsync(PagingQuery query);
+        Task<Medication?> GetByIdAsync(int id);
+        Task<bool> UpdateAsync(int id, string name, decimal unitPrice, int stockQuantity, string? description);
     }
 }

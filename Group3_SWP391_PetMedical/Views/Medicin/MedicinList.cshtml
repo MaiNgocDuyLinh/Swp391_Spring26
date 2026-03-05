@@ -3,6 +3,7 @@
     ViewData["Title"] = "Danh sách thuốc";
 
     int currentPage = ViewBag.CurrentPage is int cp ? cp : 1;
+    int pageSize = ViewBag.PageSize is int ps ? ps : 10;
     int totalPages = ViewBag.TotalPages is int tp ? tp : 1;
     int totalItems = ViewBag.TotalItems is int ti ? ti : (Model?.Count() ?? 0);
     string? search = ViewBag.Search as string;
@@ -252,13 +253,11 @@
                         <tr>
                             <th style="width:60px;">#</th>
                             <th>Tên thuốc</th>
-                            <th style="width:140px;">Đơn giá</th>
                             <th style="width:150px;">Tồn kho</th>
-                            <th>Mô tả</th>
                             <th class="text-end" style="width:180px;">Thao tác</th>
                         </tr>
                     </thead>
-                    @{int index = (currentPage - 1) * 10 + 1;}
+                    @{int index = (currentPage - 1) * pageSize + 1;}
                     @foreach (var m in Model)
                     {
                         var qty = m.stock_quantity ?? 0;
@@ -267,13 +266,11 @@
                             <tr>
                                 <td>@index</td>
                                 <td><strong>@m.name</strong></td>
-                                <td class="pc-money">@m.unit_price.ToString("N0") đ</td>
                                 <td>
                                     <span class="pc-badge @badgeClass">
                                         <i class="fas fa-capsules"></i> @qty
                                     </span>
                                 </td>
-                                <td><small class="text-muted">@(string.IsNullOrWhiteSpace(m.description) ? "-" : m.description)</small></td>
                                 <td class="text-end">
                                     <div class="pc-action-icons">
                                         <a class="pc-ico" title="Xem chi tiết"
