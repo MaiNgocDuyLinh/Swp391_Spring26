@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Group3_SWP391_PetMedical.Models.Common;
 using Group3_SWP391_PetMedical.Services.Interfaces;
 using Group3_SWP391_PetMedical.ViewModels.Medicin;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Group3_SWP391_PetMedical.Controllers
 {
+    
     public class MedicinController : Controller
     {
         private readonly IMedicinService _medicinService;
@@ -19,6 +21,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View();
         }
 
+        [Authorize(Roles = "Doctor,Staff,Manager")]
         public async Task<IActionResult> MedicinList(string? search, int page = 1, int pageSize = 10)
         {
             if (page <= 0) page = 1;
@@ -40,6 +43,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(data.Items);
         }
 
+        [Authorize(Roles = "Doctor,Staff,Manager")]
         public async Task<IActionResult> MedicinDetails(int id)
         {
             var medicin = await _medicinService.GetByIdAsync(id);
@@ -51,12 +55,14 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(medicin);
         }
 
+        [Authorize(Roles = "Staff,Manager")]
         [HttpGet]
         public IActionResult MedicinAddForm()
         {
             return View(new CreateMedicinVm());
         }
 
+        [Authorize(Roles = "Staff,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MedicinAddForm(CreateMedicinVm vm)
@@ -76,6 +82,8 @@ namespace Group3_SWP391_PetMedical.Controllers
             return RedirectToAction(nameof(MedicinDetails), new { id = created.medicine_id });
         }
 
+
+        [Authorize(Roles = "Staff,Manager")]
         [HttpGet]
         public async Task<IActionResult> MedicinEditForm(int id)
         {
@@ -94,6 +102,8 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(vm);
         }
 
+
+        [Authorize(Roles = "Staff,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MedicinEditForm(EditMedicinVm vm)
