@@ -80,5 +80,25 @@ namespace Group3_SWP391_PetMedical.Controllers
             TempData["SuccessMessage"] = "Đã chỉ định bác sĩ thành công!";
             return RedirectToAction("AppointmentDetail", new { id = appointmentId });
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelAppointment(int id, string? reason)
+        {
+            await _managerService.CancelAppointmentAsync(id, reason);
+            TempData["SuccessMessage"] = "Đã hủy lịch hẹn!";
+            return RedirectToAction("AppointmentDetail", new { id });
+        }
+
+        // ========== CANCELLED HISTORY ==========
+        public async Task<IActionResult> CancelledAppointments(string? search, int page = 1)
+        {
+            var result = await _managerService.GetCancelledAppointmentsPagedAsync(search, page, PageSize);
+            ViewBag.CurrentPage = result.Page;
+            ViewBag.TotalPages = result.TotalPages;
+            ViewBag.TotalItems = result.TotalItems;
+            ViewBag.Search = search;
+            return View(result.Items.ToList());
+        }
     }
 }

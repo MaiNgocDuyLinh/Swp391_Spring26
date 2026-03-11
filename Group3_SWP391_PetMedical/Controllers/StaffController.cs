@@ -108,6 +108,17 @@ namespace Group3_SWP391_PetMedical.Controllers
             return RedirectToAction("AppointmentDetail", new { id });
         }
 
+        // ========== CANCELLED HISTORY ==========
+        public async Task<IActionResult> CancelledAppointments(string? search, int page = 1)
+        {
+            var result = await _staffService.GetCancelledAppointmentsPagedAsync(search, page, PageSize);
+            ViewBag.CurrentPage = result.Page;
+            ViewBag.TotalPages = result.TotalPages;
+            ViewBag.TotalItems = result.TotalItems;
+            ViewBag.Search = search;
+            return View(result.Items.ToList());
+        }
+
         // ========== INVOICE ==========
         [HttpPost]
         [ValidateAntiForgeryToken]

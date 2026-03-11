@@ -36,6 +36,9 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<PagedResult<Appointment>> GetAllAppointmentsPagedAsync(string? search, string? statusFilter, int page, int pageSize)
             => _appointmentRepo.GetAllAppointmentsPagedAsync(search, statusFilter, page, pageSize);
 
+        public Task<PagedResult<Appointment>> GetCancelledAppointmentsPagedAsync(string? search, int page, int pageSize)
+            => _appointmentRepo.GetCancelledAppointmentsPagedAsync(search, page, pageSize);
+
         public Task<Appointment?> GetAppointmentByIdAsync(int id)
             => _appointmentRepo.GetByIdAsync(id);
 

@@ -14,6 +14,7 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         // ========== Appointments ==========
         Task<PagedResult<Appointment>> GetAppointmentsByDatePagedAsync(DateTime date, string? search, int page, int pageSize);
         Task<PagedResult<Appointment>> GetAllAppointmentsPagedAsync(string? search, string? statusFilter, int page, int pageSize);
+        Task<PagedResult<Appointment>> GetCancelledAppointmentsPagedAsync(string? search, int page, int pageSize);
         Task<Appointment?> GetAppointmentByIdAsync(int id);
         Task<bool> CancelAppointmentAsync(int id, string? reason);
         Task<bool> AssignDoctorAsync(int appointmentId, int doctorId);

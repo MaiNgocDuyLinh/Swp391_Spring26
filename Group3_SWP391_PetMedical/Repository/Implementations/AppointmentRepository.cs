@@ -67,6 +67,26 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return await query.ToPagedResultAsync(page, pageSize);
         }
 
+        // ========== Cancelled history ==========
+        public async Task<PagedResult<Appointment>> GetCancelledAppointmentsPagedAsync(
+            string? search, int page, int pageSize)
+        {
+            var query = BaseQuery().Where(a => a.status == "Đã Hủy");
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+                query = query.Where(a =>
+                    (a.customer != null && EF.Functions.Collate(a.customer.full_name, "Vietnamese_CI_AI").Contains(search)) ||
+                    (a.pet != null && EF.Functions.Collate(a.pet.name, "Vietnamese_CI_AI").Contains(search)) ||
+                    (a.doctor != null && EF.Functions.Collate(a.doctor.full_name, "Vietnamese_CI_AI").Contains(search)) ||
+                    EF.Functions.Collate(a.notes ?? "", "Vietnamese_CI_AI").Contains(search));
+            }
+
+            query = query.OrderByDescending(a => a.appointment_date);
+            return await query.ToPagedResultAsync(page, pageSize);
+        }
+
         // ========== Get chi tiet 1 lich ==========
         public async Task<Appointment?> GetByIdAsync(int id)
         {

@@ -8,9 +8,10 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         // ========== View appointments ==========
         Task<PagedResult<Appointment>> GetAppointmentsByDatePagedAsync(DateTime date, string? search, int page, int pageSize);
         Task<PagedResult<Appointment>> GetAllAppointmentsPagedAsync(string? search, string? statusFilter, int page, int pageSize);
+        Task<PagedResult<Appointment>> GetCancelledAppointmentsPagedAsync(string? search, int page, int pageSize);
         Task<Appointment?> GetByIdAsync(int id);
 
-        // ========== Staff: Cancel ==========
+        // ========== Cancel ==========
         Task<bool> CancelAsync(int id, string? reason);
 
         // ========== Assign Doctor ==========
