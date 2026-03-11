@@ -365,11 +365,18 @@ namespace Group3_SWP391_PetMedical.Controllers
             var vm = await _cusAppointmentService.GetCusEditAppointmentAsync(customerId, id);
             if (vm == null) return NotFound();
 
+            if (vm.Status != "Chờ xác nhận" && vm.Status != "Đặt lịch thành công")
+            {
+                TempData["error"] = "Chỉ được chỉnh sửa lịch khi trạng thái là 'Chờ xác nhận' hoặc 'Đặt lịch thành công'.";
+                return RedirectToAction(nameof(MyAppointments));
+            }
+
             if (vm.CreatedAt != default && DateTime.Now > vm.CreatedAt.AddHours(24))
             {
                 TempData["error"] = "Không thể thay đổi lịch hẹn sau 24h.";
                 return RedirectToAction(nameof(MyAppointments));
             }
+
 
             var services = await _serviceService.GetAllAsync();
             ViewBag.ServiceOptions = services.Select(s => new SelectListItem
@@ -472,6 +479,16 @@ namespace Group3_SWP391_PetMedical.Controllers
             var detail = await _cusAppointmentService.GetCusAppointmentDetailAsync(customerId, id);
             if (detail == null) return NotFound();
 
+            if (detail.AppointmentDate <= DateTime.Now.AddHours(8))
+            {
+                TempData["error"] = "Không được hủy lịch khám trước dưới 8 giờ.";
+                return RedirectToAction(nameof(MyAppointments));
+            }
+            if (detail.Status != "Chờ xác nhận" && detail.Status != "Đặt lịch thành công")
+            {
+                TempData["error"] = "Chỉ được hủy lịch khi trạng thái là 'Chờ xác nhận' hoặc 'Đặt lịch thành công'.";
+                return RedirectToAction(nameof(MyAppointments));
+            }
             var vm = new CusCancelAppointmentVM
             {
                 AppointmentId = detail.AppointmentId,
@@ -493,6 +510,14 @@ namespace Group3_SWP391_PetMedical.Controllers
         {
             int customerId = GetCurrentUserId();
 
+            var detail = await _cusAppointmentService.GetCusAppointmentDetailAsync(customerId, vm.AppointmentId);
+            if (detail == null) return NotFound();
+
+            if (detail.AppointmentDate <= DateTime.Now.AddHours(8))
+            {
+                ModelState.AddModelError("", "Không được hủy lịch khám trước dưới 8 giờ.");
+            }
+
             if (string.IsNullOrWhiteSpace(vm.Reason))
             {
                 ModelState.AddModelError(nameof(vm.Reason), "Vui lòng nhập lý do hủy.");
@@ -500,6 +525,10 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             if (!ModelState.IsValid)
             {
+                vm.AppointmentDate = detail.AppointmentDate;
+                vm.PetName = detail.PetName;
+                vm.ServiceNames = detail.Services != null ? string.Join(", ", detail.Services) : "";
+
                 if (popup == 1) ViewBag.IsPopup = true;
                 return View("~/Views/Appointment/CusCancelAppointment.cshtml", vm);
             }
@@ -509,10 +538,8 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             TempData["msg"] = "Đã hủy lịch hẹn thành công!";
 
-            //  Sau khi hủy: luôn quay về lịch sử khám bệnh
             if (popup == 1)
             {
-                // URL trang cha cần quay về
                 ViewBag.GoBackUrl = Url.Action(nameof(AppointmentHistory), "CusAppointment");
                 return View("~/Views/Appointment/_PopupRedirectParent.cshtml");
             }

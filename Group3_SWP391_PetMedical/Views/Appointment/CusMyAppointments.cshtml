@@ -583,19 +583,40 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
 
-                                        <a class="pc-ico edit-check"
-                                           title="Chỉnh sửa"
-                                           data-created="@item.CreatedAt.ToString("o")"
-                                           href="@Url.Action("Edit", "CusAppointment", new { id = item.AppointmentId })">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
+                                        @if (item.Status == "Chờ xác nhận" || item.Status == "Đặt lịch thành công")
+                                        {
+                                            <a class="pc-ico edit-check"
+                                               title="Chỉnh sửa"
+                                               data-created="@item.CreatedAt.ToString("o")"
+                                               data-status="@item.Status"
+                                               href="@Url.Action("Edit", "CusAppointment", new { id = item.AppointmentId })">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="pc-ico" style="opacity:.35; cursor:not-allowed;">
+                                                <i class="fas fa-edit"></i>
+                                            </span>
+                                        }
 
-                                        <a class="pc-ico"
-                                           title="Hủy lịch"
-                                           href="javascript:void(0)"
-                                           onclick="openCancel(@item.AppointmentId)">
-                                            <i class="fas fa-times"></i>
-                                        </a>
+                                        @if (item.Status == "Chờ xác nhận" || item.Status == "Đặt lịch thành công")
+                                        {
+                                            <a class="pc-ico cancel-check"
+                                               title="Hủy lịch"
+                                               data-appointment="@item.AppointmentDate.ToString("o")"
+                                               data-status="@item.Status"
+                                               href="javascript:void(0)"
+                                               onclick="return handleCancelClick(this, @item.AppointmentId)">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="pc-ico" style="opacity:.35; cursor:not-allowed;">
+                                                <i class="fas fa-times"></i>
+                                            </span>
+                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -667,6 +688,60 @@
 
 @section Scripts {
     <script>
+        //cancel
+
+                function handleCancelClick(el, id) {
+
+            const status = el.getAttribute("data-status");
+            const appointmentDate = new Date(el.getAttribute("data-appointment"));
+            const now = new Date();
+
+            const diffHours = (appointmentDate - now) / (1000 * 60 * 60);
+
+            if (status !== "Chờ xác nhận" && status !== "Đặt lịch thành công") {
+                alert("Chỉ được hủy lịch khi trạng thái là 'Chờ xác nhận' hoặc 'Đặt lịch thành công'.");
+                return false;
+            }
+
+            if (diffHours < 8) {
+                alert("Chỉ được hủy lịch khi còn hơn 8 giờ trước giờ hẹn.");
+                return false;
+            }
+
+            openCancel(id);
+            return false;
+        }
+
+
+
+
+        //edit
+                document.querySelectorAll(".edit-check").forEach(function (btn) {
+
+            btn.addEventListener("click", function (e) {
+
+                const created = new Date(this.getAttribute("data-created"));
+                const status = this.getAttribute("data-status");
+                const now = new Date();
+
+                const diffHours = (now - created) / (1000 * 60 * 60);
+
+                if (status !== "Chờ xác nhận" && status !== "Đặt lịch thành công") {
+                    e.preventDefault();
+                    alert("Chỉ được chỉnh sửa lịch khi trạng thái là 'Chờ xác nhận' hoặc 'Đặt lịch thành công'.");
+                    return false;
+                }
+
+                if (diffHours > 24) {
+                    e.preventDefault();
+                    alert("Không thể chỉnh sửa lịch hẹn sau 24h.");
+                    return false;
+                }
+
+            });
+
+        });
+
         function openDetail(id) {
             const url = '@Url.Action("Details", "CusAppointment")' + '?id=' + id + '&popup=1';
             document.getElementById('detailFrame').src = url;

@@ -464,6 +464,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (appt == null) return false;
 
+            if (appt.status != "Chờ xác nhận" && appt.status != "Đặt lịch thành công")
+                throw new Exception("Chỉ được chỉnh sửa lịch khi trạng thái là 'Chờ xác nhận' hoặc 'Đặt lịch thành công'.");
             DateTime createdAt;
             try
             {
@@ -567,11 +569,17 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (appt == null) return false;
 
+            if (appt.status != "Chờ xác nhận" && appt.status != "Đặt lịch thành công")
+                throw new Exception("Chỉ được hủy lịch khi trạng thái là 'Chờ xác nhận' hoặc 'Đặt lịch thành công'.");
+
+            if (appt.appointment_date <= DateTime.Now.AddHours(8))
+                throw new Exception("Không được hủy lịch khi còn dưới 8 giờ trước giờ khám.");
+
             appt.status = "Đã hủy";
 
             var old = appt.notes ?? "";
             var line = $"[Lý do hủy]: {reason}";
-            appt.notes = string.IsNullOrWhiteSpace(old) ? line : (old + "\n" + line);
+            appt.notes = string.IsNullOrWhiteSpace(old) ? line : old + "\n" + line;
 
             await _context.SaveChangesAsync();
             return true;
