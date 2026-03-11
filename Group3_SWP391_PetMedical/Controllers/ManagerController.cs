@@ -74,24 +74,6 @@ namespace Group3_SWP391_PetMedical.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApproveAppointment(int id)
-        {
-            await _managerService.ApproveAppointmentAsync(id);
-            TempData["SuccessMessage"] = "Đã xác nhận lịch hẹn!";
-            return RedirectToAction("AppointmentList");
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RejectAppointment(int id, string? reason)
-        {
-            await _managerService.RejectAppointmentAsync(id, reason);
-            TempData["SuccessMessage"] = "Đã hủy lịch hẹn!";
-            return RedirectToAction("AppointmentList");
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AssignDoctor(int appointmentId, int doctorId)
         {
             await _managerService.AssignDoctorAsync(appointmentId, doctorId);

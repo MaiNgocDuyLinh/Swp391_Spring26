@@ -11,7 +11,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         private readonly PetClinicContext _context;
         public AppointmentRepository(PetClinicContext context) => _context = context;
 
-        // ========== Helper: Include đầy đủ navigation properties ==========
+        // ========== Helper: Include navigation properties ==========
         private IQueryable<Appointment> BaseQuery() =>
             _context.Appointments
                 .AsNoTracking()
@@ -21,7 +21,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .Include(a => a.AppointmentDetails)
                     .ThenInclude(ad => ad.service);
 
-        // ========== Staff: Xem lịch theo ngày ==========
+        // ========== Staff: Xem lich theo ngay ==========
         public async Task<PagedResult<Appointment>> GetAppointmentsByDatePagedAsync(
             DateTime date, string? search, int page, int pageSize)
         {
@@ -41,27 +41,18 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return await query.ToPagedResultAsync(page, pageSize);
         }
 
-        // ========== Manager + Staff: Xem tất cả lịch (có filter status) ==========
+        // ========== Manager + Staff: Xem tat ca lich (filter status) ==========
         public async Task<PagedResult<Appointment>> GetAllAppointmentsPagedAsync(
             string? search, string? statusFilter, int page, int pageSize)
         {
             var query = BaseQuery();
 
-            // Lọc theo status (hỗ trợ cả English và Vietnamese status)
+            // Filter by Vietnamese status directly
             if (!string.IsNullOrWhiteSpace(statusFilter) && statusFilter != "All")
             {
-                // Map English status sang Vietnamese tương ứng để lọc cả 2
-                var vietMap = new Dictionary<string, string> {
-                    {"Pending", "Chờ xác nhận"}, {"Deposited", "Đã đặt cọc"},
-                    {"Confirmed", "Đã xác nhận"}, {"Arrived", "Đã đến"},
-                    {"Completed", "Hoàn thành"}, {"Cancelled", "Đã hủy"},
-                    {"NoShow", "Không đến"}
-                };
-                var vietStatus = vietMap.ContainsKey(statusFilter) ? vietMap[statusFilter] : statusFilter;
-                query = query.Where(a => a.status == statusFilter || a.status == vietStatus);
+                query = query.Where(a => a.status == statusFilter);
             }
 
-            // Tìm kiếm
             if (!string.IsNullOrWhiteSpace(search))
             {
                 search = search.Trim().ToLower();
@@ -76,35 +67,25 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return await query.ToPagedResultAsync(page, pageSize);
         }
 
-        // ========== Get chi tiết 1 lịch ==========
+        // ========== Get chi tiet 1 lich ==========
         public async Task<Appointment?> GetByIdAsync(int id)
         {
             return await BaseQuery().FirstOrDefaultAsync(a => a.appointment_id == id);
         }
 
-        // ========== Manager: Approve ==========
-        public async Task<bool> ApproveAsync(int id)
+        // ========== Staff: Cancel appointment ==========
+        public async Task<bool> CancelAsync(int id, string? reason)
         {
             var appt = await _context.Appointments.FindAsync(id);
             if (appt == null) return false;
-            appt.status = "Confirmed";
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        // ========== Manager: Reject ==========
-        public async Task<bool> RejectAsync(int id, string? reason)
-        {
-            var appt = await _context.Appointments.FindAsync(id);
-            if (appt == null) return false;
-            appt.status = "Cancelled";
+            appt.status = "Đã Hủy";
             if (!string.IsNullOrWhiteSpace(reason))
-                appt.notes = reason;
+                appt.notes = (appt.notes ?? "") + "\n[Staff hủy]: " + reason;
             await _context.SaveChangesAsync();
             return true;
         }
 
-        // ========== Manager + Staff: Assign Doctor ==========
+        // ========== Staff: Assign Doctor ==========
         public async Task<bool> AssignDoctorAsync(int appointmentId, int doctorId)
         {
             var appt = await _context.Appointments.FindAsync(appointmentId);
@@ -116,7 +97,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
         public async Task<List<User>> GetDoctorsAsync()
         {
-            // Lấy role Doctor
             var doctorRole = await _context.Roles.FirstOrDefaultAsync(r => r.role_name == "Doctor");
             if (doctorRole == null) return new List<User>();
 
@@ -161,11 +141,9 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (appt == null) return false;
 
-            // Kiểm tra đã có invoice chưa
             var exists = await _context.Invoices.AnyAsync(i => i.appointment_id == appointmentId);
-            if (exists) return true; // đã có rồi
+            if (exists) return true;
 
-            // Tính tổng tiền
             var total = appt.AppointmentDetails.Sum(ad => ad.actual_price ?? ad.service?.base_price ?? 0);
 
             var invoice = new Invoice

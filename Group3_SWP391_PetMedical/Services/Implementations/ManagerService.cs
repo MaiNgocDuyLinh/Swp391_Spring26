@@ -33,12 +33,6 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<Appointment?> GetAppointmentByIdAsync(int id)
             => _appointmentRepo.GetByIdAsync(id);
 
-        public Task<bool> ApproveAppointmentAsync(int id)
-            => _appointmentRepo.ApproveAsync(id);
-
-        public Task<bool> RejectAppointmentAsync(int id, string? reason)
-            => _appointmentRepo.RejectAsync(id, reason);
-
         public Task<bool> AssignDoctorAsync(int appointmentId, int doctorId)
             => _appointmentRepo.AssignDoctorAsync(appointmentId, doctorId);
 
