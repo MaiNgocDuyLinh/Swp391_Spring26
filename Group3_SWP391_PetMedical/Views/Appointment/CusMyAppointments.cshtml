@@ -21,10 +21,111 @@
     //  map service_id -> base_price
     var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
     var _priceMap = _allSvcs.ToDictionary(x => x.service_id, x => (decimal)x.base_price);
+
+@functions {
+    public static string GetShiftLabel(DateTime dt)
+    {
+        return dt.Hour < 12 ? "Ca sáng" : "Ca chiều";
+    }
+
+    public static string NormalizeStatus(string? status)
+    {
+        return (status ?? "").Trim().ToLower();
+    }
+
+    public static string GetStatusClass(string? status)
+    {
+        var s = NormalizeStatus(status);
+
+        return s switch
+        {
+            "chờ xác nhận" => "pc-badge--pending",
+            "đặt lịch thành công" => "pc-badge--success",
+            "đã hủy" => "pc-badge--cancelled",
+            "đã đến" => "pc-badge--arrived",
+            "không đến" => "pc-badge--noshow",
+            "đang khám" => "pc-badge--examining",
+            "đã khám" => "pc-badge--examined",
+            "đã thanh toán" => "pc-badge--paid",
+            _ => "pc-badge--default"
+        };
+    }
+}
 }
 
 @section Styles {
     <style>
+        .pc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: none;
+        }
+            .pc-badge i {
+                color: inherit !important;
+            }
+
+        /* Chờ xác nhận */
+        .pc-badge--pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        /* Đặt lịch thành công */
+        .pc-badge--success {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        /* Đã hủy */
+        .pc-badge--cancelled {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Đã đến */
+        .pc-badge--arrived {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        /* Không đến */
+        .pc-badge--noshow {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        /* Đang khám */
+        .pc-badge--examining {
+            background: #fce7f3;
+            color: #be185d;
+        }
+
+        /* Đã khám */
+        .pc-badge--examined {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        /* Đã thanh toán - dùng màu cũ của "Đặt lịch" */
+        .pc-badge--paid {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .pc-badge--default {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+
+
+
         :root {
             --pc-red: #ff3b3b;
             --pc-red-dark: #e83434;
@@ -449,7 +550,7 @@
                         <tbody class="pc-record">
                             <tr>
                                 <td>
-                                    <strong>@item.AppointmentDate.ToString("HH:mm dd/MM/yyyy")</strong>
+                                    <strong>@GetShiftLabel(item.AppointmentDate) @item.AppointmentDate.ToString("dd/MM/yyyy")</strong>
                                     @if (!string.IsNullOrWhiteSpace(item.Notes))
                                     {
                                         <div class="pc-note-inline">
@@ -463,7 +564,7 @@
                                 <td>@item.ServiceNames</td>
 
                                 <td>
-                                    <span class="pc-badge">
+                                    <span class="pc-badge @GetStatusClass(item.Status)">
                                         <i class="fas fa-calendar-check"></i>
                                         @item.Status
                                     </span>
