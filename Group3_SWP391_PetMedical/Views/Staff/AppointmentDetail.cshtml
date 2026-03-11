@@ -5,31 +5,20 @@
     var doctors = ViewBag.Doctors as List<User> ?? new List<User>();
     var invoice = ViewBag.Invoice as Invoice;
 
-    // Chuẩn hóa status (Customer lưu tiếng Việt, Staff/Manager lưu tiếng Anh)
-    string NormalizeStatus(string? s) => (s ?? "").Trim().ToLower() switch {
-        "chờ xác nhận"  => "Pending",
-        "đã đặt cọc"    => "Deposited",
-        "đã xác nhận"   => "Confirmed",
-        "đã đến"        => "Arrived",
-        "hoàn thành"    => "Completed",
-        "đã hủy"        => "Cancelled",
-        "không đến"     => "NoShow",
-        "đã thanh toán" => "Completed",
-        _ => s ?? ""
+    // Status color mapping
+    (string bg, string color, string icon) StatusStyle(string? s) => (s ?? "").Trim() switch {
+        "Chờ xác nhận"        => ("#fef3c7", "#b45309", "fa-clock"),
+        "Đặt lịch thành công" => ("#d1fae5", "#047857", "fa-check-circle"),
+        "Đã Hủy"              => ("#fee2e2", "#dc2626", "fa-times-circle"),
+        "Đã đến"              => ("#e0e7ff", "#4338ca", "fa-map-marker-alt"),
+        "Không đến"           => ("#f3f4f6", "#6b7280", "fa-user-slash"),
+        "Đang khám"           => ("#fce7f3", "#be185d", "fa-stethoscope"),
+        "Đã khám"             => ("#ede9fe", "#6d28d9", "fa-clipboard-check"),
+        "Đã thanh toán"       => ("#dcfce7", "#15803d", "fa-money-check-alt"),
+        _                     => ("#f3f4f6", "#6b7280", "fa-question-circle")
     };
 
-    var normalizedStatus = NormalizeStatus(Model.status);
-
-    string StatusViet(string? s) => NormalizeStatus(s) switch {
-        "Pending"   => "Chờ xác nhận",
-        "Deposited" => "Đã đặt cọc",
-        "Confirmed" => "Đã xác nhận",
-        "Arrived"   => "Đã đến",
-        "Completed" => "Hoàn thành",
-        "Cancelled" => "Đã hủy",
-        "NoShow"    => "Không đến",
-        _ => s ?? "-"
-    };
+    var st = StatusStyle(Model.status);
 }
 
 @section Styles {
@@ -43,19 +32,13 @@
         .pc-card-head i { margin-right:8px; color:var(--pc-red); }
         .pc-card-body { padding:18px; }
 
-        .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight:800; font-size:0.85rem; border:1px solid rgba(0,0,0,0.06); background:#fff; }
-        .pc-badge i { color:var(--pc-red); }
-        .pc-btn { border-radius:999px; padding:0 18px; height:42px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; text-decoration:none; cursor:pointer; }
+        .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:999px; font-weight:700; font-size:0.85rem; }
+        .pc-btn { border-radius:999px; padding:0 18px; height:42px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; text-decoration:none; cursor:pointer; font-size:0.9rem; }
         .pc-btn--primary { background:var(--pc-red); color:#fff; box-shadow:0 10px 20px rgba(255,59,59,0.25); }
         .pc-btn--primary:hover { background:var(--pc-red-dark); color:#fff; }
         .pc-btn--ghost { background:#fff; border:1px solid rgba(0,0,0,0.10); color:var(--pc-text) !important; }
-        .pc-btn--success { background:#22c55e; color:#fff; }
-        .pc-btn--success:hover { background:#16a34a; color:#fff; }
-        .pc-btn--danger { background:var(--pc-red); color:#fff; }
-        .pc-btn--dark { background:#1e293b; color:#fff; }
-        .pc-btn--dark:hover { background:#0f172a; color:#fff; }
-        .pc-label { font-weight:700; font-size:0.9rem; margin-bottom:6px; }
-        .pc-input { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; height:42px !important; padding:0 12px !important; }
+        .pc-btn--danger { background:#dc2626; color:#fff; }
+        .pc-btn--danger:hover { background:#b91c1c; color:#fff; }
         .pc-select { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; height:42px !important; padding:0 12px !important; appearance:auto !important; -webkit-appearance:menulist !important; background:#fff !important; }
         .pc-readonly { background:#f8f8f8; border-left:4px solid var(--pc-red); border-radius:0 12px 12px 0; padding:14px; }
         .pc-readonly-row { display:flex; margin-bottom:6px; font-size:0.95rem; }
@@ -63,19 +46,11 @@
         .pc-readonly-label { width:120px; color:var(--pc-muted); font-weight:700; flex-shrink:0; }
         .pc-readonly-val { font-weight:600; }
         .pc-money { font-weight:900; }
-
-        .pc-table-inner { border-radius:12px; overflow:hidden; background:#fff; border:1px solid var(--pc-border); }
-        .pc-table-inner thead th { background:#fff7f7; font-weight:800; }
+        .pc-input { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; }
 
         .pc-modal .modal-content { border-radius:16px; overflow:hidden; border:1px solid var(--pc-border); box-shadow:0 20px 60px rgba(0,0,0,0.18); }
         .pc-modal .modal-header { background:var(--pc-red); color:#fff; }
         .pc-modal .modal-header .close { color:#fff; opacity:1; }
-
-        /* Fix nice-select / combobox bị che */
-        .nice-select { height:42px !important; line-height:40px !important; border-radius:12px !important; padding-left:14px !important; padding-right:36px !important; float:none !important; display:inline-flex !important; align-items:center !important; width:auto !important; min-width:200px; background:#fff !important; border:1px solid rgba(0,0,0,0.10) !important; }
-        .nice-select .current { font-weight:400; color:#495057; }
-        .nice-select::after { right:14px !important; }
-        .nice-select .list { width:100% !important; border-radius:12px !important; box-shadow:0 4px 12px rgba(0,0,0,0.1) !important; z-index:9999 !important; }
     </style>
 }
 
@@ -106,7 +81,7 @@
         }
 
         <div class="row">
-            <!-- Col 1: Thông tin -->
+            <!-- Col 1: Info -->
             <div class="col-md-6">
                 <div class="pc-card">
                     <div class="pc-card-head"><i class="fas fa-info-circle"></i>Thông tin lịch hẹn</div>
@@ -114,28 +89,17 @@
                         <div class="pc-readonly">
                             <div class="pc-readonly-row">
                                 <span class="pc-readonly-label">Trạng thái:</span>
-                                <span class="pc-readonly-val"><span class="pc-badge"><i class="fas fa-calendar-check"></i> @StatusViet(Model.status)</span></span>
+                                <span class="pc-readonly-val">
+                                    <span class="pc-badge" style="background:@st.bg; color:@st.color;">
+                                        <i class="fas @st.icon"></i> @(Model.status ?? "-")
+                                    </span>
+                                </span>
                             </div>
-                            <div class="pc-readonly-row">
-                                <span class="pc-readonly-label">Ngày giờ:</span>
-                                <span class="pc-readonly-val">@Model.appointment_date.ToString("dd/MM/yyyy HH:mm")</span>
-                            </div>
-                            <div class="pc-readonly-row">
-                                <span class="pc-readonly-label">Khách hàng:</span>
-                                <span class="pc-readonly-val">@(Model.customer?.full_name ?? "N/A") <small class="text-muted">@(Model.customer?.phone ?? "")</small></span>
-                            </div>
-                            <div class="pc-readonly-row">
-                                <span class="pc-readonly-label">Thú cưng:</span>
-                                <span class="pc-readonly-val">@(Model.pet?.name ?? "N/A") <small class="text-muted">(@(Model.pet?.species ?? ""))</small></span>
-                            </div>
-                            <div class="pc-readonly-row">
-                                <span class="pc-readonly-label">Bác sĩ:</span>
-                                <span class="pc-readonly-val">@(Model.doctor?.full_name ?? "Chưa phân công")</span>
-                            </div>
-                            <div class="pc-readonly-row">
-                                <span class="pc-readonly-label">Ghi chú:</span>
-                                <span class="pc-readonly-val">@(Model.notes ?? "-")</span>
-                            </div>
+                            <div class="pc-readonly-row"><span class="pc-readonly-label">Ngày giờ:</span><span class="pc-readonly-val">@Model.appointment_date.ToString("dd/MM/yyyy HH:mm")</span></div>
+                            <div class="pc-readonly-row"><span class="pc-readonly-label">Khách hàng:</span><span class="pc-readonly-val">@(Model.customer?.full_name ?? "N/A") <small class="text-muted">@(Model.customer?.phone ?? "")</small></span></div>
+                            <div class="pc-readonly-row"><span class="pc-readonly-label">Thú cưng:</span><span class="pc-readonly-val">@(Model.pet?.name ?? "N/A") <small class="text-muted">(@(Model.pet?.species ?? ""))</small></span></div>
+                            <div class="pc-readonly-row"><span class="pc-readonly-label">Bác sĩ:</span><span class="pc-readonly-val">@(Model.doctor?.full_name ?? "Chưa phân công")</span></div>
+                            <div class="pc-readonly-row"><span class="pc-readonly-label">Ghi chú:</span><span class="pc-readonly-val">@(Model.notes ?? "-")</span></div>
                         </div>
                     </div>
                 </div>
@@ -172,26 +136,8 @@
             <!-- Col 2: Actions -->
             <div class="col-md-6">
 
-                @if (normalizedStatus == "Pending" || normalizedStatus == "Deposited")
-                {
-                    <div class="pc-card">
-                        <div class="pc-card-head"><i class="fas fa-gavel"></i>Duyệt / Hủy</div>
-                        <div class="pc-card-body d-flex gap-3 flex-wrap">
-                            <form asp-action="ApproveAppointment" asp-controller="Staff" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@Model.appointment_id" />
-                                <button type="submit" class="pc-btn pc-btn--success" onclick="return confirm('Xác nhận duyệt?')">
-                                    <i class="fas fa-check"></i> Xác nhận
-                                </button>
-                            </form>
-                            <button class="pc-btn pc-btn--danger" data-toggle="modal" data-target="#rejectModal">
-                                <i class="fas fa-times"></i> Hủy lịch
-                            </button>
-                        </div>
-                    </div>
-                }
-
-                @if (normalizedStatus != "Cancelled" && normalizedStatus != "Completed")
+                @* Assign Doctor — only if no doctor yet and not cancelled/paid *@
+                @if (Model.status != "Đã Hủy" && Model.status != "Đã thanh toán" && Model.status != "Không đến")
                 {
                     <div class="pc-card">
                         <div class="pc-card-head"><i class="fas fa-user-md"></i>Chỉ định Bác sĩ</div>
@@ -216,7 +162,8 @@
                     </div>
                 }
 
-                @if (normalizedStatus == "Confirmed")
+                @* Update Status — check-in, payment *@
+                @if (Model.status == "Đặt lịch thành công")
                 {
                     <div class="pc-card">
                         <div class="pc-card-head"><i class="fas fa-exchange-alt"></i>Cập nhật trạng thái</div>
@@ -225,9 +172,8 @@
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@Model.appointment_id" />
                                 <select name="newStatus" class="form-control pc-select" style="max-width:200px;">
-                                    <option value="Arrived">Đã đến</option>
-                                    <option value="NoShow">Không đến</option>
-                                    <option value="Completed">Hoàn thành</option>
+                                    <option value="Đã đến">Đã đến</option>
+                                    <option value="Không đến">Không đến</option>
                                 </select>
                                 <button type="submit" class="pc-btn pc-btn--primary">
                                     <i class="fas fa-save"></i> Cập nhật
@@ -237,6 +183,38 @@
                     </div>
                 }
 
+                @if (Model.status == "Đã khám")
+                {
+                    <div class="pc-card">
+                        <div class="pc-card-head"><i class="fas fa-money-check-alt"></i>Thanh toán</div>
+                        <div class="pc-card-body">
+                            <form asp-action="UpdateStatus" asp-controller="Staff" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.appointment_id" />
+                                <input type="hidden" name="newStatus" value="Đã thanh toán" />
+                                <button type="submit" class="pc-btn pc-btn--primary" onclick="return confirm('Xác nhận đã thanh toán?')">
+                                    <i class="fas fa-money-check-alt"></i> Xác nhận thanh toán
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                @* Cancel — Staff cancel when customer contacts *@
+                @if (Model.status != "Đã Hủy" && Model.status != "Đã thanh toán" && Model.status != "Không đến" && Model.status != "Đã khám" && Model.status != "Đang khám")
+                {
+                    <div class="pc-card">
+                        <div class="pc-card-head"><i class="fas fa-times-circle"></i>Hủy lịch hẹn</div>
+                        <div class="pc-card-body">
+                            <p class="text-muted mb-3" style="font-size:0.9rem;">Hủy khi khách hàng liên hệ yêu cầu</p>
+                            <button class="pc-btn pc-btn--danger" data-toggle="modal" data-target="#cancelModal">
+                                <i class="fas fa-times"></i> Hủy lịch hẹn
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                @* Invoice *@
                 <div class="pc-card">
                     <div class="pc-card-head"><i class="fas fa-file-invoice-dollar"></i>Hóa đơn</div>
                     <div class="pc-card-body">
@@ -250,9 +228,9 @@
                                 <div class="pc-readonly-row">
                                     <span class="pc-readonly-label">Thanh toán:</span>
                                     <span class="pc-readonly-val">
-                                        <span class="pc-badge">
-                                            <i class="fas @(invoice.payment_status == "Paid" ? "fa-check-circle" : "fa-clock")"></i>
-                                            @(invoice.payment_status == "Paid" ? "Đã thanh toán" : "Chưa thanh toán")
+                                        @{ var pst = invoice.payment_status == "Paid" ? ("Đã thanh toán", "#dcfce7", "#15803d", "fa-check-circle") : ("Chưa thanh toán", "#fef3c7", "#b45309", "fa-clock"); }
+                                        <span class="pc-badge" style="background:@pst.Item2; color:@pst.Item3;">
+                                            <i class="fas @pst.Item4"></i> @pst.Item1
                                         </span>
                                     </span>
                                 </div>
@@ -261,9 +239,8 @@
                                 <i class="fas fa-eye"></i> Xem hóa đơn
                             </a>
                         }
-                        else if (Model.status == "Completed")
+                        else if (Model.status == "Đã khám" || Model.status == "Đã thanh toán")
                         {
-                            <p class="text-muted mb-3">Chưa có hóa đơn.</p>
                             <form asp-action="CreateInvoice" asp-controller="Staff" method="post">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="appointmentId" value="@Model.appointment_id" />
@@ -281,19 +258,19 @@
     </div>
 </section>
 
-<!-- Modal Reject -->
-<div class="modal fade pc-modal" id="rejectModal" tabindex="-1" role="dialog">
+<!-- Modal Cancel -->
+<div class="modal fade pc-modal" id="cancelModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title"><i class="fas fa-times-circle mr-2"></i>Hủy lịch hẹn</h5>
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <form asp-action="RejectAppointment" asp-controller="Staff" method="post">
+            <form asp-action="CancelAppointment" asp-controller="Staff" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="id" value="@Model.appointment_id" />
                 <div class="modal-body" style="padding:20px;">
-                    <div class="pc-label">Lý do hủy (tùy chọn):</div>
+                    <label class="form-label" style="font-weight:700;">Lý do hủy:</label>
                     <textarea class="form-control pc-input" name="reason" rows="3"
                               placeholder="Nhập lý do hủy..." style="height:auto !important;"></textarea>
                 </div>
