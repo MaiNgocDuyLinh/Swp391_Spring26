@@ -288,14 +288,25 @@
                             <input class="pc-input" value="@Model.Status" disabled />
                         </div>
 
-                        <div class="mb-3">
-                            <div class="pc-label">Ngày giờ khám</div>
-                            <!--  bind trực tiếp để ModelState bắt đúng -->
-                            <input type="datetime-local"
-                                   class="pc-input"
-                                   asp-for="AppointmentDate"
-                                   value="@Model.AppointmentDate.ToString("yyyy-MM-ddTHH:mm")" />
-                            <div class="text-danger">@Html.ValidationMessageFor(m => m.AppointmentDate)</div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="pc-label">Ngày khám</div>
+                                <input type="date"
+                                       class="pc-input"
+                                       asp-for="AppointmentDate"
+                                       value="@Model.AppointmentDate.ToString("yyyy-MM-dd")" />
+                                <div class="text-danger">@Html.ValidationMessageFor(m => m.AppointmentDate)</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <div class="pc-label">Ca khám</div>
+                                <select class="pc-select form-select" asp-for="Shift">
+                                    <option value="">-- Chọn ca khám --</option>
+                                    <option value="sáng" selected="@(Model.Shift == "sáng" || Model.Shift == "sang")">Ca sáng</option>
+                                    <option value="chiều" selected="@(Model.Shift == "chiều" || Model.Shift == "chieu")">Ca chiều</option>
+                                </select>
+                                <div class="text-danger">@Html.ValidationMessageFor(m => m.Shift)</div>
+                            </div>
                         </div>
 
                         <div class="mb-3">
@@ -374,12 +385,19 @@
                         <div class="pc-step__n">1</div>
                         <div>
                             <div class="pc-step__t">Cập nhật thời gian</div>
-                            <div class="pc-step__d">Chọn lại ngày giờ khám phù hợp với bạn.</div>
+                            <div class="pc-step__d">Chọn lại ngày khám phù hợp với bạn.</div>
                         </div>
                     </div>
 
                     <div class="pc-step">
                         <div class="pc-step__n">2</div>
+                        <div>
+                            <div class="pc-step__t">Cập nhật ca khám</div>
+                            <div class="pc-step__d">Chọn lại ca khám phù hợp với bạn.</div>
+                      </div>
+                    </div>
+                    <div class="pc-step">
+                        <div class="pc-step__n">3</div>
                         <div>
                             <div class="pc-step__t">Chọn lại dịch vụ</div>
                             <div class="pc-step__d">Tick các dịch vụ muốn khám (có thể nhiều dịch vụ).</div>
@@ -387,7 +405,7 @@
                     </div>
 
                     <div class="pc-step">
-                        <div class="pc-step__n">3</div>
+                        <div class="pc-step__n">4</div>
                         <div>
                             <div class="pc-step__t">Ghi chú</div>
                             <div class="pc-step__d">Mô tả tình trạng thú cưng để bác sĩ chuẩn bị tốt hơn.</div>
@@ -395,7 +413,7 @@
                     </div>
 
                     <div class="pc-step">
-                        <div class="pc-step__n">4</div>
+                        <div class="pc-step__n">5</div>
                         <div>
                             <div class="pc-step__t">Xác nhận</div>
                             <div class="pc-step__d">Nhấn “Lưu thay đổi”. Hệ thống giữ nguyên trạng thái hiện tại.</div>

@@ -390,7 +390,7 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             //  đảm bảo list không null
             vm.ServiceIds ??= new List<int>();
-
+            vm.Shift ??= "";
             //  Lấy lại bản ghi hiện tại từ DB để:
             // - lấy CreatedAt thật (form không submit CreatedAt)
             // - chống bypass 24h
@@ -400,6 +400,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             //  gán lại CreatedAt/Status để view hiển thị đúng nếu trả về View do lỗi
             vm.CreatedAt = current.CreatedAt;
             vm.Status = current.Status;
+            vm.Shift = string.IsNullOrWhiteSpace(vm.Shift) ? current.Shift : vm.Shift;
 
             //  CHẶN SAU 24H (DÙNG current.CreatedAt)
             if (current.CreatedAt != default && DateTime.Now > current.CreatedAt.AddHours(24))
@@ -412,6 +413,16 @@ namespace Group3_SWP391_PetMedical.Controllers
             if (vm.ServiceIds.Count == 0)
             {
                 ModelState.AddModelError("ServiceIds", "Vui lòng chọn ít nhất 1 dịch vụ.");
+            }
+
+            if (vm.AppointmentDate == default)
+            {
+                ModelState.AddModelError("AppointmentDate", "Vui lòng chọn ngày khám.");
+            }
+
+            if (string.IsNullOrWhiteSpace(vm.Shift))
+            {
+                ModelState.AddModelError("Shift", "Vui lòng chọn ca khám.");
             }
 
             if (!ModelState.IsValid)
