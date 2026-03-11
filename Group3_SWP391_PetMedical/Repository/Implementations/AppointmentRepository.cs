@@ -29,12 +29,12 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                search = search.Trim().ToLower();
+                search = search.Trim();
                 query = query.Where(a =>
-                    (a.customer != null && a.customer.full_name.ToLower().Contains(search)) ||
-                    (a.pet != null && a.pet.name.ToLower().Contains(search)) ||
-                    (a.doctor != null && a.doctor.full_name.ToLower().Contains(search)) ||
-                    (a.notes ?? "").ToLower().Contains(search));
+                    (a.customer != null && EF.Functions.Collate(a.customer.full_name, "Vietnamese_CI_AI").Contains(search)) ||
+                    (a.pet != null && EF.Functions.Collate(a.pet.name, "Vietnamese_CI_AI").Contains(search)) ||
+                    (a.doctor != null && EF.Functions.Collate(a.doctor.full_name, "Vietnamese_CI_AI").Contains(search)) ||
+                    EF.Functions.Collate(a.notes ?? "", "Vietnamese_CI_AI").Contains(search));
             }
 
             query = query.OrderBy(a => a.appointment_date);
@@ -55,12 +55,12 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                search = search.Trim().ToLower();
+                search = search.Trim();
                 query = query.Where(a =>
-                    (a.customer != null && a.customer.full_name.ToLower().Contains(search)) ||
-                    (a.pet != null && a.pet.name.ToLower().Contains(search)) ||
-                    (a.doctor != null && a.doctor.full_name.ToLower().Contains(search)) ||
-                    (a.notes ?? "").ToLower().Contains(search));
+                    (a.customer != null && EF.Functions.Collate(a.customer.full_name, "Vietnamese_CI_AI").Contains(search)) ||
+                    (a.pet != null && EF.Functions.Collate(a.pet.name, "Vietnamese_CI_AI").Contains(search)) ||
+                    (a.doctor != null && EF.Functions.Collate(a.doctor.full_name, "Vietnamese_CI_AI").Contains(search)) ||
+                    EF.Functions.Collate(a.notes ?? "", "Vietnamese_CI_AI").Contains(search));
             }
 
             query = query.OrderByDescending(a => a.appointment_date);
