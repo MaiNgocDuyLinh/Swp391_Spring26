@@ -102,6 +102,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         public async Task<IActionResult> Book(
             [FromQuery(Name = "Form.DoctorId")] int? doctorId,
             [FromQuery(Name = "Form.AppointmentDate")] DateTime? appointmentDate,
+            [FromQuery(Name = "Form.Shift")] string? shift,
             [FromQuery(Name = "Form.PetId")] int? petId,
             [FromQuery(Name = "Form.ServiceIds")] List<int>? serviceIds,
             [FromQuery(Name = "Form.Notes")] string? notes)
@@ -118,8 +119,10 @@ namespace Group3_SWP391_PetMedical.Controllers
             {
                 vm.Form.PetId = petId.Value;
             }
+
             vm.Form.DoctorId = doctorId;
-            vm.Form.AppointmentDate = appointmentDate ?? default;
+            vm.Form.AppointmentDate = appointmentDate?.Date ?? default;
+            vm.Form.Shift = shift ?? "";
             vm.Form.Notes = notes;
             vm.Form.ServiceIds = serviceIds ?? new List<int>();
 
@@ -150,11 +153,23 @@ namespace Group3_SWP391_PetMedical.Controllers
                 Text = "Bác sĩ ngẫu nhiên",
                 Selected = !vm.Form.DoctorId.HasValue
             });
-
-            if (vm.Form.DoctorId.HasValue && appointmentDate.HasValue)
+            if (vm.Form.DoctorId.HasValue && vm.Form.AppointmentDate != default)
             {
-                var day = appointmentDate.Value.Date;
+                var day = vm.Form.AppointmentDate.Date;
                 vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day, day);
+
+                if (!string.IsNullOrWhiteSpace(vm.Form.Shift))
+                {
+                    var isFull = await IsDoctorShiftFullAsync(
+                        vm.Form.DoctorId.Value,
+                        vm.Form.AppointmentDate,
+                        vm.Form.Shift);
+
+                    if (isFull)
+                    {
+                        vm.ShiftCapacityWarning = "Đã hết ca làm việc của bác sĩ trong ngày bạn chọn.";
+                    }
+                }
             }
 
             return View("~/Views/Appointment/CusBookAppointment.cshtml", vm);
@@ -167,6 +182,21 @@ namespace Group3_SWP391_PetMedical.Controllers
         {
             int customerId = GetCurrentUserId();
             vm.Form.ServiceIds ??= new List<int>();
+            if (vm.Form.DoctorId.HasValue
+                && vm.Form.AppointmentDate != default
+                && !string.IsNullOrWhiteSpace(vm.Form.Shift))
+            {
+                var isFull = await IsDoctorShiftFullAsync(
+                    vm.Form.DoctorId.Value,
+                    vm.Form.AppointmentDate,
+                    vm.Form.Shift);
+
+                if (isFull)
+                {
+                    vm.ShiftCapacityWarning = "Đã hết ca làm việc của bác sĩ trong ngày bạn chọn.";
+                    ModelState.AddModelError("Form.Shift", "Đã hết ca làm việc của bác sĩ trong ngày bạn chọn.");
+                }
+            }
 
             if (!ModelState.IsValid)
             {
@@ -219,6 +249,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             {
                 start = x.Start,
                 end = x.End,
+                shift = x.Shift,
                 display = x.Display
             }));
         }
@@ -266,6 +297,50 @@ namespace Group3_SWP391_PetMedical.Controllers
                 end = a.End,
                 status = a.Status
             }));
+        }
+
+        private const int MAX_APPOINTMENTS_PER_SHIFT = 5;
+
+        private static string NormalizeShiftKey(string? shift)
+        {
+            var key = (shift ?? "").Trim().ToLowerInvariant();
+
+            return key switch
+            {
+                "sáng" or "sang" => "sáng",
+                "chiều" or "chieu" => "chiều",
+                _ => ""
+            };
+        }
+
+        private static DateTime GetShiftStart(DateTime day, string? shift)
+        {
+            var date = day.Date;
+            var shiftKey = NormalizeShiftKey(shift);
+
+            return shiftKey switch
+            {
+                "sáng" => date.AddHours(8),
+                "chiều" => date.AddHours(13),
+                _ => date
+            };
+        }
+
+        private async Task<bool> IsDoctorShiftFullAsync(int doctorId, DateTime day, string? shift)
+        {
+            var shiftKey = NormalizeShiftKey(shift);
+            if (string.IsNullOrWhiteSpace(shiftKey)) return false;
+
+            var from = day.Date;
+            var to = day.Date.AddDays(1).AddTicks(-1);
+
+            var appointments = await _cusAppointmentService.GetDoctorAppointmentsAsync(doctorId, from, to);
+
+            var shiftStart = GetShiftStart(day, shiftKey);
+
+            var bookedCount = appointments.Count(x => x.Start == shiftStart);
+
+            return bookedCount >= MAX_APPOINTMENTS_PER_SHIFT;
         }
         //get details
         [HttpGet]
@@ -468,8 +543,34 @@ namespace Group3_SWP391_PetMedical.Controllers
                 Text = "Chưa phân công",
                 Selected = !vm.Form.DoctorId.HasValue
             });
-        }
 
+            vm.DoctorShifts = new List<DoctorShiftVM>();
+
+            if (vm.Form.DoctorId.HasValue && vm.Form.AppointmentDate != default)
+            {
+                var day = vm.Form.AppointmentDate.Date;
+                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day, day);
+            }
+            vm.ShiftCapacityWarning = null;
+
+            if (vm.Form.DoctorId.HasValue
+                && vm.Form.AppointmentDate != default
+                && !string.IsNullOrWhiteSpace(vm.Form.Shift))
+            {
+                var day = vm.Form.AppointmentDate.Date;
+                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day, day);
+
+                var isFull = await IsDoctorShiftFullAsync(
+                    vm.Form.DoctorId.Value,
+                    vm.Form.AppointmentDate,
+                    vm.Form.Shift);
+
+                if (isFull)
+                {
+                    vm.ShiftCapacityWarning = "Đã hết ca làm việc của bác sĩ trong ngày bạn chọn.";
+                }
+            }
+        }
         private int GetCurrentUserId()
         {
             var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier)

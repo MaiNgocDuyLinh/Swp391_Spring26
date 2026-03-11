@@ -5,13 +5,17 @@
 @{
     ViewData["Title"] = "Đặt lịch ngay";
 
-    // ✅ NEW: lấy bảng giá dịch vụ (không sửa controller/logic cũ)
     var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
     var _priceMap = _allSvcs.ToDictionary(x => x.service_id, x => (decimal)x.base_price);
+
+    var dateVal = Model.Form.AppointmentDate == default
+        ? ""
+        : Model.Form.AppointmentDate.ToString("yyyy-MM-dd");
+
+    var shiftKey = (Model.Form.Shift ?? "").Trim().ToLowerInvariant();
 }
 
 <style>
-    /* ===== PetCare booking page style (local only) ===== */
     .pc-hero {
         position: relative;
         border-radius: 24px;
@@ -107,21 +111,6 @@
         background: rgba(255, 246, 246, .35);
     }
 
-    .pc-service-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 10px;
-        border-radius: 14px;
-        background: rgba(255,255,255,.85);
-        border: 1px solid rgba(0,0,0,.05);
-        margin-bottom: 10px;
-    }
-
-        .pc-service-item:last-child {
-            margin-bottom: 0;
-        }
-
     .pc-service-item2 {
         padding: 10px 12px;
         border-radius: 14px;
@@ -168,7 +157,6 @@
         margin-top: 10px;
     }
 
-    /* right visual block */
     .pc-visual {
         border-radius: 24px;
         min-height: 320px;
@@ -233,10 +221,9 @@
         border: 1px solid rgba(0,0,0,.10) !important;
         padding: 0 14px !important;
         background-color: #fff !important;
-        line-height: 48px !important; /* text nằm giữa theo dọc */
+        line-height: 48px !important;
     }
 
-    /* Làm select + input giống hệt nhau */
     .pc-equal-control {
         width: 100% !important;
         height: 50px !important;
@@ -247,28 +234,24 @@
         background-color: #fff !important;
     }
 
-    /* reset select để giống input */
     select.pc-equal-control {
         appearance: none !important;
         -webkit-appearance: none !important;
         -moz-appearance: none !important;
     }
 
-    /* focus giống nhau */
     .pc-equal-control:focus {
         outline: none !important;
         border-color: #ff3b3b !important;
         box-shadow: none !important;
     }
 
-    /* label */
     .pc-field .form-label {
         display: block;
         margin-bottom: 8px;
         font-weight: 700;
     }
 
-    /* ✅ NEW: list style for calendar-like view */
     .pc-cal-list {
         list-style: none;
         padding-left: 0;
@@ -299,7 +282,6 @@
         white-space: nowrap;
     }
 
-    /* ✅ NEW: price + total box */
     .pc-svc-row {
         display: flex;
         align-items: center;
@@ -328,7 +310,6 @@
 </style>
 
 <div class="container my-4">
-
     <div class="pc-hero" style="margin-top : 150px;">
         <div class="pc-hero-inner">
             <div class="row g-4 align-items-stretch">
@@ -341,7 +322,7 @@
 
                     <div class="pc-title">Đặt lịch ngay</div>
                     <div class="pc-sub">
-                        Chọn thú cưng, thời gian khám và dịch vụ mong muốn.
+                        Chọn thú cưng, ngày khám, ca khám và dịch vụ mong muốn.
                         Hệ thống sẽ tạo lịch với trạng thái <b>Chờ xác nhận</b>.
                     </div>
 
@@ -355,24 +336,28 @@
                             <form method="post" asp-action="Book" asp-controller="CusAppointment">
                                 @Html.AntiForgeryToken()
 
-                                <div class="mt-3">
-                                    <label class="form-label">Ngày giờ khám</label>
+                                <div class="row g-3 mt-1">
+                                    <div class="col-lg-6 pc-field">
+                                        <label class="form-label">Ngày khám</label>
+                                        <input class="form-control pc-equal-control"
+                                               asp-for="Form.AppointmentDate"
+                                               type="date"
+                                               value="@dateVal" />
+                                        <span class="text-danger" asp-validation-for="Form.AppointmentDate"></span>
+                                    </div>
 
-                                    @{
-                                        var dtVal = Model.Form.AppointmentDate == default
-                                        ? ""
-                                        : Model.Form.AppointmentDate.ToString("yyyy-MM-ddTHH:mm");
-                                    }
-
-                                    <input class="form-control pc-equal-control"
-                                           asp-for="Form.AppointmentDate"
-                                           type="datetime-local"
-                                           value="@dtVal" />
-                                    <span class="text-danger" asp-validation-for="Form.AppointmentDate"></span>
+                                    <div class="col-lg-6 pc-field">
+                                        <label class="form-label">Ca khám</label>
+                                        <select class="form-control pc-equal-control" id="Form_Shift" name="Form.Shift">
+                                            <option value="">-- Chọn ca khám --</option>
+                                            <option value="sáng" selected="@(shiftKey == "sáng" || shiftKey == "sang")">Ca sáng</option>
+                                            <option value="chiều" selected="@(shiftKey == "chiều" || shiftKey == "chieu")">Ca chiều</option>
+                                        </select>
+                                        <span class="text-danger" asp-validation-for="Form.Shift"></span>
+                                    </div>
                                 </div>
-                                <!--  Doctor select + shifts (ADDED ONLY)  -->
-                                <div class="col-12 pc-field">
 
+                                <div class="col-12 pc-field mt-3">
                                     <label class="form-label">Bác sĩ</label>
 
                                     <select class="form-control pc-equal-control"
@@ -383,31 +368,27 @@
 
                                     <span class="text-danger" asp-validation-for="Form.DoctorId"></span>
 
-
-
                                     <div class="pc-note mt-2" id="doctorHint">
-                                        Không chọn bác sĩ sẽ hiển thị <b>Chưa phân công</b>. Bấm "Xem lịch bác sĩ" để hiển thị ca làm.
+                                        Không chọn bác sĩ sẽ hiển thị <b>Chưa phân công</b>. Bấm "Xem lịch bác sĩ" để hiển thị ca sáng / chiều trong ngày đã chọn.
                                     </div>
 
                                     <button type="submit"
                                             class="pc-btn-ghost mt-2"
                                             formmethod="get"
+                                            formnovalidate
                                             formaction="@Url.Action("Book", "CusAppointment")">
                                         Xem lịch bác sĩ
                                     </button>
-
-                                    <div id="doctorShiftsBox" style="display:none; margin-top:10px;">
-                                        <div style="font-weight:700; margin-bottom:8px;">Ca làm của bác sĩ (trong ngày)</div>
-
-                                        <div class="pc-services-box" style="max-height:160px;">
-                                            <ul id="doctorShiftsList" style="margin:0; padding-left:18px;"></ul>
+                                    @if (!string.IsNullOrWhiteSpace(Model.ShiftCapacityWarning))
+                                    {
+                                        <div class="mt-2"
+                                             style="border:1px solid #f5c2c7; background:#fff3cd; color:#856404; border-radius:14px; padding:10px 14px; font-weight:600;">
+                                            @Model.ShiftCapacityWarning
                                         </div>
-
-                                        <div class="text-danger mt-2" id="doctorShiftError" style="display:none;"></div>
-                                    </div>
+                                    }
                                 </div>
-                                <div class="row g-3">
 
+                                <div class="row g-3">
                                     <div class="col-lg-6 pc-field">
                                         <label class="form-label">Thú cưng</label>
 
@@ -429,8 +410,6 @@
                                                 var sid = int.Parse(s.Value);
                                                 var isChecked = Model.Form.ServiceIds != null && Model.Form.ServiceIds.Contains(sid);
                                                 var inputId = $"svc_{sid}";
-
-                                                // lấy giá theo service_id
                                                 var price = _priceMap.ContainsKey(sid) ? _priceMap[sid] : 0m;
 
                                                 <div class="pc-service-item2">
@@ -457,14 +436,11 @@
                                         <span class="text-danger" asp-validation-for="Form.ServiceIds"></span>
                                         <div class="pc-note">Gợi ý: bạn có thể chọn nhiều dịch vụ trong một lần khám.</div>
 
-                                        <!--   Total box -->
                                         <div class="pc-total-box" id="totalBox">
                                             <div>Tổng tiền</div>
                                             <div id="totalMoney">0 VNĐ</div>
                                         </div>
                                     </div>
-
-
 
                                     <div class="col-12 pc-field">
                                         <label>Ghi chú</label>
@@ -474,7 +450,6 @@
                                 </div>
 
                                 <div class="d-flex flex-wrap gap-2 mt-3" style="gap: 30px;">
-
                                     <button type="submit" class="pc-btn-primary">
                                         <i class="fas fa-calendar-plus me-1"></i> Đặt lịch
                                     </button>
@@ -486,12 +461,10 @@
                                     <a class="pc-btn-ghost" asp-action="AppointmentHistory" asp-controller="CusAppointment">
                                         <i class="fas fa-history me-1"></i> Lịch sử khám
                                     </a>
-
                                 </div>
                             </form>
                         </div>
                     </div>
-
                 </div>
 
                 <div class="col-lg-5">
@@ -502,15 +475,12 @@
                                 <span>Quy trình đơn giản</span>
                             </div>
 
-
-
-
                             <div class="pc-steps">
                                 <div class="pc-step">
                                     <div class="pc-step-num">1</div>
                                     <div>
-                                        <div style="font-weight:800;">Chọn thời gian</div>
-                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Đặt lịch trước(Tháng/Ngày/Năm/Giờ) để phòng khám sắp xếp.</div>
+                                        <div style="font-weight:800;">Chọn ngày và ca khám</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Chỉ chọn theo ca <b>sáng</b> hoặc <b>chiều</b>, không chọn giờ cụ thể nữa.</div>
                                     </div>
                                 </div>
 
@@ -518,10 +488,9 @@
                                     <div class="pc-step-num">2</div>
                                     <div>
                                         <div style="font-weight:800;">Chọn bác sĩ</div>
-                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Chọn bác sĩ mà bạn muốn khám .(Bấm "Xem lịch Bác sĩ" để hiện thị ca làm của bác sĩ trong ngày bạn chọn)</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Bấm "Xem lịch bác sĩ" để xem bác sĩ có ca sáng / chiều trong ngày bạn chọn hay không.</div>
                                     </div>
                                 </div>
-
 
                                 <div class="pc-step">
                                     <div class="pc-step-num">3</div>
@@ -531,15 +500,14 @@
                                     </div>
                                 </div>
 
-
-
                                 <div class="pc-step">
                                     <div class="pc-step-num">4</div>
                                     <div>
                                         <div style="font-weight:800;">Chọn dịch vụ</div>
-                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Có thể chọn nhiều dịch vụ một lần.</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Có thể chọn nhiều dịch vụ trong một lần khám.</div>
                                     </div>
                                 </div>
+
                                 <div class="pc-step">
                                     <div class="pc-step-num">5</div>
                                     <div>
@@ -549,8 +517,6 @@
                                 </div>
                             </div>
 
-                            <!--   show FULL doctor schedule (next N days)
-                                  always show -->
                             <div id="rightDoctorBox" class="mt-3">
                                 <div class="pc-badge" style="margin-bottom:10px;">
                                     <i class="far fa-calendar-alt"></i>
@@ -562,20 +528,27 @@
 
                                     <div class="pc-services-box" style="max-height:260px; width:100%;">
                                         <ul class="pc-cal-list">
-                                            @if (Model.Form.DoctorId.HasValue && Model.DoctorShifts.Any())
+                                            @if (Model.Form.DoctorId.HasValue && Model.Form.AppointmentDate != default && Model.DoctorShifts.Any())
                                             {
                                                 foreach (var s in Model.DoctorShifts)
                                                 {
                                                     <li class="pc-cal-item">
                                                         <span class="pc-cal-date">@s.Start.ToString("dd/MM/yyyy")</span>
-                                                        <span class="pc-cal-time">@s.Display</span>
+                                                        <span class="pc-cal-time">@s.Shift</span>
                                                     </li>
                                                 }
                                             }
-                                            else if (Model.Form.DoctorId.HasValue)
+                                            else if (Model.Form.DoctorId.HasValue && Model.Form.AppointmentDate != default)
                                             {
                                                 <li class="pc-cal-item">
                                                     <span class="pc-cal-date">Không có ca làm cho ngày này.</span>
+                                                    <span class="pc-cal-time"></span>
+                                                </li>
+                                            }
+                                            else if (Model.Form.AppointmentDate == default)
+                                            {
+                                                <li class="pc-cal-item">
+                                                    <span class="pc-cal-date">Chưa chọn ngày khám.</span>
                                                     <span class="pc-cal-time"></span>
                                                 </li>
                                             }
@@ -590,7 +563,7 @@
                                     </div>
 
                                     <div class="pc-note">
-                                        Chọn ngày giờ khám, sau đó chọn bác sĩ để xem các ca làm việc trong ngày đó.
+                                        Chọn ngày khám, sau đó chọn bác sĩ để xem ca sáng / chiều trong ngày đó.
                                     </div>
                                 </div>
                             </div>
@@ -602,30 +575,23 @@
             </div>
         </div>
     </div>
-
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        //đặt ngay từ dịch vụ
         $(document).ready(function () {
-
-            // Lấy serviceId từ query string
             const params = new URLSearchParams(window.location.search);
             const serviceId = params.get("serviceId");
 
             if (serviceId) {
-
-                // Nếu là dropdown (select)
                 const select = document.querySelector("select[name='Form.ServiceIds']");
                 if (select) {
                     select.value = serviceId;
                     select.dispatchEvent(new Event('change'));
                 }
 
-                // Nếu là checkbox list
                 const checkbox = document.querySelector(
                     "input[name='Form.ServiceIds'][value='" + serviceId + "']"
                 );
@@ -634,7 +600,6 @@
                 }
             }
 
-            //   tính tổng tiền dịch vụ đã chọn
             function updateTotal() {
                 let total = 0;
 
@@ -647,14 +612,11 @@
                 document.getElementById("totalMoney").textContent = fmt.format(total) + " VNĐ";
             }
 
-            // bind change
             document.querySelectorAll("input[name='Form.ServiceIds'].svc-cb").forEach(cb => {
                 cb.addEventListener("change", updateTotal);
             });
 
-            // init on load (để trường hợp có tick sẵn từ query string / model)
             updateTotal();
         });
-
     </script>
 }

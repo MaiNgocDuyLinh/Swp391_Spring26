@@ -158,7 +158,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
 
         public async Task<List<DoctorAppointmentEventVM>>
-            GetDoctorAppointmentsAsync(int doctorId, DateTime from, DateTime to)
+     GetDoctorAppointmentsAsync(int doctorId, DateTime from, DateTime to)
         {
             var q = _context.Appointments
                 .AsNoTracking()
@@ -167,16 +167,31 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                             && a.appointment_date <= to
                             && (a.status == null || a.status.Trim().ToLower() != "đã hủy"));
 
-            var list = await q
+            var raw = await q
                 .OrderBy(a => a.appointment_date)
-                .Select(a => new DoctorAppointmentEventVM
+                .Select(a => new
                 {
-                    Title = a.pet != null ? $"Khám - {a.pet.name}" : "Lịch hẹn",
-                    Start = a.appointment_date,
-                    End = a.appointment_date.AddMinutes(30), // duration 30 phút
+                    PetName = a.pet != null ? a.pet.name : "Lịch hẹn",
+                    AppointmentDate = a.appointment_date,
                     Status = a.status
                 })
                 .ToListAsync();
+
+            var list = raw
+                .Select(a =>
+                {
+                    var slot = GetAppointmentSlot(a.AppointmentDate);
+
+                    return new DoctorAppointmentEventVM
+                    {
+                        Title = $"{slot.Shift} - {a.PetName}",
+                        Start = slot.Start,
+                        End = slot.End,
+                        Status = a.Status
+                    };
+                })
+                .OrderBy(x => x.Start)
+                .ToList();
 
             return list;
         }
@@ -198,53 +213,22 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             foreach (var s in schedules)
             {
-                var shiftKey = (s.shift ?? "").Trim().ToLower();
-
-                TimeOnly start;
-                TimeOnly end;
-
-                switch (shiftKey)
+                foreach (var slot in ExpandScheduleSlots(s.shift))
                 {
-                    case "sáng":
-                    case "sang":
-                        start = new TimeOnly(8, 0);
-                        end = new TimeOnly(12, 0);
-                        break;
-
-                    case "chiều":
-                    case "chieu":
-                        start = new TimeOnly(13, 0);
-                        end = new TimeOnly(17, 0);
-                        break;
-
-                    case "tối":
-                    case "toi":
-                        start = new TimeOnly(18, 0);
-                        end = new TimeOnly(21, 0);
-                        break;
-
-                    case "cả ngày":
-                    case "ca ngay":
-                    case "cangay":
-                        start = new TimeOnly(8, 0);
-                        end = new TimeOnly(21, 0);
-                        break;
-
-                    default:
-                        continue;
+                    result.Add(new DoctorShiftVM
+                    {
+                        Start = targetDate.ToDateTime(slot.Start),
+                        End = targetDate.ToDateTime(slot.End),
+                        Shift = slot.Shift
+                    });
                 }
-
-                var startDt = targetDate.ToDateTime(start);
-                var endDt = targetDate.ToDateTime(end);
-
-                result.Add(new DoctorShiftVM
-                {
-                    Start = startDt,
-                    End = endDt
-                });
             }
 
-            return result.OrderBy(x => x.Start).ToList();
+            return result
+                .GroupBy(x => new { x.Start, x.End, x.Shift })
+                .Select(g => g.First())
+                .OrderBy(x => x.Start)
+                .ToList();
         }
 
         public async Task<bool> IsDoctorWorkingAtAsync(int doctorId, DateTime appointmentDateTime)
@@ -269,36 +253,39 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (serviceCount != cmd.ServiceIds.Count)
                 throw new Exception("Danh sách dịch vụ không hợp lệ.");
 
-            if (cmd.AppointmentDate <= DateTime.Now)
-                throw new Exception("Ngày giờ khám phải lớn hơn hiện tại.");
+            var appointmentDateTime = BuildAppointmentDateTime(cmd.AppointmentDate, cmd.Shift);
+
+            if (appointmentDateTime <= DateTime.Now)
+                throw new Exception("Ngày khám phải lớn hơn hiện tại.");
 
             var duplicated = await _context.Appointments
                 .AsNoTracking()
                 .AnyAsync(a => a.customer_id == customerId
                             && a.pet_id == cmd.PetId
-                            && a.appointment_date == cmd.AppointmentDate);
+                            && a.appointment_date == appointmentDateTime);
 
             if (duplicated)
-                throw new Exception("Bạn đã có lịch cho thú cưng này tại thời điểm đó.");
+                throw new Exception("Bạn đã có lịch cho thú cưng này ở ca đó.");
 
             if (cmd.DoctorId.HasValue)
             {
-                var doctorOk = await _context.Users.AsNoTracking()
+                var doctorOk = await _context.Users
+                    .AsNoTracking()
                     .AnyAsync(u => u.user_id == cmd.DoctorId.Value && u.role_id == 3);
 
                 if (!doctorOk)
                     throw new Exception("Bác sĩ không hợp lệ.");
 
-                var inShift = await IsDoctorWorkingAtAsync(cmd.DoctorId.Value, cmd.AppointmentDate);
+                var inShift = await IsDoctorWorkingAtAsync(cmd.DoctorId.Value, appointmentDateTime);
                 if (!inShift)
-                    throw new Exception("Giờ đặt không nằm trong ca làm của bác sĩ đã chọn.");
+                    throw new Exception("Ca khám đã chọn không nằm trong ca làm của bác sĩ.");
             }
 
             var appt = new Appointment
             {
                 customer_id = customerId,
                 pet_id = cmd.PetId,
-                appointment_date = cmd.AppointmentDate,
+                appointment_date = appointmentDateTime,
                 notes = cmd.Notes,
                 status = "Chờ xác nhận",
                 doctor_id = cmd.DoctorId,
@@ -319,6 +306,109 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             return appt.appointment_id;
         }
+
+        private static string NormalizeShiftKey(string? shift)
+        {
+            var key = (shift ?? "").Trim().ToLowerInvariant();
+
+            return key switch
+            {
+                "sáng" or "sang" => "sáng",
+                "chiều" or "chieu" => "chiều",
+                "cả ngày" or "ca ngay" or "cangay" => "cả ngày",
+                _ => ""
+            };
+        }
+
+        private static DateTime BuildAppointmentDateTime(DateTime appointmentDate, string? shift)
+        {
+            var date = appointmentDate.Date;
+
+            return NormalizeShiftKey(shift) switch
+            {
+                "sáng" => date.AddHours(8),
+                "chiều" => date.AddHours(13),
+                _ => throw new Exception("Ca khám không hợp lệ.")
+            };
+        }
+
+        private static IEnumerable<(string Shift, TimeOnly Start, TimeOnly End)> ExpandScheduleSlots(string? shift)
+        {
+            switch (NormalizeShiftKey(shift))
+            {
+                case "sáng":
+                    yield return ("Ca sáng", new TimeOnly(8, 0), new TimeOnly(12, 0));
+                    yield break;
+
+                case "chiều":
+                    yield return ("Ca chiều", new TimeOnly(13, 0), new TimeOnly(17, 0));
+                    yield break;
+
+                case "cả ngày":
+                    yield return ("Ca sáng", new TimeOnly(8, 0), new TimeOnly(12, 0));
+                    yield return ("Ca chiều", new TimeOnly(13, 0), new TimeOnly(17, 0));
+                    yield break;
+            }
+        }
+
+        private static (string Shift, DateTime Start, DateTime End) GetAppointmentSlot(DateTime appointmentDateTime)
+        {
+            var date = appointmentDateTime.Date;
+
+            if (appointmentDateTime.Hour < 12)
+            {
+                return ("Ca sáng", date.AddHours(8), date.AddHours(12));
+            }
+
+            return ("Ca chiều", date.AddHours(13), date.AddHours(17));
+        }
+
+
+
+        private const int MAX_APPOINTMENTS_PER_SHIFT = 5;
+
+        private static (DateTime ShiftStart, DateTime ShiftEnd, string ShiftLabel) GetShiftWindow(DateTime appointmentDateTime)
+        {
+            var date = appointmentDateTime.Date;
+            var time = appointmentDateTime.TimeOfDay;
+
+            // ca sáng: 08:00 - 12:00
+            if (time >= new TimeSpan(8, 0, 0) && time < new TimeSpan(12, 0, 0))
+            {
+                return (date.AddHours(8), date.AddHours(12), "ca sáng");
+            }
+
+            // ca chiều: 13:00 - 17:00
+            if (time >= new TimeSpan(13, 0, 0) && time < new TimeSpan(17, 0, 0))
+            {
+                return (date.AddHours(13), date.AddHours(17), "ca chiều");
+            }
+
+            throw new Exception("Thời gian khám không thuộc ca sáng hoặc ca chiều.");
+        }
+
+        private async Task<int> CountDoctorAppointmentsInShiftAsync(
+            int doctorId,
+            DateTime appointmentDateTime,
+            int? excludeAppointmentId = null)
+        {
+            var (shiftStart, shiftEnd, _) = GetShiftWindow(appointmentDateTime);
+
+            var q = _context.Appointments
+                .AsNoTracking()
+                .Where(a => a.doctor_id == doctorId
+                            && a.appointment_date >= shiftStart
+                            && a.appointment_date < shiftEnd
+                            && (a.status == null || a.status.Trim().ToLower() != "đã hủy"));
+
+            if (excludeAppointmentId.HasValue)
+            {
+                q = q.Where(a => a.appointment_id != excludeAppointmentId.Value);
+            }
+
+            return await q.CountAsync();
+        }
+
 
         public async Task<CusAppointmentDetailVM?> GetCusAppointmentDetailAsync(int customerId, int appointmentId)
         {
