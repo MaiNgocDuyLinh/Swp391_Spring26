@@ -61,7 +61,7 @@
                         <div class="pc-label">Ngày tạo</div>
                         <div><strong>@Model.created_at?.ToString("dd/MM/yyyy HH:mm")</strong></div>
                         <div class="mt-2">
-                            <span class="pc-badge">
+                            <span class="pc-badge" style="background:@(Model.payment_status == "Paid" ? "#dcfce7" : "#fef3c7"); color:@(Model.payment_status == "Paid" ? "#15803d" : "#b45309");">
                                 <i class="fas @(Model.payment_status == "Paid" ? "fa-check-circle" : "fa-clock")"></i>
                                 @(Model.payment_status == "Paid" ? "Đã thanh toán" : "Chưa thanh toán")
                             </span>
