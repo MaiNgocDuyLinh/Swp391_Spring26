@@ -307,6 +307,7 @@
         gap: 10px;
         font-weight: 800;
     }
+   
 </style>
 
 <div class="container my-4">
@@ -357,7 +358,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-12 pc-field mt-3">
+                                <div class="col-12 pc-field mt-3" style="padding: 0">
                                     <label class="form-label">Bác sĩ</label>
 
                                     <select class="form-control pc-equal-control"
@@ -479,13 +480,20 @@
                                 <div class="pc-step">
                                     <div class="pc-step-num">1</div>
                                     <div>
-                                        <div style="font-weight:800;">Chọn ngày và ca khám</div>
-                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Chỉ chọn theo ca <b>sáng</b> hoặc <b>chiều</b>, không chọn giờ cụ thể nữa.</div>
+                                        <div style="font-weight:800;">Chọn ngày khám</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Chọn ngày mà bạn muốn khám </div>
+                                    </div>
+                                </div>
+                                <div class="pc-step">
+                                    <div class="pc-step-num">2</div>
+                                    <div>
+                                        <div style="font-weight:800;">Chọn ca khám</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Chọn theo ca <b>sáng</b> hoặc <b>chiều</b></div>
                                     </div>
                                 </div>
 
                                 <div class="pc-step">
-                                    <div class="pc-step-num">2</div>
+                                    <div class="pc-step-num">3</div>
                                     <div>
                                         <div style="font-weight:800;">Chọn bác sĩ</div>
                                         <div style="color:rgba(0,0,0,.60); font-size:13px;">Bấm "Xem lịch bác sĩ" để xem bác sĩ có ca sáng / chiều trong ngày bạn chọn hay không.</div>
@@ -493,7 +501,7 @@
                                 </div>
 
                                 <div class="pc-step">
-                                    <div class="pc-step-num">3</div>
+                                    <div class="pc-step-num">4</div>
                                     <div>
                                         <div style="font-weight:800;">Chọn thú cưng</div>
                                         <div style="color:rgba(0,0,0,.60); font-size:13px;">Chỉ hiển thị thú cưng thuộc tài khoản.</div>
@@ -501,7 +509,7 @@
                                 </div>
 
                                 <div class="pc-step">
-                                    <div class="pc-step-num">4</div>
+                                    <div class="pc-step-num">5</div>
                                     <div>
                                         <div style="font-weight:800;">Chọn dịch vụ</div>
                                         <div style="color:rgba(0,0,0,.60); font-size:13px;">Có thể chọn nhiều dịch vụ trong một lần khám.</div>
@@ -509,7 +517,7 @@
                                 </div>
 
                                 <div class="pc-step">
-                                    <div class="pc-step-num">5</div>
+                                    <div class="pc-step-num">6</div>
                                     <div>
                                         <div style="font-weight:800;">Chờ xác nhận</div>
                                         <div style="color:rgba(0,0,0,.60); font-size:13px;">Trạng thái mặc định: <b>Chờ xác nhận</b>.</div>
@@ -563,7 +571,8 @@
                                     </div>
 
                                     <div class="pc-note">
-                                        Chọn ngày khám, sau đó chọn bác sĩ để xem ca sáng / chiều trong ngày đó.
+                                        Chọn ngày khám, sau đó chọn bác sĩ để xem ca sáng / chiều trong ngày đó. <br />
+                                        <span style="color:red;">* Mỗi ca làm của bác sĩ chỉ khám tối đa 5 lịch hẹn</span>
                                     </div>
                                 </div>
                             </div>
