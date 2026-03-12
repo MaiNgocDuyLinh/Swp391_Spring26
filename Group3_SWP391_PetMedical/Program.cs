@@ -25,6 +25,10 @@ namespace Group3_SWP391_PetMedical
             builder.Services.AddScoped<IMedicinRepository, MedicinRepository>();
             builder.Services.AddScoped<IMedicinService, MedicinService>();
 
+
+            //feedback
+            builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+            builder.Services.AddScoped<IFeedbackService, FeedbackService>();
             //list pet
             builder.Services.AddScoped<IPetRepository, PetRepository>();
             builder.Services.AddScoped<IPetService, PetService>();

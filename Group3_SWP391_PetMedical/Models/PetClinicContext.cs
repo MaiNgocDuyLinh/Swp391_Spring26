@@ -254,6 +254,22 @@ public partial class PetClinicContext : DbContext
                   .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
+        // Feedback ↔ Appointment / User(customer)
+        modelBuilder.Entity<Feedback>(entity =>
+        {
+            entity.ToTable("Feedback");
+
+            entity.HasOne(f => f.appointment)
+                  .WithMany(a => a.Feedbacks)
+                  .HasForeignKey(f => f.appointment_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(f => f.customer)
+                  .WithMany(u => u.Feedbacks)
+                  .HasForeignKey(f => f.customer_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
         // Prescription ↔ MedicalRecord / Medication
         modelBuilder.Entity<Prescription>(entity =>
         {

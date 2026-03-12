@@ -1,0 +1,359 @@
+﻿@model Group3_SWP391_PetMedical.ViewModels.Feedback.CusCreateFeedbackVM
+
+@{
+    ViewData["Title"] = "Gửi phản hồi";
+
+    var caKham = Model.AppointmentDate.Hour < 12 ? "Ca sáng" : "Ca chiều";
+    var ngayKhamHienThi = $"{caKham} - {Model.AppointmentDate:dd/MM/yyyy}";
+}
+
+@section Styles {
+    <style>
+        :root {
+            --pc-red: #ff3b3b;
+            --pc-red-dark: #e83434;
+            --pc-pink: #f3d7d5;
+            --pc-soft: #fff7f7;
+            --pc-text: #2b2b2b;
+            --pc-muted: #7a7a7a;
+            --pc-border: rgba(0,0,0,0.08);
+            --pc-star: #f6c343;
+            --pc-star-off: #e3e3e3;
+        }
+
+        .pc-feedback-wrap {
+            background: var(--pc-pink);
+            border: 1px solid var(--pc-border);
+            border-radius: 22px;
+            padding: 32px;
+            margin-top: 150px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+        }
+
+        .pc-feedback-card {
+            max-width: 980px;
+            width: 100%;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 14px 32px rgba(0,0,0,0.06);
+        }
+
+        .pc-feedback-head {
+            padding: 24px 28px 12px 28px;
+            background: linear-gradient(180deg, #fffafa 0%, #ffffff 100%);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .pc-feedback-title {
+            font-weight: 800;
+            font-size: 2rem;
+            color: var(--pc-text);
+            margin: 0;
+        }
+
+        .pc-feedback-sub {
+            margin: 6px 0 0;
+            color: var(--pc-muted);
+            font-size: 0.98rem;
+        }
+
+        .pc-feedback-body {
+            padding: 24px 28px 28px 28px;
+        }
+
+        .pc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .pc-field-full {
+            grid-column: 1 / -1;
+        }
+
+        .pc-label {
+            display: block;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--pc-text);
+            margin-bottom: 8px;
+        }
+
+        .pc-input {
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,0.10);
+            min-height: 46px;
+            padding: 0 14px;
+            background: #fff;
+            color: var(--pc-text);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+            .pc-input:focus,
+            .pc-textarea:focus {
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 0 0 0.2rem rgba(255,59,59,0.10);
+            }
+
+        .pc-textarea {
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,0.10);
+            min-height: 150px;
+            padding: 12px 14px;
+            background: #fff;
+            color: var(--pc-text);
+            outline: none;
+            resize: vertical;
+            transition: all 0.2s ease;
+        }
+
+        .pc-readonly {
+            background: #fff8f8;
+        }
+
+        .pc-services-readonly {
+            min-height: 82px;
+            resize: none;
+            white-space: normal;
+            overflow-y: auto;
+        }
+
+        .pc-rating-box {
+            background: var(--pc-soft);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 16px;
+            padding: 16px 18px;
+        }
+
+        .pc-stars {
+            display: inline-flex;
+            flex-direction: row-reverse;
+            gap: 8px;
+        }
+
+            .pc-stars input {
+                display: none;
+            }
+
+            .pc-stars label {
+                cursor: pointer;
+                margin: 0;
+                font-size: 2.4rem;
+                line-height: 1;
+                color: var(--pc-star-off);
+                transition: transform 0.15s ease, color 0.15s ease;
+            }
+
+                .pc-stars label:hover {
+                    transform: scale(1.08);
+                }
+
+                .pc-stars label::before {
+                    content: "★";
+                }
+
+                .pc-stars input:checked ~ label,
+                .pc-stars label:hover,
+                .pc-stars label:hover ~ label {
+                    color: var(--pc-star);
+                }
+
+        .pc-rating-text {
+            margin-top: 10px;
+            color: var(--pc-muted);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .pc-btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .pc-btn {
+            border-radius: 999px;
+            padding: 0 20px;
+            height: 44px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            text-decoration: none;
+        }
+
+        .pc-btn--ghost {
+            background: #fff;
+            color: var(--pc-text);
+            border: 1px solid rgba(0,0,0,0.10);
+        }
+
+            .pc-btn--ghost:hover {
+                color: var(--pc-text);
+                background: #fafafa;
+            }
+
+        .pc-btn--primary {
+            background: var(--pc-red);
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(255,59,59,0.25);
+        }
+
+            .pc-btn--primary:hover {
+                background: var(--pc-red-dark);
+                color: #fff;
+            }
+
+        .validation-summary-errors,
+        .text-danger {
+            font-size: 0.9rem;
+        }
+
+        .field-validation-error {
+            display: block;
+            margin-top: 6px;
+        }
+
+        @@media (max-width: 992px) {
+            .pc-feedback-wrap {
+                padding: 24px;
+            }
+
+            .pc-feedback-card {
+                max-width: 100%;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .pc-feedback-wrap {
+                padding: 18px;
+                margin-top: 120px;
+            }
+
+            .pc-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pc-feedback-title {
+                font-size: 1.6rem;
+            }
+
+            .pc-stars label {
+                font-size: 2rem;
+            }
+
+            .pc-feedback-head,
+            .pc-feedback-body {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+        }
+    </style>
+}
+
+<section class="container py-4">
+    <div class="pc-feedback-wrap">
+        <div class="pc-feedback-card">
+            <div class="pc-feedback-head">
+                <h3 class="pc-feedback-title">Gửi Đánh Giá</h3>
+                <p class="pc-feedback-sub">Đánh giá trải nghiệm khám bệnh của bạn tại PetCare</p>
+            </div>
+
+            <div class="pc-feedback-body">
+                <form asp-controller="Feedback" asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="AppointmentId" />
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="pc-grid">
+                        <div>
+                            <label class="pc-label">Ngày khám</label>
+                            <input class="pc-input pc-readonly" value="@ngayKhamHienThi" readonly />
+                        </div>
+
+                        <div>
+                            <label class="pc-label">Thú cưng</label>
+                            <input class="pc-input pc-readonly" value="@Model.PetName" readonly />
+                        </div>
+
+                        <div>
+                            <label class="pc-label">Bác sĩ</label>
+                            <input class="pc-input pc-readonly" value="@Model.DoctorName" readonly />
+                        </div>
+
+                        <div>
+                            <label class="pc-label">Dịch vụ</label>
+                            <textarea class="pc-textarea pc-readonly pc-services-readonly" readonly>@Model.ServiceNames</textarea>
+                        </div>
+
+                        <div class="pc-field-full">
+                            <label asp-for="Rating" class="pc-label">Số sao</label>
+
+                            <div class="pc-rating-box">
+                                <div class="pc-stars">
+                                    <input type="radio" asp-for="Rating" id="star5" value="5" />
+                                    <label for="star5" title="5 sao"></label>
+
+                                    <input type="radio" asp-for="Rating" id="star4" value="4" />
+                                    <label for="star4" title="4 sao"></label>
+
+                                    <input type="radio" asp-for="Rating" id="star3" value="3" />
+                                    <label for="star3" title="3 sao"></label>
+
+                                    <input type="radio" asp-for="Rating" id="star2" value="2" />
+                                    <label for="star2" title="2 sao"></label>
+
+                                    <input type="radio" asp-for="Rating" id="star1" value="1" />
+                                    <label for="star1" title="1 sao"></label>
+                                </div>
+
+                                <div class="pc-rating-text">
+                                    Chọn mức độ hài lòng của bạn từ 1 đến 5 sao
+                                </div>
+                            </div>
+
+                            <span asp-validation-for="Rating" class="text-danger"></span>
+                        </div>
+
+                        <div class="pc-field-full">
+                            <label asp-for="Comment" class="pc-label">Nội dung phản hồi</label>
+                            <textarea asp-for="Comment"
+                                      class="pc-textarea"
+                                      placeholder="Hãy chia sẻ cảm nhận của bạn về bác sĩ, dịch vụ hoặc trải nghiệm khám bệnh..."></textarea>
+                            <span asp-validation-for="Comment" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="pc-btn-row">
+                        <a asp-controller="CusAppointment"
+                           asp-action="AppointmentHistory"
+                           class="pc-btn pc-btn--ghost">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+
+                        <button type="submit" class="pc-btn pc-btn--primary">
+                            <i class="fas fa-paper-plane"></i> Gửi phản hồi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -42,12 +42,32 @@
             _ => "pc-badge--default"
         };
     }
+
+    public static bool IsPaidStatus(string? status)
+    {
+        return NormalizeStatus(status) == "đã thanh toán";
+    }
 }
 }
 
 @section Styles {
     <style>
+        .pc-btn--sm {
+            height: 36px;
+            padding: 0 14px;
+            font-size: 0.9rem;
+        }
 
+        .pc-feedback-done {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
         :root {
             --pc-red: #ff3b3b;
             --pc-red-dark: #e83434;
@@ -380,12 +400,13 @@
                             <th>Dịch vụ</th>
                             <th style="width:140px;">Trạng thái</th>
                             <th style="width:140px;" class="text-end">Tổng tiền</th>
+                            <th style="width:160px;" class="text-center">Thao tác</th>
                         </tr>
                     </thead>
 
                     @foreach (var item in Model.Page.Data.Items)
                     {
-                        // ✅ NEW: tính tổng tiền theo base_price từ ServiceNames (không dùng item.TotalAmount)
+                        // : tính tổng tiền theo base_price từ ServiceNames (không dùng item.TotalAmount)
                         decimal totalFromBasePrice = 0m;
 
                         if (!string.IsNullOrWhiteSpace(item.ServiceNames))
@@ -432,6 +453,27 @@
 
                                 <td class="text-end pc-money">
                                     @totalFromBasePrice.ToString("N0")
+                                </td>
+
+                                <td class="text-center">
+                                    @if (IsPaidStatus(item.Status))
+                                    {
+                                        @if (item.HasFeedback)
+                                        {
+                                            <span class="pc-feedback-done">
+                                                <i class="fas fa-check-circle"></i> Đã Đánh Giá
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <a asp-controller="Feedback"
+                                               asp-action="Create"
+                                               asp-route-appointmentId="@item.AppointmentId"
+                                               class="pc-btn pc-btn--primary pc-btn--sm">
+                                                <i class="fas fa-comment-dots"></i> Đánh Giá
+                                            </a>
+                                        }
+                                    }
                                 </td>
                             </tr>
                         </tbody>

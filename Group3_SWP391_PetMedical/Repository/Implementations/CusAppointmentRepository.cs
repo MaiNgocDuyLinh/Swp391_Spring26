@@ -58,7 +58,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                      .OrderByDescending(a => a.status != null && a.status.Trim().ToLower() == "đã hủy") 
                      .ThenByDescending(a => EF.Property<DateTime?>(a, CREATED_AT_FIELD) != null)        
                      .ThenByDescending(a => EF.Property<DateTime?>(a, CREATED_AT_FIELD))                
-                     .ThenByDescending(a => a.appointment_id)                                          
+                     .ThenByDescending(a => a.appointment_id)
                      .Select(a => new CusAppointmentHistoryItemVM
                      {
                          AppointmentId = a.appointment_id,
@@ -71,7 +71,10 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                          Status = a.status ?? "",
                          Notes = a.notes,
                          ServiceNames = string.Join(", ", a.AppointmentDetails.Select(d => d.service.service_name)),
-                         TotalAmount = a.Invoice != null ? a.Invoice.total_amount : null
+                         TotalAmount = a.Invoice != null ? a.Invoice.total_amount : null,
+                         HasFeedback = _context.Feedbacks.Any(f =>
+                             f.appointment_id == a.appointment_id &&
+                             f.customer_id == customerId)
                      });
 
             return await projected.ToPagedResultAsync(query.Page, query.PageSize);
