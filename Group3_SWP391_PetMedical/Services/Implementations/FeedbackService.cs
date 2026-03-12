@@ -1,4 +1,5 @@
-﻿using Group3_SWP391_PetMedical.Repository.Interfaces;
+﻿using Group3_SWP391_PetMedical.Models.Common;
+using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Group3_SWP391_PetMedical.Services.Interfaces;
 using Group3_SWP391_PetMedical.ViewModels.Feedback;
 
@@ -31,5 +32,7 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
 
             return await _repo.CreateFeedbackAsync(customerId, vm);
         }
+        public Task<PagedResult<CusFeedbackHistoryItemVM>> GetCusFeedbackHistoryAsync(int customerId, CusFeedbackHistoryQuery query)
+    => _repo.GetCusFeedbackHistoryAsync(customerId, query);
     }
 }

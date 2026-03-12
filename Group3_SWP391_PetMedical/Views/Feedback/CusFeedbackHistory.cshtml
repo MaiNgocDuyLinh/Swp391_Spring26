@@ -1,0 +1,524 @@
+﻿@using Group3_SWP391_PetMedical.Models.Common
+@using Group3_SWP391_PetMedical.Services.Interfaces
+@model Group3_SWP391_PetMedical.ViewModels.Feedback.CusFeedbackHistoryListVM
+
+@inject IServiceService ServiceService
+
+@{
+    ViewData["Title"] = "Lịch sử đánh giá";
+
+    var pagerObj = new PagedResult<object>
+    {
+        Items = Model.Page.Data.Items.Cast<object>().ToList(),
+        Page = Model.Page.Data.Page,
+        PageSize = Model.Page.Data.PageSize,
+        TotalItems = Model.Page.Data.TotalItems
+    };
+
+    var fromVal = Model.Filter.FromDate?.ToString("yyyy-MM-dd") ?? "";
+    var toVal = Model.Filter.ToDate?.ToString("yyyy-MM-dd") ?? "";
+
+    var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
+
+@functions {
+    public static string GetShiftLabel(DateTime dt)
+    {
+        return dt.Hour < 12 ? "Ca sáng" : "Ca chiều";
+    }
+
+    public static string NormalizeStatus(string? status)
+    {
+        return (status ?? "").Trim().ToLower();
+    }
+
+    public static string GetStatusClass(string? status)
+    {
+        var s = NormalizeStatus(status);
+
+        return s switch
+        {
+            "đã thanh toán" => "pc-badge--paid",
+            _ => "pc-badge--default"
+        };
+    }
+
+    public static string RenderStars(int? rating)
+    {
+        var r = rating ?? 0;
+        var full = new string('★', r);
+        var empty = new string('☆', 5 - r);
+        return full + empty;
+    }
+}
+}
+
+@section Styles {
+    <style>
+        .pc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: none;
+        }
+
+            .pc-badge i {
+                color: inherit !important;
+            }
+
+        .pc-badge--paid {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .pc-badge--default {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        :root {
+            --pc-red: #ff3b3b;
+            --pc-red-dark: #e83434;
+            --pc-pink: #fff2f2;
+            --pc-text: #2b2b2b;
+            --pc-muted: #7a7a7a;
+            --pc-border: rgba(0,0,0,0.06);
+            --pc-star: #f6c343;
+        }
+
+        .pc-wrap {
+            background: #f3d7d5;
+            border: 1px solid var(--pc-border);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+        }
+
+        .pc-title {
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .pc-sub {
+            color: var(--pc-muted);
+            margin: 0;
+        }
+
+        .pc-filter {
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            border-radius: 16px;
+            padding: 18px;
+            margin: 18px 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+        .pc-label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .pc-input, .pc-select {
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.10);
+            height: 42px;
+            padding: 0 12px;
+        }
+
+            .pc-select.form-select {
+                line-height: 42px !important;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+                background-position: right 12px center;
+            }
+
+        .pc-btn {
+            border-radius: 999px;
+            padding: 0 18px;
+            height: 42px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .pc-btn--primary {
+            background: var(--pc-red);
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(255,59,59,0.25);
+        }
+
+            .pc-btn--primary:hover {
+                background: var(--pc-red-dark);
+                color: #fff;
+            }
+
+        .pc-btn--ghost {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.10);
+            color: var(--pc-text) !important;
+            min-width: 140px;
+            white-space: nowrap;
+        }
+
+        .pc-table {
+            border-radius: 16px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+            .pc-table thead th {
+                background: #fff7f7;
+                font-weight: 800;
+            }
+
+        .pc-money {
+            font-weight: 900;
+        }
+
+        .pc-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+            .pc-actions .pc-btn--primary {
+                margin-left: auto;
+                min-width: 110px;
+            }
+
+        .pc-pager.pagination {
+            gap: 10px;
+            margin: 0;
+        }
+
+        .pc-pager .page-item .page-link {
+            border-radius: 999px !important;
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 !important;
+            border: 1px solid rgba(0,0,0,0.10);
+            color: var(--pc-text);
+            background: #fff;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+        }
+
+            .pc-pager .page-item .page-link:hover {
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+                color: var(--pc-red-dark);
+            }
+
+        .pc-pager .page-item.active .page-link {
+            background: var(--pc-red) !important;
+            border-color: var(--pc-red) !important;
+            color: #fff !important;
+            box-shadow: 0 12px 24px rgba(255,59,59,0.25);
+        }
+
+        .pc-pager .page-item.disabled .page-link {
+            opacity: 0.45;
+            pointer-events: none;
+            box-shadow: none;
+        }
+
+        @@media (max-width: 576px) {
+            .pc-pager .page-item .page-link {
+                width: 38px;
+                height: 38px;
+            }
+        }
+
+        .pc-note-inline {
+            margin-top: 6px;
+            font-size: 0.9rem;
+            color: var(--pc-muted);
+        }
+
+        tbody.pc-record {
+            transition: background 0.25s ease;
+        }
+
+            tbody.pc-record:hover tr {
+                background: #fff3f3 !important;
+            }
+
+        .pc-review-state {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            border: 1px solid rgba(0,0,0,0.06);
+            background: #fff;
+        }
+
+        .pc-review-state--done {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .pc-review-state--waiting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .pc-stars {
+            color: var(--pc-star);
+            font-size: 1.05rem;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .pc-comment {
+            max-width: 260px;
+            white-space: normal;
+            word-break: break-word;
+            color: var(--pc-text);
+        }
+
+        .pc-action-icons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .pc-ico {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0,0,0,0.10);
+            background: #fff;
+            color: var(--pc-text);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+            .pc-ico:hover {
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+                color: var(--pc-red-dark);
+            }
+    </style>
+}
+
+<section class="container py-4" id="servicesArea">
+    <div class="pc-wrap" style="margin-top:150px;">
+
+        <h3 class="pc-title">Lịch sử đánh giá</h3>
+        <p class="pc-sub">Tra cứu các lịch đã thanh toán và tình trạng đánh giá</p>
+
+        <div class="pc-filter">
+            <form method="get" asp-controller="Feedback" asp-action="History" class="row g-3">
+                <div class="col-lg-4 col-md-6">
+                    <div class="pc-label">Từ khóa</div>
+                    <input class="form-control pc-input"
+                           name="q"
+                           value="@Model.Filter.Q"
+                           placeholder="Tên thú cưng / bác sĩ / ghi chú..." />
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <div class="pc-label">Từ ngày</div>
+                    <input type="date" class="form-control pc-input" name="fromDate" value="@fromVal" />
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <div class="pc-label">Đến ngày</div>
+                    <input type="date" class="form-control pc-input" name="toDate" value="@toVal" />
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="pc-label">Dịch vụ</div>
+                    <select class="form-select pc-select" name="serviceId">
+                        @foreach (var opt in Model.ServiceOptions)
+                        {
+                            <option value="@opt.Value" selected="@(opt.Selected ? "selected" : null)">
+                                @opt.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <input type="hidden" name="page" value="1" />
+                <input type="hidden" name="pageSize" value="@Model.Filter.PageSize" />
+
+                <div class="col-12 mt-2">
+                    <div class="pc-actions">
+                        <a class="pc-btn pc-btn--ghost"
+                           href="@Url.Action("History", "Feedback")#servicesArea">
+                            <i class="fas fa-undo-alt"></i> Làm mới
+                        </a>
+
+                        <button type="submit" class="pc-btn pc-btn--primary">
+                            <i class="fas fa-filter"></i> Lọc
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        @if (!Model.Page.Data.Items.Any())
+        {
+            <div class="alert alert-info mb-0" style="border-radius:14px;">
+                Chưa có lịch sử đánh giá phù hợp.
+            </div>
+        }
+        else
+        {
+            <div class="pc-table table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width:180px;">Ngày khám</th>
+                            <th>Thú cưng</th>
+                            <th>Bác sĩ</th>
+                            <th>Dịch vụ</th>
+                            <th style="width:140px;">Trạng thái</th>
+                            <th style="width:140px;" class="text-end">Tổng tiền</th>
+                            <th style="width:140px;">Đánh giá</th>
+                            <th style="width:120px;">Số sao</th>
+                            <th style="width:260px;">Nội dung</th>
+                            <th style="width:120px;" class="text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+
+                    @foreach (var item in Model.Page.Data.Items)
+                    {
+                        decimal totalFromServices = 0m;
+                        if (!string.IsNullOrWhiteSpace(item.ServiceNames))
+                        {
+                            var names = item.ServiceNames
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(x => x.Trim())
+                            .ToList();
+
+                            foreach (var n in names)
+                            {
+                                var svc = _allSvcs.FirstOrDefault(x =>
+                                string.Equals(x.service_name?.Trim(), n, StringComparison.OrdinalIgnoreCase));
+
+                                if (svc != null)
+                                {
+                                    totalFromServices += (decimal)svc.base_price;
+                                }
+                            }
+                        }
+
+                        <tbody class="pc-record">
+                            <tr>
+                                <td>
+                                    <strong>@GetShiftLabel(item.AppointmentDate) @item.AppointmentDate.ToString("dd/MM/yyyy")</strong>
+                                    @if (!string.IsNullOrWhiteSpace(item.Notes))
+                                    {
+                                        <div class="pc-note-inline">
+                                            <strong>Ghi chú:</strong> @item.Notes
+                                        </div>
+                                    }
+                                </td>
+
+                                <td><strong>@item.PetName</strong></td>
+                                <td>@item.DoctorName</td>
+                                <td>@item.ServiceNames</td>
+
+                                <td>
+                                    <span class="pc-badge @GetStatusClass(item.Status)">
+                                        <i class="fas fa-check-circle"></i>
+                                        @item.Status
+                                    </span>
+                                </td>
+
+                                <td class="text-end pc-money">
+                                    @totalFromServices.ToString("N0")
+                                </td>
+
+                                <td>
+                                    @if (item.HasFeedback)
+                                    {
+                                        <span class="pc-review-state pc-review-state--done">
+                                            <i class="fas fa-star"></i> Đã đánh giá
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="pc-review-state pc-review-state--waiting">
+                                            <i class="fas fa-clock"></i> Chưa đánh giá
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (item.HasFeedback)
+                                    {
+                                        <span class="pc-stars">@RenderStars(item.Rating)</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:#999;">--</span>
+                                    }
+                            </td>
+
+                            <td>
+                                <div class="pc-comment">
+                                    @(item.HasFeedback
+                                                                    ? (string.IsNullOrWhiteSpace(item.Comment) ? "Không có nội dung." : item.Comment)
+                                                                    : "Chưa có đánh giá")
+                            </div>
+                        </td>
+
+                                <td class="text-end">
+                                    <div class="pc-action-icons">
+                                @if (!item.HasFeedback)
+                                        {
+                                            <a class="pc-ico"
+                                               title="Đánh giá ngay"
+                                               href="@Url.Action("Create", "Feedback", new { appointmentId = item.AppointmentId })">
+                                                <i class="fas fa-star"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="pc-ico" style="opacity:.35; cursor:not-allowed;">
+                                                <i class="fas fa-check"></i>
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    }
+                </table>
+            </div>
+
+            <div class="mt-3">
+                @await Html.PartialAsync("_Pager",
+                (action: "History",
+                controller: "Feedback",
+                q: Model.Filter.Q,
+                pager: pagerObj))
+        </div>
+
+        <div class="text-center mt-2" style="color: var(--pc-muted); font-size:0.95rem;">
+            Tổng: <strong>@Model.Page.Data.TotalItems</strong> lịch khám
+        </div>
+                }
+    </div>
+</section>

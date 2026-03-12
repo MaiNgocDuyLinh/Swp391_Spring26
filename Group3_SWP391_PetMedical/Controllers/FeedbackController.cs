@@ -1,8 +1,9 @@
-﻿using System.Security.Claims;
-using Group3_SWP391_PetMedical.Services.Interfaces;
+﻿using Group3_SWP391_PetMedical.Services.Interfaces;
 using Group3_SWP391_PetMedical.ViewModels.Feedback;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
 
 namespace Group3_SWP391_PetMedical.Controllers
 {
@@ -10,10 +11,14 @@ namespace Group3_SWP391_PetMedical.Controllers
     public class FeedbackController : Controller
     {
         private readonly IFeedbackService _feedbackService;
+        private readonly IServiceService _serviceService;
 
-        public FeedbackController(IFeedbackService feedbackService)
+        public FeedbackController(
+            IFeedbackService feedbackService,
+            IServiceService serviceService)
         {
             _feedbackService = feedbackService;
+            _serviceService = serviceService;
         }
 
         [HttpGet]
@@ -27,8 +32,8 @@ namespace Group3_SWP391_PetMedical.Controllers
             var existed = await _feedbackService.HasFeedbackAsync(customerId, appointmentId);
             if (existed)
             {
-                TempData["error"] = "Bạn đã feedback lịch hẹn này rồi.";
-                return RedirectToAction("AppointmentHistory", "CusAppointment");
+                TempData["error"] = "Bạn đã đánh giá lịch hẹn này rồi.";
+                return RedirectToAction("History", "Feedback");
             }
 
             return View("~/Views/Feedback/CusFeedback.cshtml", vm);
@@ -51,8 +56,8 @@ namespace Group3_SWP391_PetMedical.Controllers
             var existed = await _feedbackService.HasFeedbackAsync(customerId, vm.AppointmentId);
             if (existed)
             {
-                TempData["error"] = "Bạn đã feedback lịch hẹn này rồi.";
-                return RedirectToAction("AppointmentHistory", "CusAppointment");
+                TempData["error"] = "Bạn đã đánh giá lịch hẹn này rồi.";
+                return RedirectToAction("History", "Feedback");
             }
 
             if (!ModelState.IsValid)
@@ -63,8 +68,8 @@ namespace Group3_SWP391_PetMedical.Controllers
             try
             {
                 await _feedbackService.CreateFeedbackAsync(customerId, vm);
-                TempData["msg"] = "Gửi feedback thành công!";
-                return RedirectToAction("AppointmentHistory", "CusAppointment");
+                TempData["msg"] = "Gửi phản hồi thành công!";
+                return RedirectToAction("History", "Feedback");
             }
             catch (Exception ex)
             {
@@ -73,6 +78,39 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
         }
 
+        //history
+        [HttpGet]
+        public async Task<IActionResult> History([FromQuery] CusFeedbackHistoryQuery filter)
+        {
+            int customerId = GetCurrentUserId();
+
+            var paged = await _feedbackService.GetCusFeedbackHistoryAsync(customerId, filter);
+            var services = await _serviceService.GetAllAsync();
+
+            var vm = new CusFeedbackHistoryListVM
+            {
+                Filter = filter,
+                Page = new()
+                {
+                    Data = paged,
+                    Q = filter.Q
+                },
+                ServiceOptions = services.Select(s => new SelectListItem
+                {
+                    Value = s.service_id.ToString(),
+                    Text = s.service_name,
+                    Selected = filter.ServiceId.HasValue && filter.ServiceId.Value == s.service_id
+                }).ToList()
+            };
+
+            vm.ServiceOptions.Insert(0, new SelectListItem
+            {
+                Value = "",
+                Text = "Tất cả dịch vụ"
+            });
+
+            return View("~/Views/Feedback/CusFeedbackHistory.cshtml", vm);
+        }
         private int GetCurrentUserId()
         {
             var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier)
