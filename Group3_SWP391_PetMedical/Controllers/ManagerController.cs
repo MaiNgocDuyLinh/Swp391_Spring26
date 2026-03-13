@@ -50,6 +50,42 @@ namespace Group3_SWP391_PetMedical.Controllers
             return RedirectToAction("ListServices");
         }
 
+        public IActionResult AddService()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddService(string service_name, decimal base_price,
+            string? description, int? duration, bool is_home_service)
+        {
+            if (string.IsNullOrWhiteSpace(service_name))
+            {
+                ModelState.AddModelError("service_name", "Tên dịch vụ không được để trống.");
+                return View();
+            }
+            await _managerService.CreateServiceAsync(service_name, base_price, description, duration, is_home_service);
+            TempData["SuccessMessage"] = "Thêm dịch vụ thành công!";
+            return RedirectToAction("ListServices");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteService(int id)
+        {
+            var success = await _managerService.DeleteServiceAsync(id);
+            if (!success)
+            {
+                TempData["ErrorMessage"] = "Không thể xóa dịch vụ. Dịch vụ đang được sử dụng trong lịch hẹn.";
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Đã xóa dịch vụ thành công!";
+            }
+            return RedirectToAction("ListServices");
+        }
+
         // ========== APPOINTMENTS ==========
         public async Task<IActionResult> AppointmentList(string? search, string? statusFilter, int page = 1)
         {

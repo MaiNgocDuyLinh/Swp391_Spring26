@@ -9,6 +9,8 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         Task<PagedResult<Service>> GetServicesPagedAsync(string? search, int page, int pageSize);
         Task<Service?> GetServiceByIdAsync(int id);
         Task<bool> UpdateServiceAsync(int id, string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService, bool status);
+        Task<bool> CreateServiceAsync(string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService);
+        Task<bool> DeleteServiceAsync(int id);
 
         // ========== Appointments ==========
         Task<PagedResult<Appointment>> GetAllAppointmentsPagedAsync(string? search, string? statusFilter, int page, int pageSize);

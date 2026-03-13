@@ -71,5 +71,37 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             await _context.SaveChangesAsync();
             return true;
         }
+
+        // Thêm dịch vụ mới
+        public async Task<bool> CreateAsync(string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService)
+        {
+            var service = new Service
+            {
+                service_name = serviceName,
+                base_price = basePrice,
+                description = description,
+                duration = duration,
+                is_home_service = isHomeService,
+                status = true
+            };
+            _context.Services.Add(service);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Xóa dịch vụ
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var service = await _context.Services.FirstOrDefaultAsync(s => s.service_id == id);
+            if (service == null) return false;
+
+            // Check if service is linked to any appointment
+            var hasAppointments = await _context.AppointmentDetails.AnyAsync(ad => ad.service_id == id);
+            if (hasAppointments) return false;
+
+            _context.Services.Remove(service);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

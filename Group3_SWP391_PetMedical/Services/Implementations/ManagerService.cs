@@ -26,6 +26,12 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<bool> UpdateServiceAsync(int id, string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService, bool status)
             => _serviceRepo.UpdateAsync(id, serviceName, basePrice, description, duration, isHomeService, status);
 
+        public Task<bool> CreateServiceAsync(string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService)
+            => _serviceRepo.CreateAsync(serviceName, basePrice, description, duration, isHomeService);
+
+        public Task<bool> DeleteServiceAsync(int id)
+            => _serviceRepo.DeleteAsync(id);
+
         // ========== Appointments ==========
         public Task<PagedResult<Appointment>> GetAllAppointmentsPagedAsync(string? search, string? statusFilter, int page, int pageSize)
             => _appointmentRepo.GetAllAppointmentsPagedAsync(search, statusFilter, page, pageSize);

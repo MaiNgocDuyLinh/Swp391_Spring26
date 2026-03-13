@@ -40,13 +40,26 @@
 <section class="container py-4" id="servicesArea">
     <div class="pc-wrap" style="margin-top:150px;">
 
-        <h3 class="pc-title">Quản lý Dịch vụ</h3>
-        <p class="pc-sub">Xem và chỉnh sửa danh sách dịch vụ tại phòng khám</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="pc-title">Quản lý Dịch vụ</h3>
+                <p class="pc-sub">Xem và quản lý danh sách dịch vụ tại phòng khám</p>
+            </div>
+            <a class="pc-btn pc-btn--primary" href="@Url.Action("AddService", "Manager")">
+                <i class="fas fa-plus"></i> Thêm dịch vụ
+            </a>
+        </div>
 
         @if (TempData["SuccessMessage"] != null)
         {
             <div class="alert alert-success mt-3 mb-0" style="border-radius:14px;">
                 <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger mt-3 mb-0" style="border-radius:14px;">
+                <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
             </div>
         }
 
@@ -113,6 +126,14 @@
                                            href="@Url.Action("EditService", "Manager", new { id = s.service_id })">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        <button class="pc-ico" title="Xóa" style="color:#dc2626; border-color:rgba(220,38,38,0.2);"
+                                                onclick="if(confirm('Xác nhận xóa dịch vụ \"' + '@s.service_name' + '\"?')) document.getElementById('deleteForm-@s.service_id').submit();">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                        <form id="deleteForm-@s.service_id" asp-action="DeleteService" asp-controller="Manager" method="post" style="display:none;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@s.service_id" />
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
