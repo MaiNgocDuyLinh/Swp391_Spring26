@@ -41,6 +41,9 @@ namespace Group3_SWP391_PetMedical
             builder.Services.AddScoped<ICusAppointmentRepository, CusAppointmentRepository>();
             builder.Services.AddScoped<ICusAppointmentService, CusAppointmentService>();
 
+            //shopping
+            builder.Services.AddScoped<ICusShoppingRepository, CusShoppingRepository>();
+            builder.Services.AddScoped<ICusShoppingService, CusShoppingService>();
 
             // User (Profile, ChangePassword)
             builder.Services.AddScoped<Group3_SWP391_PetMedical.Repository.Interfaces.IUserRepository,

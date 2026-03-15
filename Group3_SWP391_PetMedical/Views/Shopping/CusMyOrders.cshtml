@@ -1,0 +1,51 @@
+﻿@model List<Group3_SWP391_PetMedical.ViewModels.Shopping.CusShoppingOrderListItemVM>
+
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+}
+
+<div class="container py-5 mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Đơn hàng của tôi</h2>
+        <a href="@Url.Action("Index", "CusShopping")" class="btn btn-outline-dark">Quay lại mua sắm</a>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered bg-white">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái đơn</th>
+                        <th>Thanh toán</th>
+                        <th>Tổng tiền</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.OrderCode</td>
+                            <td>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.OrderStatus</td>
+                            <td>@item.PaymentStatus</td>
+                            <td>@item.TotalAmount.ToString("N0") đ</td>
+                            <td>
+                                <a href="@Url.Action("OrderDetail", "CusShopping", new { id = item.OrderId })" class="btn btn-sm btn-dark">
+                                    Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">Bạn chưa có đơn hàng nào.</div>
+    }
+</div>

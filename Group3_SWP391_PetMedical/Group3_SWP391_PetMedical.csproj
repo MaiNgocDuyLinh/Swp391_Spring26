@@ -46,6 +46,7 @@
 	<ItemGroup>
 	  <Folder Include="ViewModels\Users\" />
 	  <Folder Include="Views\ForgetPassword\" />
+	  <Folder Include="wwwroot\uploads\Shopping\" />
 	</ItemGroup>
 
 </Project>

@@ -1,0 +1,543 @@
+﻿@model Group3_SWP391_PetMedical.ViewModels.Shopping.CusShoppingIndexVM
+
+@{
+    ViewData["Title"] = "Mua sắm";
+    var q = Model.Query.Keyword ?? "";
+    var pageSize = Model.Query.PageSize;
+    var currentCategoryId = Model.Query.CategoryId;
+    var defaultImg = Url.Content("~/uploads/Shopping/OrderDefault.png");
+
+    var totalPages = (int)Math.Ceiling((double)Model.Result.TotalItems / Model.Result.PageSize);
+    var currentPage = Model.Result.Page <= 0 ? 1 : Model.Result.Page;
+}
+
+<style>
+    .cusshop-page {
+        padding-top: 140px;
+    }
+
+    @@media (max-width: 991.98px) {
+        .cusshop-page {
+            padding-top: 160px;
+        }
+    }
+
+    .cusshop-frame {
+        background: #ffffff;
+        border: 1px solid #eef0f4;
+        border-radius: 26px;
+        padding: 44px 34px;
+        box-shadow: 0 18px 40px rgba(0,0,0,.06);
+    }
+
+    @@media (max-width: 575.98px) {
+        .cusshop-frame {
+            padding: 28px 18px;
+            border-radius: 20px;
+        }
+    }
+
+    .cusshop-hero {
+        text-align: center;
+        margin-bottom: 22px;
+    }
+
+    .cusshop-hero .title {
+        font-size: 52px;
+        line-height: 1.15;
+        font-weight: 900;
+        color: #0b1c39;
+        margin: 0;
+    }
+
+    .cusshop-hero .subtitle {
+        margin-top: 12px;
+        color: #6c7a92;
+        font-size: 16px;
+    }
+
+    @@media (max-width: 991.98px) {
+        .cusshop-hero .title {
+            font-size: 38px;
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .cusshop-hero .title {
+            font-size: 30px;
+        }
+    }
+
+    .cusshop-toolbar {
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+        gap: 14px;
+        margin: 22px 0 30px;
+        flex-wrap: wrap;
+    }
+
+    .cusshop-search {
+        flex: 1 1 700px;
+    }
+
+    .cusshop-actions {
+        flex: 0 0 auto;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .cusshop-search-form .row {
+        margin-left: -7px;
+        margin-right: -7px;
+    }
+
+    .cusshop-search-form .row > div {
+        padding-left: 7px;
+        padding-right: 7px;
+    }
+
+    .cusshop-search-input,
+    .cusshop-search-select {
+    height: 52px;
+    border-radius: 999px;
+    border: 1px solid #eef0f4;
+    color: #0b1c39;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    text-align-last: center;
+    padding: 0 42px 0 18px;
+    line-height: 50px;
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #fff;
+    background-image: none;
+}
+
+.cusshop-search-select:focus {
+    border-color: rgba(255,61,28,.35);
+    box-shadow: 0 0 0 .2rem rgba(255,61,28,.10);
+}
+
+.cusshop-search-select option {
+    color: #0b1c39;
+    text-align: left;
+    line-height: normal;
+}
+
+    .cusshop-btn {
+        height: 52px;
+        border-radius: 999px;
+        padding: 0 24px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: .2s ease;
+        border: 1px solid transparent;
+    }
+
+    .cusshop-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 30px rgba(0,0,0,.08);
+        text-decoration: none;
+    }
+
+    .cusshop-btn-primary {
+        background: #ff3d1c;
+        border-color: #ff3d1c;
+        color: #fff;
+    }
+
+    .cusshop-btn-primary:hover {
+        color: #fff;
+    }
+
+    .cusshop-btn-soft {
+        background: #5aa9ff;
+        border-color: #5aa9ff;
+        color: #fff;
+    }
+
+    .cusshop-btn-soft:hover {
+        color: #fff;
+    }
+
+    .cusshop-btn-dark {
+        background: #1f1b24;
+        border-color: #1f1b24;
+        color: #fff;
+    }
+
+    .cusshop-btn-dark:hover {
+        color: #fff;
+    }
+
+    .cusshop-btn-outline {
+        background: #fff;
+        border-color: #dfe7f2;
+        color: #0b1c39;
+    }
+
+    .cusshop-btn-outline:hover {
+        color: #0b1c39;
+        background: #f8fbff;
+    }
+
+    .cusshop-card {
+        background: #fff5f7;
+        border-radius: 18px;
+        padding: 16px 16px 18px;
+        height: 100%;
+        border: 1px solid rgba(255, 61, 28, .10);
+        transition: .2s ease;
+        box-shadow: 0 8px 24px rgba(11, 28, 57, .04);
+    }
+
+    .cusshop-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 40px rgba(0,0,0,.10);
+    }
+
+    .cusshop-card-imgwrap {
+        border-radius: 16px;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid #f1f3f7;
+        height: 240px;
+        margin-bottom: 16px;
+    }
+
+    .cusshop-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .cusshop-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(90,169,255,.12);
+        color: #2b6cb0;
+        font-size: 12px;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .cusshop-name {
+        font-size: 24px;
+        line-height: 1.35;
+        font-weight: 900;
+        color: #0b1c39;
+        margin: 0 0 10px;
+        min-height: 64px;
+    }
+
+    .cusshop-price {
+        font-size: 28px;
+        font-weight: 900;
+        color: #ff3d1c;
+        margin-bottom: 6px;
+    }
+
+    .cusshop-stock {
+        color: #6c7a92;
+        font-size: 15px;
+        margin-bottom: 16px;
+    }
+
+    .cusshop-empty {
+        border-radius: 18px;
+        background: #fff8e8;
+        border: 1px solid rgba(255, 193, 7, .25);
+        padding: 18px;
+        text-align: center;
+        color: #7b5a00;
+        font-weight: 600;
+    }
+
+    .cusshop-pager-wrap {
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    .cusshop-pager {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .cusshop-pager .page-link {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        padding: 0;
+        border-radius: 999px !important;
+        border: 1px solid #dfe7f2;
+        color: #0b1c39;
+        background: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 16px;
+        line-height: 1;
+        box-shadow: none;
+        margin: 0;
+    }
+
+    .cusshop-pager .page-link i {
+        font-size: 14px;
+        line-height: 1;
+    }
+
+    .cusshop-pager .page-item {
+        margin: 0;
+    }
+
+    .cusshop-pager .page-item.active .page-link {
+        background: #5aa9ff;
+        border-color: #5aa9ff;
+        color: #fff;
+    }
+
+    .cusshop-pager .page-item.disabled .page-link {
+        color: #b9c3d3;
+        background: #f4f7fb;
+        border-color: #dfe7f2;
+        opacity: 1;
+    }
+
+    .cusshop-pager .page-link:hover {
+        background: rgba(90,169,255,.08);
+        border-color: #5aa9ff;
+        color: #0b1c39;
+    }
+
+    .cusshop-summary {
+        color: #6c7a92;
+        font-size: 15px;
+        margin-top: 12px;
+        text-align: center;
+    }
+
+    @@media (max-width: 767.98px) {
+        .cusshop-actions {
+            width: 100%;
+            justify-content: stretch;
+            flex-wrap: wrap;
+        }
+
+        .cusshop-actions .cusshop-btn {
+            flex: 1 1 calc(50% - 5px);
+        }
+
+        .cusshop-name {
+            font-size: 20px;
+            min-height: auto;
+        }
+
+        .cusshop-price {
+            font-size: 24px;
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .cusshop-actions .cusshop-btn {
+            flex: 1 1 100%;
+        }
+
+        .cusshop-pager .page-link {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+        }
+    }
+</style>
+
+<section class="services-area section-padding40 cusshop-page">
+    <div class="container">
+        <div class="cusshop-frame">
+
+            <div class="cusshop-hero">
+                <h1 class="title">Mua sắm sản phẩm</h1>
+                <div class="subtitle">Chọn sản phẩm chăm sóc thú cưng phù hợp ngay tại phòng khám.</div>
+            </div>
+
+            <div class="cusshop-toolbar">
+                <div class="cusshop-search">
+                    <form method="get" asp-controller="CusShopping" asp-action="Index" class="cusshop-search-form">
+                        <input type="hidden" name="Page" value="1" />
+                        <input type="hidden" name="PageSize" value="@pageSize" />
+
+                        <div class="row">
+                            <div class="col-lg-4 col-md-12 mb-2 mb-lg-0">
+                                <input type="text"
+                                       name="Keyword"
+                                       value="@Model.Query.Keyword"
+                                       class="form-control cusshop-search-input"
+                                       placeholder="Tìm sản phẩm..." />
+                            </div>
+
+                            <div class="col-lg-4 col-md-6 mb-2 mb-md-0">
+                                <select name="CategoryId" class="form-control cusshop-search-select">
+                                    <option value="">-- Tất cả danh mục --</option>
+                                    @foreach (var c in Model.Categories)
+                                    {
+                                        if (currentCategoryId == c.CategoryId)
+                                        {
+                                            <option value="@c.CategoryId" selected>@c.CategoryName</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@c.CategoryId">@c.CategoryName</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-lg-2 col-md-3 col-6">
+                                <button type="submit" class="cusshop-btn cusshop-btn-dark w-100">
+                                    <i class="fas fa-search"></i> Lọc
+                                </button>
+                            </div>
+
+                            <div class="col-lg-2 col-md-3 col-6">
+                                <a href="@Url.Action("Index", "CusShopping")" class="cusshop-btn cusshop-btn-outline w-100">
+                                    <i class="fas fa-sync-alt"></i> Làm mới
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="cusshop-actions">
+                    <a class="cusshop-btn cusshop-btn-soft" href="@Url.Action("MyOrders", "CusShopping")">
+                        <i class="fas fa-receipt"></i> Đơn hàng của tôi
+                    </a>
+                    <a class="cusshop-btn cusshop-btn-primary" href="@Url.Action("Cart", "CusShopping")">
+                        <i class="fas fa-shopping-cart"></i> Giỏ hàng
+                    </a>
+                </div>
+            </div>
+
+            @if (!Model.Result.Items.Any())
+            {
+                <div class="cusshop-empty">
+                    Không có sản phẩm phù hợp.
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var item in Model.Result.Items)
+                    {
+                        var imgUrl = string.IsNullOrWhiteSpace(item.ImageUrl)
+                            ? defaultImg
+                            : (item.ImageUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) || item.ImageUrl.StartsWith("/")
+                                ? item.ImageUrl
+                                : Url.Content("~/uploads/products/" + item.ImageUrl));
+
+                        <div class="col-xl-4 col-lg-4 col-md-6 mb-4">
+                            <div class="cusshop-card">
+                                <div class="cusshop-card-imgwrap">
+                                    <img src="@imgUrl"
+                                         alt="@item.Name"
+                                         class="cusshop-card-img"
+                                         onerror="this.onerror=null;this.src='@defaultImg';" />
+                                </div>
+
+                                <span class="cusshop-badge">@item.CategoryName</span>
+
+                                <h3 class="cusshop-name">@item.Name</h3>
+
+                                <div class="cusshop-price">@item.Price.ToString("N0") đ</div>
+                                <div class="cusshop-stock">Tồn kho: @item.StockQuantity</div>
+
+                                <a href="@Url.Action("Detail", "CusShopping", new { id = item.ProductId })"
+                                   class="cusshop-btn cusshop-btn-soft w-100">
+                                    Xem sản phẩm
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (totalPages > 1)
+                {
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <div class="cusshop-pager-wrap">
+                                <nav aria-label="Shopping pagination">
+                                    <ul class="pagination cusshop-pager mb-0 justify-content-center">
+
+                                        <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                                            <a class="page-link"
+                                               href="@Url.Action("Index", "CusShopping", new {
+                                                   Keyword = Model.Query.Keyword,
+                                                   CategoryId = Model.Query.CategoryId,
+                                                   Page = currentPage - 1,
+                                                   PageSize = Model.Query.PageSize
+                                               })">
+                                                <i class="fas fa-angle-left"></i>
+                                            </a>
+                                        </li>
+
+                                        @{
+                                            int startPage = Math.Max(1, currentPage - 2);
+                                            int endPage = Math.Min(totalPages, currentPage + 2);
+                                        }
+
+                                        @for (int i = startPage; i <= endPage; i++)
+                                        {
+                                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                                <a class="page-link"
+                                                   href="@Url.Action("Index", "CusShopping", new {
+                                                       Keyword = Model.Query.Keyword,
+                                                       CategoryId = Model.Query.CategoryId,
+                                                       Page = i,
+                                                       PageSize = Model.Query.PageSize
+                                                   })">
+                                                    @i
+                                                </a>
+                                            </li>
+                                        }
+
+                                        <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                                            <a class="page-link"
+                                               href="@Url.Action("Index", "CusShopping", new {
+                                                   Keyword = Model.Query.Keyword,
+                                                   CategoryId = Model.Query.CategoryId,
+                                                   Page = currentPage + 1,
+                                                   PageSize = Model.Query.PageSize
+                                               })">
+                                                <i class="fas fa-angle-right"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+
+                                <div class="cusshop-summary">
+                                    Hiển thị @Model.Result.Items.Count / @Model.Result.TotalItems sản phẩm
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>

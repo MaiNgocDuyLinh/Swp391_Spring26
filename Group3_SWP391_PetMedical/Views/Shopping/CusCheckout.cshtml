@@ -1,0 +1,82 @@
+﻿@model Group3_SWP391_PetMedical.ViewModels.Shopping.CusCheckoutVM
+
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+
+<div class="container py-5 mt-5">
+    <div class="mb-4">
+        <a href="@Url.Action("Cart", "CusShopping")" class="btn btn-outline-secondary">← Quay lại giỏ hàng</a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Thông tin nhận hàng</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="CusShopping" asp-action="Checkout" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="form-group">
+                            <label>Phương thức thanh toán</label>
+                            <select name="PaymentMethod" class="form-control">
+                                <option value="Tiền mặt" selected="@(Model.PaymentMethod == "Tiền mặt")">Tiền mặt</option>
+                                <option value="Chuyển khoản" selected="@(Model.PaymentMethod == "Chuyển khoản")">Chuyển khoản</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ngày nhận mong muốn</label>
+                            <input type="datetime-local"
+                                   name="PickupDate"
+                                   value="@(Model.PickupDate.HasValue? Model.PickupDate.Value.ToString("yyyy-MM-ddTHH:mm") : "")"
+                                   class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ghi chú</label>
+                            <textarea name="PickupNote" class="form-control" rows="4">@Model.PickupNote</textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-danger btn-lg">Xác nhận đặt hàng</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Đơn hàng của bạn</h4>
+                </div>
+                <div class="card-body">
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="d-flex justify-content-between border-bottom py-2">
+                            <div>
+                                <strong>@item.ProductName</strong>
+                                @if (!string.IsNullOrWhiteSpace(item.VariantName))
+                                {
+                                    <div class="text-muted small">@item.VariantName</div>
+                                }
+                                <div class="text-muted small">SL: @item.Quantity</div>
+                            </div>
+                            <div>@item.LineTotal.ToString("N0") đ</div>
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <strong>Tổng cộng</strong>
+                        <strong class="text-danger">@Model.SubTotal.ToString("N0") đ</strong>
+                    </div>
+
+                    <div class="mt-3 text-muted">
+                        Hình thức nhận hàng: <strong>Nhận tại phòng khám</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

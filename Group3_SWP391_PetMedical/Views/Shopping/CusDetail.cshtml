@@ -1,0 +1,68 @@
+﻿@model Group3_SWP391_PetMedical.ViewModels.Shopping.CusShoppingDetailVM
+
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+}
+
+<div class="container py-5 mt-5">
+    <div class="mb-3">
+        <a href="@Url.Action("Index", "CusShopping")" class="btn btn-outline-secondary">← Quay lại mua sắm</a>
+        <a href="@Url.Action("Cart", "CusShopping")" class="btn btn-danger">Giỏ hàng</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-5 mb-4">
+            <img src="@(string.IsNullOrWhiteSpace(Model.ImageUrl) ? Url.Content("~/assets/img/gallery/gallery1.png") : Model.ImageUrl)"
+                 class="img-fluid rounded shadow-sm"
+                 style="width:100%; max-height:420px; object-fit:cover;" />
+        </div>
+
+        <div class="col-md-7">
+            <p class="text-muted mb-2">@Model.CategoryName</p>
+            <h2 class="mb-3">@Model.Name</h2>
+            <h4 class="text-danger mb-3">@Model.Price.ToString("N0") đ</h4>
+            <p class="text-muted">Tồn kho: @Model.StockQuantity</p>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Description))
+            {
+                <div class="mb-4">
+                    <strong>Mô tả:</strong>
+                    <p class="mb-0">@Model.Description</p>
+                </div>
+            }
+
+            <form asp-controller="CusShopping" asp-action="AddToCart" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ProductId" value="@Model.ProductId" />
+
+                @if (Model.Variants.Any())
+                {
+                    <div class="form-group">
+                        <label><strong>Biến thể</strong></label>
+                        <select name="VariantId" class="form-control">
+                            <option value="">-- Chọn biến thể --</option>
+                            @foreach (var v in Model.Variants)
+                            {
+                                var label = v.VariantName;
+                                if (!string.IsNullOrWhiteSpace(v.Color)) { label += $" | Màu: {v.Color}"; }
+                                if (!string.IsNullOrWhiteSpace(v.Size)) { label += $" | Size: {v.Size}"; }
+                                if (v.PriceOverride.HasValue) { label += $" | Giá: {v.PriceOverride.Value:N0} đ"; }
+                                label += $" | Tồn: {v.StockQuantity}";
+                                <option value="@v.VariantId">@label</option>
+                            }
+                        </select>
+                    </div>
+                }
+
+                <div class="form-group">
+                    <label><strong>Số lượng</strong></label>
+                    <input type="number" min="1" name="Quantity" value="1" class="form-control" style="max-width:160px;" />
+                </div>
+
+                <button type="submit" class="btn btn-danger">
+                    Thêm vào giỏ hàng
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

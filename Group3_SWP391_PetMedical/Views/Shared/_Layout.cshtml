@@ -179,6 +179,10 @@
 
                                                 @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Customer"))
                                                 {
+                                                    <a class="dropdown-item" href="@Url.Action("Index", "CusShopping")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-shopping-bag me-2"></i> Mua sắm
+                                                    </a>
+
                                                     <a class="dropdown-item" href="@Url.Action("MyPets", "Pet")" style="padding: 0.5rem 1rem;">
                                                         <i class="fas fa-paw me-2"></i> Thú cưng của tôi
                                                     </a>
@@ -196,8 +200,14 @@
                                                     </a>
                                                 }
 
+                                                @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Manager"))
+                                                {
+                                                    <div class="dropdown-divider"></div>
+                                                    <a class="dropdown-item" href="@Url.Action("Index", "ManShopping")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-shopping-bag me-2"></i> Mua sắm
+                                                    </a>
+                                                }
 
-                                                    
                                                 @if (User.IsInRole("Admin") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Admin"))
                                                 {
                                                     <div class="dropdown-divider"></div>

@@ -1,0 +1,69 @@
+﻿@model Group3_SWP391_PetMedical.ViewModels.Shopping.CusCartVM
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<div class="container py-5 mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Giỏ hàng của tôi</h2>
+        <a href="@Url.Action("Index", "CusShopping")" class="btn btn-outline-dark">Tiếp tục mua sắm</a>
+    </div>
+
+    @if (Model.Items.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered bg-white">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Giá</th>
+                        <th style="width:180px;">Số lượng</th>
+                        <th>Thành tiền</th>
+                        <th style="width:120px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.ProductName</strong>
+                                @if (!string.IsNullOrWhiteSpace(item.VariantName))
+                                {
+                                    <div class="text-muted">Biến thể: @item.VariantName</div>
+                                }
+                            </td>
+                            <td>@item.UnitPrice.ToString("N0") đ</td>
+                            <td>
+                                <form asp-controller="CusShopping" asp-action="UpdateCartItem" method="post" class="d-flex">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                    <input type="number" name="quantity" value="@item.Quantity" min="1" class="form-control mr-2" />
+                                    <button type="submit" class="btn btn-sm btn-dark">Lưu</button>
+                                </form>
+                            </td>
+                            <td>@item.LineTotal.ToString("N0") đ</td>
+                            <td>
+                                <form asp-controller="CusShopping" asp-action="RemoveCartItem" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                    <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-right mt-4">
+            <h4>Tổng tiền: <span class="text-danger">@Model.SubTotal.ToString("N0") đ</span></h4>
+            <a href="@Url.Action("Checkout", "CusShopping")" class="btn btn-danger btn-lg mt-2">Tiến hành đặt hàng</a>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">Giỏ hàng của bạn đang trống.</div>
+    }
+</div>
