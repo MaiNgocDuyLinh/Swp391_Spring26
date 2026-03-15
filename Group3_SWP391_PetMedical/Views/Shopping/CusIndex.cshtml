@@ -465,7 +465,7 @@
                                 <h3 class="cusshop-name">@item.Name</h3>
 
                                 <div class="cusshop-price">@item.Price.ToString("N0") đ</div>
-                                <div class="cusshop-stock">Tồn kho: @item.StockQuantity</div>
+                                <div class="cusshop-stock">Kho: @item.StockQuantity</div>
 
                                 <a href="@Url.Action("Detail", "CusShopping", new { id = item.ProductId })"
                                    class="cusshop-btn cusshop-btn-soft w-100">

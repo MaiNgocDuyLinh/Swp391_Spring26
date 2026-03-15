@@ -18,6 +18,8 @@ namespace Group3_SWP391_PetMedical.ViewModels.Shopping
         public int? SelectedVariantId { get; set; }
 
         public List<CusShoppingVariantVM> Variants { get; set; } = new();
+
+
     }
 
     public class CusShoppingVariantVM
@@ -30,6 +32,8 @@ namespace Group3_SWP391_PetMedical.ViewModels.Shopping
         public decimal? PriceOverride { get; set; }
         public int StockQuantity { get; set; }
         public string Status { get; set; } = "";
+
+        public int? SelectedVariantId { get; set; }
     }
 
     public class CusAddToCartVM

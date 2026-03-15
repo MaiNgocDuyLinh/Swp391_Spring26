@@ -2,67 +2,482 @@
 
 @{
     ViewData["Title"] = "Chi tiết sản phẩm";
+
+    string productImg;
+    if (string.IsNullOrWhiteSpace(Model.ImageUrl))
+    {
+        productImg = Url.Content("~/uploads/Shopping/OrderDefault.png");
+    }
+    else if (Model.ImageUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) || Model.ImageUrl.StartsWith("/"))
+    {
+        productImg = Model.ImageUrl;
+    }
+    else if (Model.ImageUrl.StartsWith("uploads/", StringComparison.OrdinalIgnoreCase))
+    {
+        productImg = Url.Content("~/" + Model.ImageUrl);
+    }
+    else
+    {
+        productImg = Url.Content("~/uploads/Shopping/" + Model.ImageUrl);
+    }
+
+
+    @if (TempData["success"] != null)
+    {
+        <div class="alert alert-success">@TempData["success"]</div>
+    }
+
+    @if (TempData["error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["error"]</div>
+    }
+    var selectedVariant = Model.Variants != null && Model.Variants.Any()
+        ? Model.Variants.FirstOrDefault(x => x.VariantId == Model.SelectedVariantId) ?? Model.Variants.First()
+        : null;
+
+    var initialPrice = selectedVariant?.PriceOverride ?? Model.Price;
+    var initialStock = selectedVariant?.StockQuantity ?? Model.StockQuantity;
+
 }
 
-<div class="container py-5 mt-5">
-    <div class="mb-3">
-        <a href="@Url.Action("Index", "CusShopping")" class="btn btn-outline-secondary">← Quay lại mua sắm</a>
-        <a href="@Url.Action("Cart", "CusShopping")" class="btn btn-danger">Giỏ hàng</a>
-    </div>
+<style>
+    .cusdetail-page {
+        padding-top: 140px;
+    }
 
-    <div class="row">
-        <div class="col-md-5 mb-4">
-            <img src="@(string.IsNullOrWhiteSpace(Model.ImageUrl) ? Url.Content("~/assets/img/gallery/gallery1.png") : Model.ImageUrl)"
-                 class="img-fluid rounded shadow-sm"
-                 style="width:100%; max-height:420px; object-fit:cover;" />
-        </div>
+    @@media (max-width: 991.98px) {
+        .cusdetail-page {
+            padding-top: 160px;
+        }
+    }
 
-        <div class="col-md-7">
-            <p class="text-muted mb-2">@Model.CategoryName</p>
-            <h2 class="mb-3">@Model.Name</h2>
-            <h4 class="text-danger mb-3">@Model.Price.ToString("N0") đ</h4>
-            <p class="text-muted">Tồn kho: @Model.StockQuantity</p>
+    .cusdetail-frame {
+        background: #ffffff;
+        border: 1px solid #eef0f4;
+        border-radius: 26px;
+        padding: 34px;
+        box-shadow: 0 18px 40px rgba(0,0,0,.06);
+    }
 
-            @if (!string.IsNullOrWhiteSpace(Model.Description))
-            {
-                <div class="mb-4">
-                    <strong>Mô tả:</strong>
-                    <p class="mb-0">@Model.Description</p>
-                </div>
+    @@media (max-width: 575.98px) {
+        .cusdetail-frame {
+            padding: 20px 16px;
+            border-radius: 20px;
+        }
+    }
+
+    .cusdetail-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .cusdetail-btn {
+        height: 48px;
+        border-radius: 999px;
+        padding: 0 20px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: .2s ease;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+
+        .cusdetail-btn:hover {
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 12px 30px rgba(0,0,0,.08);
+        }
+
+    .cusdetail-btn-outline {
+        background: #fff;
+        border-color: #dfe7f2;
+        color: #0b1c39;
+    }
+
+        .cusdetail-btn-outline:hover {
+            color: #0b1c39;
+            background: #f8fbff;
+        }
+
+    .cusdetail-btn-primary {
+        background: #ff3d1c;
+        border-color: #ff3d1c;
+        color: #fff;
+    }
+
+        .cusdetail-btn-primary:hover {
+            color: #fff;
+        }
+
+    .cusdetail-btn-soft {
+        background: #5aa9ff;
+        border-color: #5aa9ff;
+        color: #fff;
+    }
+
+        .cusdetail-btn-soft:hover {
+            color: #fff;
+        }
+
+    .cusdetail-card {
+        background: #fff5f7;
+        border: 1px solid rgba(255, 61, 28, .10);
+        border-radius: 22px;
+        padding: 22px;
+        height: 100%;
+    }
+
+    .cusdetail-image-wrap {
+        background: #fff;
+        border: 1px solid #eef0f4;
+        border-radius: 22px;
+        padding: 14px;
+        box-shadow: 0 8px 24px rgba(11, 28, 57, .04);
+    }
+
+    .cusdetail-image {
+        width: 100%;
+        height: 420px;
+        object-fit: cover;
+        border-radius: 16px;
+        display: block;
+        background: #fff;
+    }
+
+    .cusdetail-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 14px;
+        border-radius: 999px;
+        background: rgba(90,169,255,.12);
+        color: #2b6cb0;
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 14px;
+    }
+
+    .cusdetail-name {
+        font-size: 38px;
+        line-height: 1.2;
+        font-weight: 900;
+        color: #0b1c39;
+        margin: 0 0 12px;
+    }
+
+    .cusdetail-price {
+        font-size: 34px;
+        line-height: 1.1;
+        font-weight: 900;
+        color: #ff3d1c;
+        margin-bottom: 10px;
+    }
+
+    .cusdetail-stock {
+        color: #6c7a92;
+        font-size: 16px;
+        margin-bottom: 18px;
+    }
+
+    .cusdetail-desc {
+        background: rgba(255,255,255,.7);
+        border: 1px solid #eef0f4;
+        border-radius: 16px;
+        padding: 16px 18px;
+        margin-bottom: 22px;
+        color: #5d6b82;
+        line-height: 1.8;
+    }
+
+    .cusdetail-form .form-group {
+        width: 100%;
+        margin-bottom: 18px;
+    }
+
+    .cusdetail-label {
+        display: block;
+        font-weight: 800;
+        color: #0b1c39;
+        margin-bottom: 8px;
+    }
+
+    .cusdetail-input,
+    .cusdetail-select {
+        height: 52px;
+        border-radius: 999px;
+        border: 1px solid #eef0f4;
+        padding: 0 18px;
+        box-shadow: none;
+        color: #0b1c39;
+        font-size: 15px;
+        background: #fff;
+    }
+
+        .cusdetail-input:focus,
+        .cusdetail-select:focus {
+            border-color: rgba(255,61,28,.35);
+            box-shadow: 0 0 0 .2rem rgba(255,61,28,.10);
+        }
+
+    .cusdetail-field-col {
+        width: 100%;
+        max-width: 520px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .cusdetail-variant-form {
+        width: 100%;
+        max-width: 520px;
+    }
+
+    .cusdetail-variant-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: nowrap;
+    }
+
+    .cusdetail-select-wrap {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .cusdetail-select {
+        width: 100%;
+        appearance: auto;
+        -webkit-appearance: menulist;
+        -moz-appearance: menulist;
+        padding-right: 18px;
+        background-image: none !important;
+    }
+
+    .cusdetail-variant-submit {
+        flex: 0 0 auto;
+        min-width: 170px;
+    }
+
+    .cusdetail-qty {
+        width: 100%;
+        max-width: 220px;
+        display: block;
+    }
+
+    .cusdetail-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+
+        .cusdetail-actions .cusdetail-btn {
+            min-width: 220px;
+        }
+
+    @@media (max-width: 991.98px) {
+        .cusdetail-name {
+            font-size: 30px;
+        }
+
+        .cusdetail-price {
+            font-size: 28px;
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .cusdetail-image {
+            height: 300px;
+        }
+
+        .cusdetail-name {
+            font-size: 26px;
+        }
+
+        .cusdetail-price {
+            font-size: 24px;
+        }
+
+        .cusdetail-field-col,
+        .cusdetail-qty,
+        .cusdetail-variant-form {
+            max-width: 100%;
+        }
+
+        .cusdetail-variant-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .cusdetail-variant-submit {
+            width: 100%;
+            min-width: 100%;
+        }
+
+        .cusdetail-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+            .cusdetail-actions .cusdetail-btn {
+                width: 100%;
+                min-width: 100%;
             }
+    }
+</style>
 
-            <form asp-controller="CusShopping" asp-action="AddToCart" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="ProductId" value="@Model.ProductId" />
+<section class="services-area section-padding40 cusdetail-page">
+    <div class="container">
+        <div class="cusdetail-frame">
 
-                @if (Model.Variants.Any())
-                {
-                    <div class="form-group">
-                        <label><strong>Biến thể</strong></label>
-                        <select name="VariantId" class="form-control">
-                            <option value="">-- Chọn biến thể --</option>
-                            @foreach (var v in Model.Variants)
-                            {
-                                var label = v.VariantName;
-                                if (!string.IsNullOrWhiteSpace(v.Color)) { label += $" | Màu: {v.Color}"; }
-                                if (!string.IsNullOrWhiteSpace(v.Size)) { label += $" | Size: {v.Size}"; }
-                                if (v.PriceOverride.HasValue) { label += $" | Giá: {v.PriceOverride.Value:N0} đ"; }
-                                label += $" | Tồn: {v.StockQuantity}";
-                                <option value="@v.VariantId">@label</option>
-                            }
-                        </select>
+            <div class="cusdetail-topbar">
+                <a href="@Url.Action("Index", "CusShopping")" class="cusdetail-btn cusdetail-btn-outline">
+                    <i class="fas fa-arrow-left"></i> Quay lại mua sắm
+                </a>
+
+                <a href="@Url.Action("Cart", "CusShopping")" class="cusdetail-btn cusdetail-btn-primary">
+                    <i class="fas fa-shopping-cart"></i> Giỏ hàng
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-5 mb-4">
+                    <div class="cusdetail-image-wrap">
+                        <img src="@productImg"
+                             alt="@Model.Name"
+                             class="cusdetail-image"
+                             onerror="this.onerror=null;this.src='@Url.Content("~/uploads/Shopping/OrderDefault.png")';" />
                     </div>
-                }
-
-                <div class="form-group">
-                    <label><strong>Số lượng</strong></label>
-                    <input type="number" min="1" name="Quantity" value="1" class="form-control" style="max-width:160px;" />
                 </div>
 
-                <button type="submit" class="btn btn-danger">
-                    Thêm vào giỏ hàng
-                </button>
-            </form>
+                <div class="col-lg-7 mb-4">
+                    <div class="cusdetail-card">
+                        <span class="cusdetail-badge">@Model.CategoryName</span>
+
+                        <h1 class="cusdetail-name">@Model.Name</h1>
+
+                        <div class="cusdetail-price">
+                            @initialPrice.ToString("N0") đ
+                        </div>
+
+                        <div class="cusdetail-stock">
+                            Kho: @initialStock
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Description))
+                        {
+                            <div class="cusdetail-desc">
+                                @Model.Description
+                            </div>
+                        }
+
+                        <div class="cusdetail-field-col">
+                            <div class="form-group">
+                                <label class="cusdetail-label">Phân loại</label>
+
+                                <form method="get"
+                                      asp-controller="CusShopping"
+                                      asp-action="Detail"
+                                      class="cusdetail-variant-form">
+                                    <input type="hidden" name="id" value="@Model.ProductId" />
+
+                                    <div class="cusdetail-variant-row">
+                                        <div class="cusdetail-select-wrap">
+                                            <select name="variantId" class="form-control cusdetail-select">
+                                                @if (Model.Variants != null && Model.Variants.Any())
+                                                {
+                                                    foreach (var v in Model.Variants)
+                                                    {
+                                                        var secondField = !string.IsNullOrWhiteSpace(v.Color)
+                                                        ? v.Color
+                                                        : !string.IsNullOrWhiteSpace(v.Size)
+                                                        ? v.Size
+                                                        : !string.IsNullOrWhiteSpace(v.Material)
+                                                        ? v.Material
+                                                        : null;
+
+                                                        var label = v.VariantName;
+                                                        if (!string.IsNullOrWhiteSpace(secondField))
+                                                        {
+                                                            label += $" | {secondField}";
+                                                        }
+
+                                                        if (Model.SelectedVariantId.HasValue && v.VariantId == Model.SelectedVariantId.Value)
+                                                        {
+                                                            <option value="@v.VariantId" selected>@label</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@v.VariantId">@label</option>
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <option value="">Mặc định</option>
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <button type="submit" class="cusdetail-btn cusdetail-btn-outline cusdetail-variant-submit">
+                                            Chọn phân loại
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <form asp-controller="CusShopping" asp-action="AddToCart" method="post" class="cusdetail-form">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="ProductId" value="@Model.ProductId" />
+                                <input type="hidden" name="VariantId" value="@Model.SelectedVariantId" />
+
+                                <div class="form-group">
+                                    <label class="cusdetail-label">Số lượng</label>
+                                    <input id="quantityInput"
+                                           type="number"
+                                           min="1"
+                                           max="@initialStock"
+                                           name="Quantity"
+                                           value="1"
+                                           class="form-control cusdetail-input cusdetail-qty" />
+                                </div>
+
+                                <div class="cusdetail-actions">
+                                    <button type="submit" class="cusdetail-btn cusdetail-btn-soft">
+                                        <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
+                                    </button>
+
+                                    <a href="@Url.Action("Index", "CusShopping")" class="cusdetail-btn cusdetail-btn-outline">
+                                        <i class="fas fa-store"></i> Xem thêm sản phẩm
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
-</div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const variantSelect = document.getElementById("variantSelect");
+            const hiddenVariant = document.getElementById("selectedVariantIdInput");
+
+            if (variantSelect && hiddenVariant) {
+                variantSelect.addEventListener("change", function () {
+                    hiddenVariant.value = this.value;
+                });
+            }
+        });
+    </script>
+</section>

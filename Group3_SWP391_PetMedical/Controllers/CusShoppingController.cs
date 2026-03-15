@@ -32,10 +32,16 @@ namespace Group3_SWP391_PetMedical.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Detail(int id)
+        public async Task<IActionResult> Detail(int id, int? variantId)
         {
             var vm = await _cusShoppingService.GetProductDetailAsync(id);
+
             if (vm == null) return NotFound();
+
+            if (vm.Variants != null && vm.Variants.Any())
+            {
+                vm.SelectedVariantId = variantId ?? vm.Variants.First().VariantId;
+            }
 
             return View("~/Views/Shopping/CusDetail.cshtml", vm);
         }
