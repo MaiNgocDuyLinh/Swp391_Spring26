@@ -14,5 +14,6 @@
         public string? Notes { get; set; }
 
         public bool HasFeedback { get; set; }
+        public bool HasMedicalRecord { get; set; }
     }
 }

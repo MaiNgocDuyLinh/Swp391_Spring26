@@ -17,8 +17,9 @@
     var fromVal = Model.Filter.FromDate?.ToString("yyyy-MM-dd") ?? "";
     var toVal = Model.Filter.ToDate?.ToString("yyyy-MM-dd") ?? "";
 
-    //  lấy đúng base_price
     var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
+}
+
 @functions {
     public static string NormalizeStatus(string? status)
     {
@@ -47,7 +48,12 @@
     {
         return NormalizeStatus(status) == "đã thanh toán";
     }
-}
+
+    public static bool CanViewMedicalRecord(string? status)
+    {
+        var s = NormalizeStatus(status);
+        return s == "đã khám" || s == "đã thanh toán";
+    }
 }
 
 @section Styles {
@@ -68,6 +74,7 @@
             color: #2e7d32;
             border: 1px solid rgba(0,0,0,0.06);
         }
+
         :root {
             --pc-red: #ff3b3b;
             --pc-red-dark: #e83434;
@@ -77,9 +84,7 @@
             --pc-border: rgba(0,0,0,0.06);
         }
 
-        /* wrapper */
         .pc-wrap {
-            /* background: linear-gradient(180deg, var(--pc-pink), #fff); */
             background: #f3d7d5;
             border: 1px solid var(--pc-border);
             border-radius: 18px;
@@ -97,7 +102,6 @@
             margin: 0;
         }
 
-        /* filter */
         .pc-filter {
             background: #fff;
             border: 1px solid var(--pc-border);
@@ -113,7 +117,6 @@
             margin-bottom: 6px;
         }
 
-        /* inputs */
         .pc-input, .pc-select {
             border-radius: 12px;
             border: 1px solid rgba(0,0,0,0.10);
@@ -121,7 +124,6 @@
             padding: 0 12px;
         }
 
-            /* FIX dropdown căn giữa */
             .pc-select.form-select {
                 line-height: 42px !important;
                 padding-top: 0 !important;
@@ -129,7 +131,6 @@
                 background-position: right 12px center;
             }
 
-        /* buttons */
         .pc-btn {
             border-radius: 999px;
             padding: 0 18px;
@@ -140,6 +141,7 @@
             justify-content: center;
             gap: 8px;
             border: none;
+            text-decoration: none !important;
         }
 
         .pc-btn--primary {
@@ -161,7 +163,41 @@
             white-space: nowrap;
         }
 
-        /* table */
+        .pc-btn-record {
+            height: 36px;
+            padding: 0 14px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid rgba(255,59,59,0.20);
+            background: #fff5f5;
+            color: var(--pc-red) !important;
+            font-size: 0.9rem;
+            font-weight: 800;
+            text-decoration: none !important;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+            white-space: nowrap;
+        }
+
+            .pc-btn-record:hover {
+                background: #ffeaea;
+                color: var(--pc-red-dark) !important;
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+            }
+
+            .pc-btn-record i {
+                color: inherit !important;
+            }
+
+        .pc-btn-record--disabled {
+            opacity: .45;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         .pc-table {
             border-radius: 16px;
             overflow: hidden;
@@ -191,49 +227,41 @@
                 color: inherit !important;
             }
 
-        /* Chờ xác nhận */
         .pc-badge--pending {
             background: #fef3c7;
             color: #b45309;
         }
 
-        /* Đặt lịch thành công */
         .pc-badge--success {
             background: #d1fae5;
             color: #047857;
         }
 
-        /* Đã hủy */
         .pc-badge--cancelled {
             background: #fee2e2;
             color: #dc2626;
         }
 
-        /* Đã đến */
         .pc-badge--arrived {
             background: #e0e7ff;
             color: #4338ca;
         }
 
-        /* Không đến */
         .pc-badge--noshow {
             background: #f3f4f6;
             color: #6b7280;
         }
 
-        /* Đang khám */
         .pc-badge--examining {
             background: #fce7f3;
             color: #be185d;
         }
 
-        /* Đã khám */
         .pc-badge--examined {
             background: #ede9fe;
             color: #6d28d9;
         }
 
-        /* Đã thanh toán - dùng màu xanh của status Đặt lịch cũ */
         .pc-badge--paid {
             background: #e0f2fe;
             color: #0369a1;
@@ -248,7 +276,6 @@
             font-weight: 900;
         }
 
-        /* ==== nút & khoảng cách ==== */
         .pc-actions {
             display: flex;
             align-items: center;
@@ -260,7 +287,6 @@
                 min-width: 110px;
             }
 
-        /* ==== Pager override ==== */
         .pc-pager.pagination {
             gap: 10px;
             margin: 0;
@@ -306,14 +332,12 @@
             }
         }
 
-        /* ===== Ghi chú gộp chung ===== */
         .pc-note-inline {
             margin-top: 6px;
             font-size: 0.9rem;
             color: var(--pc-muted);
         }
 
-        /* Hover toàn bộ record */
         tbody.pc-record {
             transition: background 0.25s ease;
         }
@@ -321,6 +345,106 @@
             tbody.pc-record:hover tr {
                 background: #fff3f3 !important;
             }
+
+        .pc-modal .modal-dialog {
+            max-width: 1050px;
+        }
+
+        @@media (min-width: 1400px) {
+            .pc-modal .modal-dialog {
+                max-width: 1150px;
+            }
+        }
+
+        .pc-modal .modal-content {
+            border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.06);
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+        }
+
+        .pc-modal .modal-header {
+            background: #fff;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            padding: 18px 22px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .pc-modal-title {
+            font-weight: 900;
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .pc-modal-sub {
+            color: var(--pc-muted);
+            font-weight: 600;
+            margin-top: 4px;
+            font-size: 0.95rem;
+        }
+
+        .pc-modal .btn-close {
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,59,59,0.30);
+            background: #fff;
+            opacity: 1;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+            position: relative;
+            z-index: 6;
+            background-image: none !important;
+        }
+
+            .pc-modal .btn-close::before {
+                content: "×";
+                position: absolute;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 28px;
+                font-weight: 900;
+                line-height: 1;
+                color: var(--pc-red);
+            }
+
+            .pc-modal .btn-close:hover {
+                border-color: rgba(255,59,59,0.70);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+                background: #fff7f7;
+            }
+
+                .pc-modal .btn-close:hover::before {
+                    color: var(--pc-red-dark);
+                }
+
+            .pc-modal .btn-close:focus {
+                outline: none;
+                box-shadow: 0 0 0 0.2rem rgba(255,59,59,0.18);
+            }
+
+        .pc-modal .modal-body {
+            padding: 0;
+            background: #fff;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pc-modal iframe {
+            width: 100%;
+            height: 72vh;
+            border: 0;
+            background: #fff;
+            display: block;
+        }
+
+        @@media (max-width: 992px) {
+            .pc-modal iframe {
+                height: 78vh;
+            }
+        }
     </style>
 }
 
@@ -330,7 +454,6 @@
         <h3 class="pc-title">Lịch sử khám bệnh</h3>
         <p class="pc-sub">Tra cứu lịch đã khám theo ngày và dịch vụ</p>
 
-        <!-- FILTER -->
         <div class="pc-filter">
             <form method="get" asp-controller="CusAppointment" asp-action="AppointmentHistory" class="row g-3">
                 <div class="col-lg-4 col-md-6">
@@ -381,7 +504,6 @@
             </form>
         </div>
 
-        <!-- LIST -->
         @if (!Model.Page.Data.Items.Any())
         {
             <div class="alert alert-info mb-0" style="border-radius:14px;">
@@ -400,13 +522,12 @@
                             <th>Dịch vụ</th>
                             <th style="width:140px;">Trạng thái</th>
                             <th style="width:140px;" class="text-end">Tổng tiền</th>
-                            <th style="width:160px;" class="text-center">Thao tác</th>
+                            <th style="width:220px;" class="text-center">Thao tác</th>
                         </tr>
                     </thead>
 
                     @foreach (var item in Model.Page.Data.Items)
                     {
-                        // : tính tổng tiền theo base_price từ ServiceNames (không dùng item.TotalAmount)
                         decimal totalFromBasePrice = 0m;
 
                         if (!string.IsNullOrWhiteSpace(item.ServiceNames))
@@ -456,24 +577,45 @@
                                 </td>
 
                                 <td class="text-center">
-                                    @if (IsPaidStatus(item.Status))
-                                    {
-                                        @if (item.HasFeedback)
+                                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                        @if (CanViewMedicalRecord(item.Status))
                                         {
-                                            <span class="pc-feedback-done">
-                                                <i class="fas fa-check-circle"></i> Đã Đánh Giá
-                                            </span>
+                                            <a class="pc-btn-record"
+                                               title="Xem bệnh án"
+                                               href="javascript:void(0)"
+                                               onclick="openMedicalRecord(@item.AppointmentId)">
+                                                <i class="fas fa-file-medical-alt"></i>
+                                                <span>Bệnh án</span>
+                                            </a>
                                         }
                                         else
                                         {
-                                            <a asp-controller="Feedback"
-                                               asp-action="Create"
-                                               asp-route-appointmentId="@item.AppointmentId"
-                                               class="pc-btn pc-btn--primary pc-btn--sm">
-                                                <i class="fas fa-comment-dots"></i> Đánh Giá
-                                            </a>
+                                            <span class="pc-btn-record pc-btn-record--disabled"
+                                                  title="Chưa có bệnh án">
+                                                <i class="fas fa-file-medical-alt"></i>
+                                                <span>Bệnh án</span>
+                                            </span>
                                         }
-                                    }
+
+                                        @if (IsPaidStatus(item.Status))
+                                        {
+                                            @if (item.HasFeedback)
+                                            {
+                                                <span class="pc-feedback-done">
+                                                    <i class="fas fa-check-circle"></i> Đã Đánh Giá
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <a asp-controller="Feedback"
+                                                   asp-action="Create"
+                                                   asp-route-appointmentId="@item.AppointmentId"
+                                                   class="pc-btn pc-btn--primary pc-btn--sm">
+                                                    <i class="fas fa-comment-dots"></i> Đánh Giá
+                                                </a>
+                                            }
+                                        }
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -495,3 +637,63 @@
                 }
     </div>
 </section>
+
+<div class="modal fade pc-modal" id="medicalRecordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div class="pc-modal-title">Bệnh án</div>
+                    <div class="pc-modal-sub">Thông tin khám, dịch vụ phát sinh và đơn thuốc</div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                        onclick="forceCloseModal('medicalRecordModal')"></button>
+            </div>
+
+            <div class="modal-body">
+                <iframe id="medicalRecordFrame" src="about:blank"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openMedicalRecord(id) {
+            const url = '/CusAppointment/MedicalRecord?id=' + id + '&popup=1';
+            document.getElementById('medicalRecordFrame').src = url;
+
+            const modalEl = document.getElementById('medicalRecordModal');
+            if (window.bootstrap && bootstrap.Modal) {
+                const modal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+                modal.show();
+            } else {
+                modalEl.classList.add('show');
+                modalEl.style.display = 'block';
+                modalEl.removeAttribute('aria-hidden');
+                document.body.classList.add('modal-open');
+            }
+        }
+
+        function forceCloseModal(id) {
+            const modalEl = document.getElementById(id);
+            if (!modalEl) return;
+
+            if (window.bootstrap && bootstrap.Modal) {
+                const inst = bootstrap.Modal.getInstance(modalEl);
+                if (inst) inst.hide();
+                else new bootstrap.Modal(modalEl).hide();
+            } else {
+                modalEl.classList.remove('show');
+                modalEl.style.display = 'none';
+                modalEl.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('modal-open');
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            }
+        }
+    </script>
+}

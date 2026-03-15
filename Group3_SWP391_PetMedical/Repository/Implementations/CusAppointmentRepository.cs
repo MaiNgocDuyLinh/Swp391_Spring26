@@ -55,9 +55,9 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
 
             var projected = q
-                     .OrderByDescending(a => a.status != null && a.status.Trim().ToLower() == "đã hủy") 
-                     .ThenByDescending(a => EF.Property<DateTime?>(a, CREATED_AT_FIELD) != null)        
-                     .ThenByDescending(a => EF.Property<DateTime?>(a, CREATED_AT_FIELD))                
+                     .OrderByDescending(a => a.status != null && a.status.Trim().ToLower() == "đã hủy")
+                     .ThenByDescending(a => EF.Property<DateTime?>(a, CREATED_AT_FIELD) != null)
+                     .ThenByDescending(a => EF.Property<DateTime?>(a, CREATED_AT_FIELD))
                      .ThenByDescending(a => a.appointment_id)
                      .Select(a => new CusAppointmentHistoryItemVM
                      {
@@ -586,6 +586,71 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+
+        public async Task<CusMedicalRecordVM?> GetCusMedicalRecordAsync(int customerId, int appointmentId)
+        {
+            var vm = await _context.MedicalRecords
+                .AsNoTracking()
+                .Where(m => m.appointment_id == appointmentId
+                            && m.appointment.customer_id == customerId
+                            && m.appointment.status != null
+                            && (
+                                m.appointment.status.Trim().ToLower() == "đã khám" ||
+                                m.appointment.status.Trim().ToLower() == "đã thanh toán"
+                            ))
+                .Select(m => new CusMedicalRecordVM
+                {
+                    MedicalRecordId = m.record_id,
+                    AppointmentId = m.appointment_id,
+                    AppointmentDate = m.appointment.appointment_date,
+                    CreatedAt = m.created_at,
+
+                    PetName = m.appointment.pet.name,
+                    PetBreed = m.appointment.pet.breed,
+                    PetSpecies = m.appointment.pet.species,
+                    PetGender = m.appointment.pet.pet_gender,
+                    PetBirthDate = m.appointment.pet.pet_birthdate,
+                    PetWeight = m.appointment.pet.weight,
+                    PetImageUrl = m.appointment.pet.PetImg,
+
+                    DoctorName = (m.appointment.doctor_id != null
+                                  && m.appointment.doctor != null
+                                  && m.appointment.doctor.role_id == 3)
+                        ? m.appointment.doctor.full_name
+                        : "Chưa phân công",
+
+                    Status = m.appointment.status ?? "",
+                    Diagnosis = m.diagnosis,
+                    HealthStatus = m.health_status,
+                    TestResults = m.test_results,
+                    ResultImages = m.result_images,
+                    FollowUpDate = m.follow_up_date,
+
+                    SelectedServiceNames = string.Join(", ",
+                        m.appointment.AppointmentDetails.Select(d => d.service.service_name))
+                })
+                .FirstOrDefaultAsync();
+
+            if (vm == null) return null;
+
+            vm.Prescriptions = await _context.Prescriptions
+                .AsNoTracking()
+                .Where(p => p.record_id == vm.MedicalRecordId)
+                .Select(p => new CusMedicalRecordPrescriptionItemVM
+                {
+                    MedicineId = p.medicine_id,
+                    MedicineName = p.medicine.name,
+                    Quantity = p.quantity,
+                    UnitPrice = p.medicine.unit_price,
+                    Dosage = p.dosage
+                })
+                .ToListAsync();
+
+            vm.ExtraServices = new List<CusMedicalRecordServiceItemVM>();
+
+            return vm;
         }
     }
 }

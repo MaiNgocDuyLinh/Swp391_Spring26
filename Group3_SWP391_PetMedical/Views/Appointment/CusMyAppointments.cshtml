@@ -50,6 +50,12 @@
             _ => "pc-badge--default"
         };
     }
+
+    public static bool CanViewMedicalRecord(string? status)
+    {
+        var s = NormalizeStatus(status);
+        return s == "đã khám" || s == "đã thanh toán";
+    }
 }
 }
 
@@ -443,6 +449,41 @@
                 height: 78vh;
             }
         }
+
+        .pc-btn-record {
+            height: 36px;
+            padding: 0 14px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid rgba(255,59,59,0.20);
+            background: #fff5f5;
+            color: #ff3b3b !important;
+            font-size: 0.9rem;
+            font-weight: 800;
+            text-decoration: none !important;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+            white-space: nowrap;
+        }
+
+            .pc-btn-record:hover {
+                background: #ffeaea;
+                color: #e83434 !important;
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+            }
+
+            .pc-btn-record i {
+                color: inherit !important;
+            }
+
+        .pc-btn-record--disabled {
+            opacity: .45;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
     </style>
 }
 
@@ -575,7 +616,7 @@
                                 </td>
 
                                 <td class="text-end">
-                                    <div class="pc-action-icons">
+                                    <div class="pc-action-icons" style="display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap;">
                                         <a class="pc-ico"
                                            title="Chi tiết"
                                            href="javascript:void(0)"
@@ -615,6 +656,25 @@
                                         {
                                             <span class="pc-ico" style="opacity:.35; cursor:not-allowed;">
                                                 <i class="fas fa-times"></i>
+                                            </span>
+                                        }
+
+                                        @if (CanViewMedicalRecord(item.Status))
+                                        {
+                                            <a class="pc-btn-record"
+                                               title="Xem bệnh án"
+                                               href="javascript:void(0)"
+                                               onclick="openMedicalRecord(@item.AppointmentId)">
+                                                <i class="fas fa-file-medical-alt"></i>
+                                                <span>Bệnh án</span>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="pc-btn-record pc-btn-record--disabled"
+                                                  title="Chưa có bệnh án">
+                                                <i class="fas fa-file-medical-alt"></i>
+                                                <span>Bệnh án</span>
                                             </span>
                                         }
                                     </div>
@@ -686,6 +746,29 @@
     </div>
 </div>
 
+
+<div class="modal fade pc-modal" id="medicalRecordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div class="pc-modal-title">Bệnh án</div>
+                    <div class="pc-modal-sub">Thông tin khám, dịch vụ phát sinh và đơn thuốc</div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                        onclick="forceCloseModal('medicalRecordModal')"></button>
+            </div>
+
+            <div class="modal-body">
+                <iframe id="medicalRecordFrame" src="about:blank"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
 @section Scripts {
     <script>
         //cancel
@@ -812,5 +895,23 @@
              });
 
          });
+
+
+         //benh an
+                 function openMedicalRecord(id) {
+            const url = '@Url.Action("MedicalRecord", "CusAppointment")' + '?id=' + id + '&popup=1';
+            document.getElementById('medicalRecordFrame').src = url;
+
+            const modalEl = document.getElementById('medicalRecordModal');
+            if (window.bootstrap && bootstrap.Modal) {
+                const modal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+                modal.show();
+            } else {
+                modalEl.classList.add('show');
+                modalEl.style.display = 'block';
+                modalEl.removeAttribute('aria-hidden');
+                document.body.classList.add('modal-open');
+            }
+        }
     </script>
 }

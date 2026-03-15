@@ -116,6 +116,7 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             => _repo.CancelCusAppointmentAsync(customerId, appointmentId, reason);
 
 
-        
+        public Task<CusMedicalRecordVM?> GetCusMedicalRecordAsync(int customerId, int appointmentId)
+    => _repo.GetCusMedicalRecordAsync(customerId, appointmentId);
     }
 }

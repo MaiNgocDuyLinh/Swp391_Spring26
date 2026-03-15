@@ -1,0 +1,565 @@
+﻿@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusMedicalRecordVM
+
+@{
+    var isPopup = Context.Request.Query["popup"] == "1";
+    if (isPopup)
+    {
+        Layout = null;
+    }
+
+    ViewData["Title"] = "Bệnh án";
+
+    string petDobText = Model.PetBirthDate.HasValue
+        ? Model.PetBirthDate.Value.ToString("dd/MM/yyyy")
+        : "Chưa có dữ liệu";
+
+    string petWeightText = Model.PetWeight.HasValue
+        ? Model.PetWeight.Value.ToString("0.##") + " kg"
+        : "Chưa có dữ liệu";
+}
+
+<link rel="stylesheet" href="~/assets/css/fontawesome-all.min.css" />
+
+<style>
+    :root {
+        --pet-red: #ff5a5a;
+        --pet-red-dark: #ef4444;
+        --pet-soft: #fff4f4;
+        --pet-border: #ffd6d6;
+        --pet-text: #2b2b2b;
+        --pet-muted: #7b7b7b;
+        --pet-bg: #fcfcfc;
+        --pet-white: #ffffff;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: var(--pet-bg);
+        color: var(--pet-text);
+        font-family: inherit;
+    }
+
+    .mr-wrap {
+        padding: @(isPopup ? "14px" : "110px 0 40px");
+        min-height: 100vh;
+        background: var(--pet-bg);
+    }
+
+    .mr-container {
+        max-width: 1380px;
+        margin: 0 auto;
+        padding: 0 18px;
+    }
+
+
+    .mr-box {
+        background: #fff;
+        border: 1px solid var(--pet-border);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+        margin-bottom: 18px;
+    }
+
+    .mr-box-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #666;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .mr-box-title i {
+            color: var(--pet-red);
+        }
+
+    .mr-pet-info {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .mr-info-row {
+        background: var(--pet-soft);
+        border: 1px solid var(--pet-border);
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+
+    .mr-info-label {
+        font-size: 0.8rem;
+        color: var(--pet-muted);
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .mr-info-value {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--pet-text);
+        line-height: 1.4;
+    }
+
+    .mr-timeline-item {
+        position: relative;
+        padding-left: 16px;
+        border-left: 2px solid var(--pet-red);
+        margin-bottom: 14px;
+    }
+
+        .mr-timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+    .mr-timeline-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--pet-red);
+        position: absolute;
+        top: 4px;
+        left: -6px;
+    }
+
+    .mr-timeline-date {
+        display: block;
+        color: var(--pet-red);
+        font-weight: 800;
+        font-size: 0.9rem;
+        margin-bottom: 2px;
+    }
+
+    .mr-timeline-text {
+        font-size: 0.92rem;
+        color: #555;
+        margin: 0;
+    }
+
+    .mr-section {
+        background: #fff;
+        border: 1px solid var(--pet-border);
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+        margin-bottom: 18px;
+    }
+
+    .mr-section-title {
+        color: var(--pet-red);
+        font-weight: 900;
+        font-size: 1rem;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-transform: uppercase;
+    }
+
+    .mr-section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--pet-soft);
+        border: 1px solid var(--pet-border);
+        color: var(--pet-red);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 40px;
+    }
+
+    .mr-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .mr-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: var(--pet-soft);
+        border: 1px solid var(--pet-border);
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #555;
+    }
+
+        .mr-chip i {
+            color: var(--pet-red);
+        }
+
+    .mr-field {
+        margin-bottom: 14px;
+    }
+
+        .mr-field:last-child {
+            margin-bottom: 0;
+        }
+
+    .mr-label {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #444;
+        margin-bottom: 6px;
+    }
+
+    .mr-value {
+        min-height: 50px;
+        background: #fffafa;
+        border: 1px solid var(--pet-border);
+        border-radius: 12px;
+        padding: 12px 14px;
+        line-height: 1.6;
+        white-space: pre-line;
+    }
+
+    .mr-table-wrap {
+        border: 1px solid var(--pet-border);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .mr-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+        background: #fff;
+    }
+
+        .mr-table thead th {
+            background: #fff4f4;
+            color: #444;
+            font-weight: 800;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--pet-border);
+            text-align: left;
+        }
+
+        .mr-table tbody td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f6dede;
+            vertical-align: middle;
+        }
+
+        .mr-table tfoot th {
+            padding: 12px 14px;
+            background: #fffafa;
+            border-top: 1px solid var(--pet-border);
+            font-weight: 800;
+        }
+
+    .mr-text-right {
+        text-align: right;
+    }
+
+    .mr-money {
+        font-weight: 800;
+    }
+
+    .mr-empty {
+        text-align: center;
+        color: var(--pet-muted);
+        padding: 26px 12px;
+    }
+
+        .mr-empty i {
+            color: #ffb3b3;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+    .mr-actions {
+        text-align: center;
+        margin-top: 24px;
+    }
+
+    .mr-btn {
+        min-width: 220px;
+        height: 48px;
+        border-radius: 999px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none !important;
+        font-weight: 800;
+        color: #fff !important;
+        background: #6c757d;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+        cursor: pointer;
+    }
+
+        .mr-btn:hover {
+            background: #5d656d;
+            color: #fff !important;
+        }
+
+    @@media (max-width: 991.98px) {
+        .mr-container {
+            padding: 0 10px;
+        }
+
+        .mr-profile,
+        .mr-box,
+        .mr-section {
+            border-radius: 16px;
+        }
+
+        .mr-summary {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="mr-wrap">
+    <div class="mr-container">
+        <div class="row" style="margin-left:-10px; margin-right:-10px;">
+            <div class="col-lg-3" style="padding-left:10px; padding-right:10px;">
+                <div class="mr-box">
+                    <div class="mr-box-title">
+                        <i class="fas fa-paw"></i>
+                        <span>Thông tin thú cưng</span>
+                    </div>
+
+                    <div class="mr-pet-info">
+                        <div class="mr-info-row">
+                            <div class="mr-info-label">Tên</div>
+                            <div class="mr-info-value">@Model.PetName</div>
+                        </div>
+
+                        <div class="mr-info-row">
+                            <div class="mr-info-label">Loài</div>
+                            <div class="mr-info-value">@(string.IsNullOrWhiteSpace(Model.PetSpecies) ? "Chưa có dữ liệu" : Model.PetSpecies)</div>
+                        </div>
+
+                        <div class="mr-info-row">
+                            <div class="mr-info-label">Giống</div>
+                            <div class="mr-info-value">@(string.IsNullOrWhiteSpace(Model.PetBreed) ? "Chưa có dữ liệu" : Model.PetBreed)</div>
+                        </div>
+
+                        <div class="mr-info-row">
+                            <div class="mr-info-label">Ngày sinh</div>
+                            <div class="mr-info-value">@petDobText</div>
+                        </div>
+
+                        <div class="mr-info-row">
+                            <div class="mr-info-label">Giới tính</div>
+                            <div class="mr-info-value">@(string.IsNullOrWhiteSpace(Model.PetGender) ? "Chưa có dữ liệu" : Model.PetGender)</div>
+                        </div>
+
+                        <div class="mr-info-row">
+                            <div class="mr-info-label">Cân nặng</div>
+                            <div class="mr-info-value">@petWeightText</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mr-box">
+                    <div class="mr-box-title">
+                        <i class="fas fa-file-medical-alt"></i>
+                        <span>Thông tin lịch khám</span>
+                    </div>
+
+                    <div class="mr-timeline-item">
+                        <div class="mr-timeline-dot"></div>
+                        <span class="mr-timeline-date">@Model.AppointmentDate.ToString("dd/MM/yyyy HH:mm")</span>
+                        <p class="mr-timeline-text">Trạng thái: @Model.Status</p>
+                    </div>
+
+                    @if (Model.CreatedAt.HasValue)
+                    {
+                        <div class="mr-timeline-item">
+                            <div class="mr-timeline-dot"></div>
+                            <span class="mr-timeline-date">@Model.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            <p class="mr-timeline-text">Ngày tạo bệnh án</p>
+                        </div>
+                    }
+
+                    @if (Model.FollowUpDate.HasValue)
+                    {
+                        <div class="mr-timeline-item">
+                            <div class="mr-timeline-dot"></div>
+                            <span class="mr-timeline-date">@Model.FollowUpDate.Value.ToString("dd/MM/yyyy")</span>
+                            <p class="mr-timeline-text">Ngày tái khám</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-lg-9" style="padding-left:10px; padding-right:10px;">
+                <div class="mr-section">
+                    <div class="mr-section-title">
+                        <span class="mr-section-icon">
+                            <i class="fas fa-notes-medical"></i>
+                        </span>
+                        <span>Nội dung bệnh án</span>
+                    </div>
+
+                    <div class="mr-summary">
+                        <div class="mr-chip">
+                            <i class="fas fa-user-md"></i>
+                            <span>Bác sĩ phụ trách: @Model.DoctorName</span>
+                        </div>
+
+                        <div class="mr-chip">
+                            <i class="fas fa-stethoscope"></i>
+                            <span>Dịch vụ đã chọn: @(string.IsNullOrWhiteSpace(Model.SelectedServiceNames) ? "Chưa có dữ liệu" : Model.SelectedServiceNames)</span>
+                        </div>
+
+                        <div class="mr-chip">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Ngày khám: @Model.AppointmentDate.ToString("dd/MM/yyyy") - @Model.AppointmentShift</span>
+                        </div>
+                    </div>
+
+                    <div class="mr-field">
+                        <div class="mr-label">Chẩn đoán</div>
+                        <div class="mr-value">@(string.IsNullOrWhiteSpace(Model.Diagnosis) ? "Chưa có dữ liệu." : Model.Diagnosis)</div>
+                    </div>
+
+                    <div class="mr-field">
+                        <div class="mr-label">Tình trạng sức khỏe</div>
+                        <div class="mr-value">@(string.IsNullOrWhiteSpace(Model.HealthStatus) ? "Chưa có dữ liệu." : Model.HealthStatus)</div>
+                    </div>
+
+                    <div class="mr-field">
+                        <div class="mr-label">Kết quả xét nghiệm / ghi chú chuyên môn</div>
+                        <div class="mr-value">@(string.IsNullOrWhiteSpace(Model.TestResults) ? "Chưa có dữ liệu." : Model.TestResults)</div>
+                    </div>
+
+                    <div class="mr-field">
+                        <div class="mr-label">Hình ảnh kết quả</div>
+                        <div class="mr-value">@(string.IsNullOrWhiteSpace(Model.ResultImages) ? "Chưa có dữ liệu." : Model.ResultImages)</div>
+                    </div>
+                </div>
+
+                <div class="mr-section">
+                    <div class="mr-section-title">
+                        <span class="mr-section-icon">
+                            <i class="fas fa-concierge-bell"></i>
+                        </span>
+                        <span>Dịch vụ phát sinh</span>
+                    </div>
+
+                    @if (Model.ExtraServices != null && Model.ExtraServices.Any())
+                    {
+                        <div class="mr-table-wrap">
+                            <table class="mr-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên dịch vụ</th>
+                                        <th>Ghi chú</th>
+                                        <th class="mr-text-right" style="width:180px;">Đơn giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var s in Model.ExtraServices)
+                                    {
+                                        <tr>
+                                            <td><i class="fas fa-plus-circle" style="color:#ff5a5a; margin-right:6px;"></i>@s.ServiceName</td>
+                                            <td>@(string.IsNullOrWhiteSpace(s.Notes) ? "--" : s.Notes)</td>
+                                            <td class="mr-text-right mr-money">@s.Price.ToString("N0")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="2" class="mr-text-right">Tổng dịch vụ</th>
+                                        <th class="mr-text-right" style="color:#ef4444;">@Model.TotalServiceAmount.ToString("N0")</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mr-empty">
+                            <i class="fas fa-folder-open fa-2x"></i>
+                            <div>Không có dịch vụ phát sinh.</div>
+                        </div>
+                    }
+                </div>
+
+                <div class="mr-section">
+                    <div class="mr-section-title">
+                        <span class="mr-section-icon">
+                            <i class="fas fa-pills"></i>
+                        </span>
+                        <span>Đơn thuốc</span>
+                    </div>
+
+                    @if (Model.Prescriptions != null && Model.Prescriptions.Any())
+                    {
+                        <div class="mr-table-wrap">
+                            <table class="mr-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên thuốc</th>
+                                        <th style="width:120px;">Số lượng</th>
+                                        <th>Liều dùng</th>
+                                        <th class="mr-text-right" style="width:140px;">Đơn giá</th>
+                                        <th class="mr-text-right" style="width:160px;">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var p in Model.Prescriptions)
+                                    {
+                                        <tr>
+                                            <td><i class="fas fa-capsules" style="color:#ff5a5a; margin-right:6px;"></i>@p.MedicineName</td>
+                                            <td>@p.Quantity</td>
+                                            <td>@(string.IsNullOrWhiteSpace(p.Dosage) ? "--" : p.Dosage)</td>
+                                            <td class="mr-text-right">@p.UnitPrice.ToString("N0")</td>
+                                            <td class="mr-text-right mr-money">@p.LineTotal.ToString("N0")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="4" class="mr-text-right">Tổng tiền thuốc</th>
+                                        <th class="mr-text-right" style="color:#ef4444;">@Model.TotalMedicineAmount.ToString("N0")</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mr-empty">
+                            <i class="fas fa-pills fa-2x"></i>
+                            <div>Không có đơn thuốc.</div>
+                        </div>
+                    }
+                </div>
+
+                <div class="mr-actions">
+                    @if (ViewBag.IsPopup == true)
+                    {
+                        <button type="button"
+                                class="mr-btn"
+                                onclick="window.parent.forceCloseModal('medicalRecordModal')">
+                            <i class="fas fa-times-circle"></i>
+                            <span>Đóng</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <a asp-controller="CusAppointment"
+                           asp-action="AppointmentHistory"
+                           class="mr-btn">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Quay lại</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

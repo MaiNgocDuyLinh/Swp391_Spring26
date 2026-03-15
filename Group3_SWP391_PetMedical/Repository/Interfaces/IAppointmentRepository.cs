@@ -1,5 +1,6 @@
 using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Models.Common;
+using Group3_SWP391_PetMedical.ViewModels.Appointment;
 
 namespace Group3_SWP391_PetMedical.Repository.Interfaces
 {

@@ -609,6 +609,21 @@ namespace Group3_SWP391_PetMedical.Controllers
                 }
             }
         }
+
+
+        //benh an
+        [HttpGet]
+        public async Task<IActionResult> MedicalRecord(int id, int? popup)
+        {
+            int customerId = GetCurrentUserId();
+
+            var vm = await _cusAppointmentService.GetCusMedicalRecordAsync(customerId, id);
+            if (vm == null) return NotFound();
+
+            if (popup == 1) ViewBag.IsPopup = true;
+
+            return View("~/Views/Appointment/CusMedicalRecord.cshtml", vm);
+        }
         private int GetCurrentUserId()
         {
             var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier)

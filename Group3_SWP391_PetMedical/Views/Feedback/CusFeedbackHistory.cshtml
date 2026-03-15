@@ -19,6 +19,7 @@
     var toVal = Model.Filter.ToDate?.ToString("yyyy-MM-dd") ?? "";
 
     var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
+}
 
 @functions {
     public static string GetShiftLabel(DateTime dt)
@@ -38,6 +39,7 @@
         return s switch
         {
             "đã thanh toán" => "pc-badge--paid",
+            "đã khám" => "pc-badge--paid",
             _ => "pc-badge--default"
         };
     }
@@ -49,7 +51,12 @@
         var empty = new string('☆', 5 - r);
         return full + empty;
     }
-}
+
+    public static bool CanViewMedicalRecord(string? status)
+    {
+        var s = NormalizeStatus(status);
+        return s == "đã khám" || s == "đã thanh toán";
+    }
 }
 
 @section Styles {
@@ -295,6 +302,7 @@
             display: flex;
             justify-content: flex-end;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .pc-ico {
@@ -317,6 +325,141 @@
                 box-shadow: 0 10px 22px rgba(255,59,59,0.12);
                 color: var(--pc-red-dark);
             }
+
+        .pc-modal .modal-dialog {
+            max-width: 1050px;
+        }
+
+        @@media (min-width: 1400px) {
+            .pc-modal .modal-dialog {
+                max-width: 1150px;
+            }
+        }
+
+        .pc-modal .modal-content {
+            border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.06);
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+        }
+
+        .pc-modal .modal-header {
+            background: #fff;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            padding: 18px 22px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .pc-modal-title {
+            font-weight: 900;
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .pc-modal-sub {
+            color: var(--pc-muted);
+            font-weight: 600;
+            margin-top: 4px;
+            font-size: 0.95rem;
+        }
+
+        .pc-modal .btn-close {
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,59,59,0.30);
+            background: #fff;
+            opacity: 1;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+            position: relative;
+            z-index: 6;
+            background-image: none !important;
+        }
+
+            .pc-modal .btn-close::before {
+                content: "×";
+                position: absolute;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 28px;
+                font-weight: 900;
+                line-height: 1;
+                color: var(--pc-red);
+            }
+
+            .pc-modal .btn-close:hover {
+                border-color: rgba(255,59,59,0.70);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+                background: #fff7f7;
+            }
+
+                .pc-modal .btn-close:hover::before {
+                    color: var(--pc-red-dark);
+                }
+
+            .pc-modal .btn-close:focus {
+                outline: none;
+                box-shadow: 0 0 0 0.2rem rgba(255,59,59,0.18);
+            }
+
+        .pc-modal .modal-body {
+            padding: 0;
+            background: #fff;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pc-modal iframe {
+            width: 100%;
+            height: 72vh;
+            border: 0;
+            background: #fff;
+            display: block;
+        }
+
+        @@media (max-width: 992px) {
+            .pc-modal iframe {
+                height: 78vh;
+            }
+        }
+
+        .pc-btn-record {
+            height: 36px;
+            padding: 0 14px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid rgba(255,59,59,0.20);
+            background: #fff5f5;
+            color: var(--pc-red) !important;
+            font-size: 0.9rem;
+            font-weight: 800;
+            text-decoration: none !important;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+            white-space: nowrap;
+        }
+
+            .pc-btn-record:hover {
+                background: #ffeaea;
+                color: var(--pc-red-dark) !important;
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+            }
+
+            .pc-btn-record i {
+                color: inherit !important;
+            }
+
+        .pc-btn-record--disabled {
+            opacity: .45;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
     </style>
 }
 
@@ -397,7 +540,7 @@
                             <th style="width:140px;">Đánh giá</th>
                             <th style="width:120px;">Số sao</th>
                             <th style="width:260px;">Nội dung</th>
-                            <th style="width:120px;" class="text-end">Thao tác</th>
+                            <th style="width:220px;" class="text-end">Thao tác</th>
                         </tr>
                     </thead>
 
@@ -485,19 +628,38 @@
                         </td>
 
                                 <td class="text-end">
-                                    <div class="pc-action-icons">
-                                @if (!item.HasFeedback)
+                                    <div class="d-flex justify-content-end align-items-center flex-wrap" style="gap:10px;">
+                                @if (CanViewMedicalRecord(item.Status))
                                         {
-                                            <a class="pc-ico"
-                                               title="Đánh giá ngay"
-                                               href="@Url.Action("Create", "Feedback", new { appointmentId = item.AppointmentId })">
-                                                <i class="fas fa-star"></i>
+                                            <a class="pc-btn-record"
+                                               title="Xem bệnh án"
+                                               href="javascript:void(0)"
+                                               onclick="openMedicalRecord(@item.AppointmentId)">
+                                                <i class="fas fa-file-medical-alt"></i>
+                                                <span>Bệnh án</span>
                                             </a>
                                         }
                                         else
                                         {
-                                            <span class="pc-ico" style="opacity:.35; cursor:not-allowed;">
-                                                <i class="fas fa-check"></i>
+                                            <span class="pc-btn-record pc-btn-record--disabled"
+                                                  title="Chưa có bệnh án">
+                                                <i class="fas fa-file-medical-alt"></i>
+                                                <span>Bệnh án</span>
+                                            </span>
+                                        }
+
+                                        @if (!item.HasFeedback)
+                                        {
+                                            <a class="pc-btn pc-btn--primary pc-btn--sm"
+                                               href="@Url.Action("Create", "Feedback", new { appointmentId = item.AppointmentId })">
+                                                <i class="fas fa-star"></i>
+                                                <span>Đánh giá</span>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="pc-feedback-done">
+                                                <i class="fas fa-check-circle"></i> Đã đánh giá
                                             </span>
                                         }
                                     </div>
@@ -522,3 +684,63 @@
                 }
     </div>
 </section>
+
+<div class="modal fade pc-modal" id="medicalRecordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div class="pc-modal-title">Bệnh án</div>
+                    <div class="pc-modal-sub">Thông tin khám, dịch vụ phát sinh và đơn thuốc</div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                        onclick="forceCloseModal('medicalRecordModal')"></button>
+            </div>
+
+            <div class="modal-body">
+                <iframe id="medicalRecordFrame" src="about:blank"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openMedicalRecord(id) {
+            const url = '/CusAppointment/MedicalRecord?id=' + id + '&popup=1';
+            document.getElementById('medicalRecordFrame').src = url;
+
+            const modalEl = document.getElementById('medicalRecordModal');
+            if (window.bootstrap && bootstrap.Modal) {
+                const modal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+                modal.show();
+            } else {
+                modalEl.classList.add('show');
+                modalEl.style.display = 'block';
+                modalEl.removeAttribute('aria-hidden');
+                document.body.classList.add('modal-open');
+            }
+        }
+
+        function forceCloseModal(id) {
+            const modalEl = document.getElementById(id);
+            if (!modalEl) return;
+
+            if (window.bootstrap && bootstrap.Modal) {
+                const inst = bootstrap.Modal.getInstance(modalEl);
+                if (inst) inst.hide();
+                else new bootstrap.Modal(modalEl).hide();
+            } else {
+                modalEl.classList.remove('show');
+                modalEl.style.display = 'none';
+                modalEl.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('modal-open');
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            }
+        }
+    </script>
+}
