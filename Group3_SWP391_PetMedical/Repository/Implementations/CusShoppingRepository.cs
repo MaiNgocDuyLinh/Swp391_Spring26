@@ -1,9 +1,9 @@
 ﻿using Group3_SWP391_PetMedical.Models;
+using Group3_SWP391_PetMedical.Models.Common;
 using Group3_SWP391_PetMedical.Models.TempShopModels;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Group3_SWP391_PetMedical.ViewModels.Shopping;
 using Microsoft.EntityFrameworkCore;
-using Group3_SWP391_PetMedical.Models.Common;
 
 namespace Group3_SWP391_PetMedical.Repository.Implementations
 {
@@ -81,6 +81,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 TotalItems = totalItems
             };
         }
+
         public async Task<CusShoppingDetailVM?> GetProductDetailAsync(int productId)
         {
             var product =
@@ -249,6 +250,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (quantity <= 0)
             {
                 _context.CartItems.Remove(item);
+                cart.UpdatedAt = DateTime.Now;
                 await _context.SaveChangesAsync();
                 return;
             }
@@ -303,19 +305,40 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             await _context.SaveChangesAsync();
         }
 
-        public async Task<CusCheckoutVM> GetCheckoutAsync(int customerId)
+        public async Task<CusCheckoutVM> GetCheckoutAsync(int customerId, List<int> selectedCartItemIds)
         {
             var cart = await GetCartAsync(customerId);
 
+            var selectedSet = selectedCartItemIds?
+                .Distinct()
+                .ToHashSet() ?? new HashSet<int>();
+
+            var selectedItems = cart.Items
+                .Where(x => selectedSet.Contains(x.CartItemId))
+                .ToList();
+
             return new CusCheckoutVM
             {
-                Items = cart.Items,
-                PaymentMethod = "Tiền mặt"
+                Items = selectedItems,
+                PaymentMethod = "Tiền mặt",
+                SelectedCartItemIds = selectedItems.Select(x => x.CartItemId).ToList()
             };
         }
 
-        public async Task<int> PlaceOrderAsync(int customerId, string? pickupNote, DateTime? pickupDate, string? paymentMethod)
+        public async Task<int> PlaceOrderAsync(
+            int customerId,
+            List<int> selectedCartItemIds,
+            string? pickupNote,
+            DateTime? pickupDate,
+            string? paymentMethod)
         {
+            var selectedSet = selectedCartItemIds?
+                .Distinct()
+                .ToHashSet() ?? new HashSet<int>();
+
+            if (!selectedSet.Any())
+                throw new Exception("Vui lòng chọn ít nhất 1 sản phẩm.");
+
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             var cart = await GetOrCreateCartAsync(customerId);
@@ -327,7 +350,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                        join pv in _context.ProductVariants
                            on ci.VariantId equals pv.VariantId into pvJoin
                        from pv in pvJoin.DefaultIfEmpty()
-                       where ci.CartId == cart.CartId
+                       where ci.CartId == cart.CartId && selectedSet.Contains(ci.CartItemId)
                        select new
                        {
                            CartItem = ci,
@@ -337,7 +360,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                        .ToListAsync();
 
             if (!cartItems.Any())
-                throw new Exception("Giỏ hàng đang trống.");
+                throw new Exception("Không tìm thấy sản phẩm đã chọn trong giỏ hàng.");
 
             foreach (var x in cartItems)
             {
@@ -392,9 +415,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     LineTotal = x.CartItem.UnitPrice * x.CartItem.Quantity
                 });
 
-                // Quy ước tồn kho:
-                // - có variant -> trừ stock của variant
-                // - không có variant -> trừ stock của product
                 if (x.CartItem.VariantId.HasValue && x.Variant != null)
                 {
                     x.Variant.StockQuantity -= x.CartItem.Quantity;
@@ -415,10 +435,13 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 }
             }
 
+            var hasRemainingItems = await _context.CartItems
+                .AnyAsync(x => x.CartId == cart.CartId && !selectedSet.Contains(x.CartItemId));
+
             _context.ProductOrderItems.AddRange(orderItems);
             _context.CartItems.RemoveRange(cartItems.Select(x => x.CartItem));
 
-            cart.Status = "Đã đặt hàng";
+            cart.Status = hasRemainingItems ? "Đang hoạt động" : "Đã đặt hàng";
             cart.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();

@@ -35,12 +35,11 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task RemoveCartItemAsync(int customerId, int cartItemId)
             => _repository.RemoveCartItemAsync(customerId, cartItemId);
 
-        public Task<CusCheckoutVM> GetCheckoutAsync(int customerId)
-            => _repository.GetCheckoutAsync(customerId);
+        public Task<CusCheckoutVM> GetCheckoutAsync(int customerId, List<int> selectedCartItemIds)
+    => _repository.GetCheckoutAsync(customerId, selectedCartItemIds);
 
-        public Task<int> PlaceOrderAsync(int customerId, string? pickupNote, DateTime? pickupDate, string? paymentMethod)
-            => _repository.PlaceOrderAsync(customerId, pickupNote, pickupDate, paymentMethod);
-
+        public Task<int> PlaceOrderAsync(int customerId, List<int> selectedCartItemIds, string? pickupNote, DateTime? pickupDate, string? paymentMethod)
+            => _repository.PlaceOrderAsync(customerId, selectedCartItemIds, pickupNote, pickupDate, paymentMethod);
         public Task<CusShoppingMyOrdersVM> GetMyOrdersAsync(int customerId, CusShoppingOrderQuery query)
             => _repository.GetMyOrdersAsync(customerId, query);
 

@@ -101,14 +101,22 @@ namespace Group3_SWP391_PetMedical.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Checkout()
+        public async Task<IActionResult> Checkout(string? selectedCartItemIds)
         {
             int customerId = GetCurrentUserId();
-            var vm = await _cusShoppingService.GetCheckoutAsync(customerId);
+
+            var selectedIds = ParseSelectedCartItemIds(selectedCartItemIds);
+            if (!selectedIds.Any())
+            {
+                TempData["error"] = "Vui lòng chọn ít nhất 1 sản phẩm.";
+                return RedirectToAction(nameof(Cart));
+            }
+
+            var vm = await _cusShoppingService.GetCheckoutAsync(customerId, selectedIds);
 
             if (!vm.Items.Any())
             {
-                TempData["error"] = "Giỏ hàng đang trống.";
+                TempData["error"] = "Không tìm thấy sản phẩm đã chọn trong giỏ hàng.";
                 return RedirectToAction(nameof(Cart));
             }
 
@@ -121,10 +129,18 @@ namespace Group3_SWP391_PetMedical.Controllers
         {
             int customerId = GetCurrentUserId();
 
+            var selectedIds = submitVm.SelectedCartItemIds?.Distinct().ToList() ?? new List<int>();
+            if (!selectedIds.Any())
+            {
+                TempData["error"] = "Vui lòng chọn ít nhất 1 sản phẩm.";
+                return RedirectToAction(nameof(Cart));
+            }
+
             try
             {
                 int orderId = await _cusShoppingService.PlaceOrderAsync(
                     customerId,
+                    selectedIds,
                     submitVm.PickupNote,
                     submitVm.PickupDate,
                     submitVm.PaymentMethod);
@@ -134,13 +150,28 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
             catch (Exception ex)
             {
-                var vm = await _cusShoppingService.GetCheckoutAsync(customerId);
+                var vm = await _cusShoppingService.GetCheckoutAsync(customerId, selectedIds);
                 vm.PickupDate = submitVm.PickupDate;
                 vm.PickupNote = submitVm.PickupNote;
                 vm.PaymentMethod = submitVm.PaymentMethod;
+
                 TempData["error"] = ex.Message;
                 return View("~/Views/Shopping/CusCheckout.cshtml", vm);
             }
+        }
+
+        private List<int> ParseSelectedCartItemIds(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+                return new List<int>();
+
+            return raw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .Where(x => int.TryParse(x, out _))
+                .Select(int.Parse)
+                .Distinct()
+                .ToList();
         }
 
         [HttpGet]

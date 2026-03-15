@@ -14,8 +14,8 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         Task UpdateCartItemAsync(int customerId, int cartItemId, int quantity);
         Task RemoveCartItemAsync(int customerId, int cartItemId);
 
-        Task<CusCheckoutVM> GetCheckoutAsync(int customerId);
-        Task<int> PlaceOrderAsync(int customerId, string? pickupNote, DateTime? pickupDate, string? paymentMethod);
+        Task<CusCheckoutVM> GetCheckoutAsync(int customerId, List<int> selectedCartItemIds);
+        Task<int> PlaceOrderAsync(int customerId, List<int> selectedCartItemIds, string? pickupNote, DateTime? pickupDate, string? paymentMethod);
 
         Task<CusShoppingMyOrdersVM> GetMyOrdersAsync(int customerId, CusShoppingOrderQuery query);
         Task<CusShoppingOrderDetailVM?> GetOrderDetailAsync(int customerId, int orderId);

@@ -329,7 +329,7 @@
                 <div class="col-lg-7">
                     <div class="pc-badge">
                         <i class="fas fa-credit-card"></i>
-                        <span>Thanh toán nhanh • PetCare</span>
+                        <span>Thanh toán • PetCare</span>
                     </div>
 
                     <div class="pc-title">Thanh toán đơn hàng</div>
@@ -348,6 +348,14 @@
                         <div class="pc-card-body">
                             <form asp-controller="CusShopping" asp-action="Checkout" method="post">
                                 @Html.AntiForgeryToken()
+
+                                @if (Model.SelectedCartItemIds != null && Model.SelectedCartItemIds.Any())
+                                {
+                                    foreach (var id in Model.SelectedCartItemIds)
+                                    {
+                                        <input type="hidden" name="SelectedCartItemIds" value="@id" />
+                                    }
+                                }
 
                                 <div class="row g-3">
                                     <div class="col-12 pc-field">
@@ -374,7 +382,7 @@
                                         <textarea name="PickupNote"
                                                   class="form-control pc-textarea"
                                                   rows="4"
-                                                  placeholder="Ví dụ: gọi trước khi nhận hàng, chuẩn bị sẵn đơn, lưu ý thêm cho phòng khám...">@Model.PickupNote</textarea>
+                                                  placeholder="Lưu ý thêm cho phòng khám...">@Model.PickupNote</textarea>
                                     </div>
                                 </div>
 
