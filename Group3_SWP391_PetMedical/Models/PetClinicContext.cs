@@ -361,9 +361,9 @@ public partial class PetClinicContext : DbContext
                   .HasDefaultValueSql("(getdate())")
                   .HasColumnName("updated_at");
 
-            entity.HasOne<ProductCategory>()
-                  .WithMany()
-                  .HasForeignKey(e => e.CategoryId)
+            entity.HasOne(d => d.Category)
+                  .WithMany(p => p.Products)
+                  .HasForeignKey(d => d.CategoryId)
                   .OnDelete(DeleteBehavior.ClientSetNull)
                   .HasConstraintName("FK_Products_ProductCategories");
         });
@@ -415,9 +415,9 @@ public partial class PetClinicContext : DbContext
                   .HasDefaultValueSql("(getdate())")
                   .HasColumnName("updated_at");
 
-            entity.HasOne<Product>()
-                  .WithMany()
-                  .HasForeignKey(e => e.ProductId)
+            entity.HasOne(d => d.Product)
+                  .WithMany(p => p.ProductVariants)
+                  .HasForeignKey(d => d.ProductId)
                   .OnDelete(DeleteBehavior.ClientSetNull)
                   .HasConstraintName("FK_ProductVariants_Products");
         });
@@ -570,22 +570,36 @@ public partial class PetClinicContext : DbContext
             entity.Property(e => e.LineTotal)
                   .HasColumnType("decimal(18,2)")
                   .HasColumnName("line_total");
-
-            entity.HasOne<ProductOrder>()
-                  .WithMany()
-                  .HasForeignKey(e => e.OrderId)
+            entity.HasOne(d => d.Order)
+                  .WithMany(p => p.ProductOrderItems)
+                  .HasForeignKey(d => d.OrderId)
                   .OnDelete(DeleteBehavior.ClientSetNull)
                   .HasConstraintName("FK_ProductOrderItems_ProductOrders");
 
-            entity.HasOne<Product>()
-                  .WithMany()
-                  .HasForeignKey(e => e.ProductId)
+            entity.HasOne(d => d.Product)
+                  .WithMany(p => p.ProductOrderItems)
+                  .HasForeignKey(d => d.ProductId)
                   .OnDelete(DeleteBehavior.ClientSetNull)
                   .HasConstraintName("FK_ProductOrderItems_Products");
 
-            entity.HasOne<ProductVariant>()
-                  .WithMany()
-                  .HasForeignKey(e => e.VariantId)
+            entity.HasOne(d => d.Variant)
+                  .WithMany(p => p.ProductOrderItems)
+                  .HasForeignKey(d => d.VariantId)
+                  .HasConstraintName("FK_ProductOrderItems_ProductVariants"); entity.HasOne(d => d.Order)
+                  .WithMany(p => p.ProductOrderItems)
+                  .HasForeignKey(d => d.OrderId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_ProductOrderItems_ProductOrders");
+
+            entity.HasOne(d => d.Product)
+                  .WithMany(p => p.ProductOrderItems)
+                  .HasForeignKey(d => d.ProductId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_ProductOrderItems_Products");
+
+            entity.HasOne(d => d.Variant)
+                  .WithMany(p => p.ProductOrderItems)
+                  .HasForeignKey(d => d.VariantId)
                   .HasConstraintName("FK_ProductOrderItems_ProductVariants");
         });
     }

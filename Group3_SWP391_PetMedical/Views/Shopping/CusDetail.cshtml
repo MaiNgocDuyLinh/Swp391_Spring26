@@ -20,17 +20,6 @@
     {
         productImg = Url.Content("~/uploads/Shopping/" + Model.ImageUrl);
     }
-
-
-    @if (TempData["success"] != null)
-    {
-        <div class="alert alert-success">@TempData["success"]</div>
-    }
-
-    @if (TempData["error"] != null)
-    {
-        <div class="alert alert-danger">@TempData["error"]</div>
-    }
     var selectedVariant = Model.Variants != null && Model.Variants.Any()
         ? Model.Variants.FirstOrDefault(x => x.VariantId == Model.SelectedVariantId) ?? Model.Variants.First()
         : null;

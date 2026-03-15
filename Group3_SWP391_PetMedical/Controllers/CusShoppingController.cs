@@ -60,7 +60,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             catch (Exception ex)
             {
                 TempData["error"] = ex.Message;
-                return RedirectToAction(nameof(Detail), new { id = vm.ProductId });
+                return RedirectToAction(nameof(Detail), new { id = vm.ProductId, variantId = vm.VariantId });
             }
         }
 
