@@ -94,6 +94,8 @@ namespace Group3_SWP391_PetMedical
                 return Task.CompletedTask;
             });
 
+            app.MapControllers();
+
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
