@@ -427,12 +427,37 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return order.OrderId;
         }
 
-        public async Task<List<CusShoppingOrderListItemVM>> GetMyOrdersAsync(int customerId)
+        public async Task<CusShoppingMyOrdersVM> GetMyOrdersAsync(int customerId, CusShoppingOrderQuery query)
         {
-            return await _context.ProductOrders
+            query ??= new CusShoppingOrderQuery();
+
+            var page = query.Page <= 0 ? 1 : query.Page;
+            var pageSize = query.PageSize <= 0 ? 6 : query.PageSize;
+            if (pageSize > 50) pageSize = 50;
+
+            var keyword = query.Q?.Trim();
+
+            var q = _context.ProductOrders
                 .AsNoTracking()
-                .Where(x => x.CustomerId == customerId)
+                .Where(x => x.CustomerId == customerId);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                q = q.Where(x =>
+                    (x.OrderCode != null && x.OrderCode.Contains(keyword)) ||
+                    (x.OrderStatus != null && x.OrderStatus.Contains(keyword)) ||
+                    (x.PaymentStatus != null && x.PaymentStatus.Contains(keyword)) ||
+                    (x.PaymentMethod != null && x.PaymentMethod.Contains(keyword)));
+            }
+
+            var totalItems = await q.CountAsync();
+            var totalAmount = await q.SumAsync(x => (decimal?)x.TotalAmount) ?? 0m;
+
+            var items = await q
                 .OrderByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.OrderId)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(x => new CusShoppingOrderListItemVM
                 {
                     OrderId = x.OrderId,
@@ -443,6 +468,24 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     CreatedAt = x.CreatedAt
                 })
                 .ToListAsync();
+
+            return new CusShoppingMyOrdersVM
+            {
+                Filter = new CusShoppingOrderQuery
+                {
+                    Q = query.Q,
+                    Page = page,
+                    PageSize = pageSize
+                },
+                FilteredTotalAmount = totalAmount,
+                Page = new PagedResult<CusShoppingOrderListItemVM>
+                {
+                    Items = items,
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalItems = totalItems
+                }
+            };
         }
 
         public async Task<CusShoppingOrderDetailVM?> GetOrderDetailAsync(int customerId, int orderId)

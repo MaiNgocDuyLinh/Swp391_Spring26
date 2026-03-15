@@ -1,51 +1,656 @@
-﻿@model List<Group3_SWP391_PetMedical.ViewModels.Shopping.CusShoppingOrderListItemVM>
+﻿@model Group3_SWP391_PetMedical.ViewModels.Shopping.CusShoppingMyOrdersVM
 
 @{
     ViewData["Title"] = "Đơn hàng của tôi";
+
+    var totalOrders = Model?.Page?.TotalItems ?? 0;
+    var totalAmount = Model?.FilteredTotalAmount ?? 0;
+    var currentPage = Model?.Page?.Page ?? 1;
+    var pageSize = Model?.Page?.PageSize ?? 6;
+    var totalPages = totalOrders > 0 ? (int)Math.Ceiling((double)totalOrders / pageSize) : 1;
+
+    Func<int, string> pageUrl = p =>
+        (Url.Action("MyOrders", "CusShopping", new
+        {
+            q = Model.Filter.Q,
+            page = p,
+            pageSize = Model.Filter.PageSize
+        }) ?? "#") + "#myOrdersArea";
+
+    var startPage = Math.Max(1, currentPage - 2);
+    var endPage = Math.Min(totalPages, currentPage + 2);
 }
 
-<div class="container py-5 mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Đơn hàng của tôi</h2>
-        <a href="@Url.Action("Index", "CusShopping")" class="btn btn-outline-dark">Quay lại mua sắm</a>
-    </div>
+@functions {
+    public static string NormalizeText(string? value)
+    {
+        return (value ?? "").Trim().ToLower();
+    }
 
-    @if (Model.Any())
+    public static string GetOrderStatusClass(string? status)
     {
-        <div class="table-responsive">
-            <table class="table table-bordered bg-white">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Mã đơn</th>
-                        <th>Ngày tạo</th>
-                        <th>Trạng thái đơn</th>
-                        <th>Thanh toán</th>
-                        <th>Tổng tiền</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td>@item.OrderCode</td>
-                            <td>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@item.OrderStatus</td>
-                            <td>@item.PaymentStatus</td>
-                            <td>@item.TotalAmount.ToString("N0") đ</td>
-                            <td>
-                                <a href="@Url.Action("OrderDetail", "CusShopping", new { id = item.OrderId })" class="btn btn-sm btn-dark">
-                                    Chi tiết
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        var s = NormalizeText(status);
+
+        return s switch
+        {
+            "chờ xác nhận" => "pc-badge--warning",
+            "đang xử lý" => "pc-badge--warning",
+            "đang giao" => "pc-badge--info",
+            "đã giao" => "pc-badge--success",
+            "hoàn thành" => "pc-badge--success",
+            "đã hủy" => "pc-badge--danger",
+            "hủy" => "pc-badge--danger",
+            _ => "pc-badge--default"
+        };
+    }
+
+    public static string GetPaymentStatusClass(string? status)
+    {
+        var s = NormalizeText(status);
+
+        return s switch
+        {
+            "đã thanh toán" => "pc-badge--paid",
+            "thanh toán thành công" => "pc-badge--paid",
+            "chưa thanh toán" => "pc-badge--danger",
+            "chờ thanh toán" => "pc-badge--warning",
+            "đã hoàn tiền" => "pc-badge--info",
+            _ => "pc-badge--default"
+        };
+    }
+
+    public static string GetOrderStatusIcon(string? status)
+    {
+        var s = NormalizeText(status);
+
+        return s switch
+        {
+            "chờ xác nhận" => "fas fa-hourglass-half",
+            "đang xử lý" => "fas fa-box-open",
+            "đang giao" => "fas fa-truck",
+            "đã giao" => "fas fa-check-circle",
+            "hoàn thành" => "fas fa-check-circle",
+            "đã hủy" => "fas fa-times-circle",
+            "hủy" => "fas fa-times-circle",
+            _ => "fas fa-info-circle"
+        };
+    }
+
+    public static string GetPaymentStatusIcon(string? status)
+    {
+        var s = NormalizeText(status);
+
+        return s switch
+        {
+            "đã thanh toán" => "fas fa-wallet",
+            "thanh toán thành công" => "fas fa-wallet",
+            "chưa thanh toán" => "fas fa-credit-card",
+            "chờ thanh toán" => "fas fa-clock",
+            "đã hoàn tiền" => "fas fa-undo-alt",
+            _ => "fas fa-money-check-alt"
+        };
+    }
+}
+
+@section Styles {
+    <style>
+        :root {
+            --pc-red: #ff3b3b;
+            --pc-red-dark: #e83434;
+            --pc-pink: #fff2f2;
+            --pc-text: #2b2b2b;
+            --pc-muted: #7a7a7a;
+            --pc-border: rgba(0,0,0,0.06);
+            --pc-success-bg: #e8f5e9;
+            --pc-success-text: #2e7d32;
+            --pc-info-bg: #e0f2fe;
+            --pc-info-text: #0369a1;
+            --pc-warning-bg: #fff3cd;
+            --pc-warning-text: #856404;
+            --pc-danger-bg: #fdeaea;
+            --pc-danger-text: #c62828;
+            --pc-default-bg: #f3f4f6;
+            --pc-default-text: #6b7280;
+        }
+
+        .pc-wrap {
+            background: #f3d7d5;
+            border: 1px solid var(--pc-border);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+        }
+
+        .pc-title {
+            font-weight: 800;
+            margin: 0;
+            color: var(--pc-text);
+        }
+
+        .pc-sub {
+            color: var(--pc-muted);
+            margin: 0;
+        }
+
+        .pc-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .pc-filter {
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+        .pc-label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .pc-input {
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.10);
+            height: 42px;
+            padding: 0 12px;
+        }
+
+        .pc-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .pc-btn {
+            border-radius: 999px;
+            padding: 0 18px;
+            height: 42px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            text-decoration: none !important;
+        }
+
+        .pc-btn--primary {
+            background: var(--pc-red);
+            color: #fff !important;
+            box-shadow: 0 10px 20px rgba(255,59,59,0.25);
+        }
+
+            .pc-btn--primary:hover {
+                background: var(--pc-red-dark);
+                color: #fff !important;
+            }
+
+        .pc-btn--ghost {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.10);
+            color: var(--pc-text) !important;
+            white-space: nowrap;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+        }
+
+            .pc-btn--ghost:hover {
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+                color: var(--pc-red-dark) !important;
+            }
+
+        .pc-summary {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .pc-summary-card {
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            border-radius: 16px;
+            padding: 16px 18px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+        .pc-summary-label {
+            color: var(--pc-muted);
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .pc-summary-value {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--pc-text);
+            line-height: 1.2;
+        }
+
+        .pc-table {
+            border-radius: 16px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+            .pc-table .table {
+                margin-bottom: 0;
+            }
+
+            .pc-table thead th {
+                background: #fff7f7;
+                font-weight: 800;
+                color: var(--pc-text);
+                border-bottom: 1px solid rgba(0,0,0,0.06);
+                white-space: nowrap;
+                vertical-align: middle;
+            }
+
+            .pc-table tbody tr {
+                transition: background 0.25s ease;
+            }
+
+                .pc-table tbody tr:hover {
+                    background: #fff3f3;
+                }
+
+        .pc-code {
+            font-weight: 800;
+            color: var(--pc-text);
+        }
+
+        .pc-date {
+            color: var(--pc-text);
+            font-weight: 600;
+        }
+
+        .pc-money {
+            font-weight: 900;
+            color: var(--pc-text);
+            white-space: nowrap;
+        }
+
+        .pc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            border: 1px solid rgba(0,0,0,0.04);
+            white-space: nowrap;
+        }
+
+            .pc-badge i {
+                color: inherit !important;
+            }
+
+        .pc-badge--paid {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .pc-badge--success {
+            background: var(--pc-success-bg);
+            color: var(--pc-success-text);
+        }
+
+        .pc-badge--info {
+            background: var(--pc-info-bg);
+            color: var(--pc-info-text);
+        }
+
+        .pc-badge--warning {
+            background: var(--pc-warning-bg);
+            color: var(--pc-warning-text);
+        }
+
+        .pc-badge--danger {
+            background: var(--pc-danger-bg);
+            color: var(--pc-danger-text);
+        }
+
+        .pc-badge--default {
+            background: var(--pc-default-bg);
+            color: var(--pc-default-text);
+        }
+
+        .pc-action-wrap {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .pc-btn-detail {
+            height: 36px;
+            padding: 0 14px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid rgba(255,59,59,0.20);
+            background: #fff5f5;
+            color: var(--pc-red) !important;
+            font-size: 0.9rem;
+            font-weight: 800;
+            text-decoration: none !important;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+            white-space: nowrap;
+        }
+
+            .pc-btn-detail:hover {
+                background: #ffeaea;
+                color: var(--pc-red-dark) !important;
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+            }
+
+        .pc-pager.pagination {
+            gap: 10px;
+            margin: 0;
+        }
+
+        .pc-pager .page-item .page-link {
+            border-radius: 999px !important;
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 !important;
+            border: 1px solid rgba(0,0,0,0.10);
+            color: var(--pc-text);
+            background: #fff;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+        }
+
+            .pc-pager .page-item .page-link:hover {
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+                color: var(--pc-red-dark);
+            }
+
+        .pc-pager .page-item.active .page-link {
+            background: var(--pc-red) !important;
+            border-color: var(--pc-red) !important;
+            color: #fff !important;
+            box-shadow: 0 12px 24px rgba(255,59,59,0.25);
+        }
+
+        .pc-pager .page-item.disabled .page-link {
+            opacity: 0.45;
+            pointer-events: none;
+            box-shadow: none;
+        }
+
+        .pc-empty {
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            border-radius: 16px;
+            padding: 28px 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+        .pc-empty-icon {
+            width: 68px;
+            height: 68px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff5f5;
+            color: var(--pc-red);
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+
+        .pc-empty-title {
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: var(--pc-text);
+            margin-bottom: 6px;
+        }
+
+        .pc-empty-sub {
+            color: var(--pc-muted);
+            margin: 0;
+        }
+
+        @@media (max-width: 991.98px) {
+            .pc-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 767.98px) {
+            .pc-wrap {
+                padding: 14px;
+                border-radius: 16px;
+            }
+
+            .pc-topbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+                .pc-topbar .pc-btn {
+                    width: 100%;
+                }
+
+            .pc-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+                .pc-actions .pc-btn {
+                    width: 100%;
+                }
+
+            .pc-summary-value {
+                font-size: 1.2rem;
+            }
+
+            .pc-pager .page-item .page-link {
+                width: 38px;
+                height: 38px;
+            }
+        }
+    </style>
+}
+
+<section class="container py-4" id="myOrdersArea">
+    <div class="pc-wrap" style="margin-top:150px;">
+
+        <div class="pc-topbar">
+            <div>
+                <h3 class="pc-title">Đơn hàng của tôi</h3>
+                <p class="pc-sub">Theo dõi đơn mua sắm, trạng thái xử lý và thanh toán của bạn</p>
+            </div>
+
+            <a href="@Url.Action("Index", "CusShopping")" class="pc-btn pc-btn--ghost">
+                <i class="fas fa-arrow-left"></i>
+                <span>Quay lại mua sắm</span>
+            </a>
         </div>
-    }
-    else
-    {
-        <div class="alert alert-info">Bạn chưa có đơn hàng nào.</div>
-    }
-</div>
+
+        <div class="pc-filter">
+            <form method="get" asp-controller="CusShopping" asp-action="MyOrders" class="row g-3">
+                <div class="col-lg-8 col-md-7">
+                    <div class="pc-label">Tìm kiếm</div>
+                    <input class="form-control pc-input"
+                           name="q"
+                           value="@Model.Filter.Q"
+                           placeholder="Mã đơn / trạng thái đơn / thanh toán / phương thức..." />
+                </div>
+
+                <input type="hidden" name="page" value="1" />
+                <input type="hidden" name="pageSize" value="@Model.Filter.PageSize" />
+
+                <div class="col-lg-4 col-md-5 d-flex align-items-end">
+                    <div class="pc-actions w-100">
+                        <a class="pc-btn pc-btn--ghost"
+                           href="@Url.Action("MyOrders", "CusShopping")#myOrdersArea">
+                            <i class="fas fa-undo-alt"></i>
+                            <span>Làm mới</span>
+                        </a>
+
+                        <button type="submit" class="pc-btn pc-btn--primary">
+                            <i class="fas fa-search"></i>
+                            <span>Tìm kiếm</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="pc-summary">
+            <div class="pc-summary-card">
+                <div class="pc-summary-label">Tổng số đơn hàng</div>
+                <div class="pc-summary-value">@totalOrders</div>
+            </div>
+
+            <div class="pc-summary-card">
+                <div class="pc-summary-label">Tổng chi tiêu</div>
+                <div class="pc-summary-value">@totalAmount.ToString("N0") đ</div>
+            </div>
+        </div>
+
+        @if (Model.Page != null && Model.Page.Items.Any())
+        {
+            <div class="pc-table table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width:160px;">Mã đơn</th>
+                            <th style="width:180px;">Ngày tạo</th>
+                            <th style="width:180px;">Trạng thái đơn</th>
+                            <th style="width:180px;">Thanh toán</th>
+                            <th style="width:160px;" class="text-end">Tổng tiền</th>
+                            <th style="width:130px;" class="text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Page.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="pc-code">@item.OrderCode</div>
+                                </td>
+
+                                <td>
+                                    <div class="pc-date">@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                                </td>
+
+                                <td>
+                                    <span class="pc-badge @GetOrderStatusClass(item.OrderStatus)">
+                                        <i class="@GetOrderStatusIcon(item.OrderStatus)"></i>
+                                        @item.OrderStatus
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="pc-badge @GetPaymentStatusClass(item.PaymentStatus)">
+                                        <i class="@GetPaymentStatusIcon(item.PaymentStatus)"></i>
+                                        @item.PaymentStatus
+                                    </span>
+                                </td>
+
+                                <td class="text-end">
+                                    <span class="pc-money">@item.TotalAmount.ToString("N0") đ</span>
+                                </td>
+
+                                <td class="text-end">
+                                    <div class="pc-action-wrap">
+                                        <a href="@Url.Action("OrderDetail", "CusShopping", new { id = item.OrderId })"
+                                           class="pc-btn-detail">
+                                            <i class="fas fa-eye"></i>
+                                            <span>Chi tiết</span>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (totalPages > 1)
+            {
+                <div class="mt-4 d-flex justify-content-center">
+                    <ul class="pagination pc-pager">
+                        <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                            <a class="page-link" href="@(currentPage <= 1 ? "#" : pageUrl(currentPage - 1))">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = startPage; i <= endPage; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link" href="@pageUrl(i)">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                            <a class="page-link" href="@(currentPage >= totalPages ? "#" : pageUrl(currentPage + 1))">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="text-center mt-2" style="color: var(--pc-muted); font-size:0.95rem;">
+                    Trang <strong>@currentPage</strong> / <strong>@totalPages</strong>
+                    - Tổng <strong>@totalOrders</strong> đơn hàng
+                </div>
+            }
+        }
+        else
+        {
+            <div class="pc-empty">
+                <div class="pc-empty-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Filter.Q))
+                {
+                    <div class="pc-empty-title">Không tìm thấy đơn hàng phù hợp</div>
+                    <p class="pc-empty-sub">Hãy thử lại với từ khóa khác hoặc làm mới bộ lọc tìm kiếm.</p>
+
+                    <div class="mt-3">
+                        <a href="@Url.Action("MyOrders", "CusShopping")#myOrdersArea" class="pc-btn pc-btn--primary">
+                            <i class="fas fa-undo-alt"></i>
+                            <span>Xem tất cả đơn hàng</span>
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="pc-empty-title">Bạn chưa có đơn hàng nào</div>
+                    <p class="pc-empty-sub">Hãy quay lại trang mua sắm để chọn thêm sản phẩm cho thú cưng của bạn.</p>
+
+                    <div class="mt-3">
+                        <a href="@Url.Action("Index", "CusShopping")" class="pc-btn pc-btn--primary">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Mua sắm ngay</span>
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>

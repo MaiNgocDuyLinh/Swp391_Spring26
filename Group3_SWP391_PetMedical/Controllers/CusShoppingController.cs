@@ -144,10 +144,12 @@ namespace Group3_SWP391_PetMedical.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> MyOrders()
+        public async Task<IActionResult> MyOrders([FromQuery] CusShoppingOrderQuery query)
         {
             int customerId = GetCurrentUserId();
-            var vm = await _cusShoppingService.GetMyOrdersAsync(customerId);
+            query ??= new CusShoppingOrderQuery();
+
+            var vm = await _cusShoppingService.GetMyOrdersAsync(customerId, query);
             return View("~/Views/Shopping/CusMyOrders.cshtml", vm);
         }
 

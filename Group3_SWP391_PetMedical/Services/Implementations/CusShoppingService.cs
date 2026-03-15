@@ -41,8 +41,8 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<int> PlaceOrderAsync(int customerId, string? pickupNote, DateTime? pickupDate, string? paymentMethod)
             => _repository.PlaceOrderAsync(customerId, pickupNote, pickupDate, paymentMethod);
 
-        public Task<List<CusShoppingOrderListItemVM>> GetMyOrdersAsync(int customerId)
-            => _repository.GetMyOrdersAsync(customerId);
+        public Task<CusShoppingMyOrdersVM> GetMyOrdersAsync(int customerId, CusShoppingOrderQuery query)
+            => _repository.GetMyOrdersAsync(customerId, query);
 
         public Task<CusShoppingOrderDetailVM?> GetOrderDetailAsync(int customerId, int orderId)
             => _repository.GetOrderDetailAsync(customerId, orderId);

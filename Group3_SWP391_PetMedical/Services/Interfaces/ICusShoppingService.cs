@@ -17,7 +17,7 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         Task<CusCheckoutVM> GetCheckoutAsync(int customerId);
         Task<int> PlaceOrderAsync(int customerId, string? pickupNote, DateTime? pickupDate, string? paymentMethod);
 
-        Task<List<CusShoppingOrderListItemVM>> GetMyOrdersAsync(int customerId);
+        Task<CusShoppingMyOrdersVM> GetMyOrdersAsync(int customerId, CusShoppingOrderQuery query);
         Task<CusShoppingOrderDetailVM?> GetOrderDetailAsync(int customerId, int orderId);
     }
 }
