@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Security.Claims;
 using System.Text.Json;
+using Group3_SWP391_PetMedical.Models.TempShopModels;
 
 namespace Group3_SWP391_PetMedical.Models;
 
@@ -36,6 +37,15 @@ public partial class PetClinicContext : DbContext
 
     // ✅ NEW TABLE
     public virtual DbSet<AuditLog> AuditLogs { get; set; }
+
+    // ✅ NEW SHOP TABLES
+    public virtual DbSet<ProductCategory> ProductCategories { get; set; }
+    public virtual DbSet<Product> Products { get; set; }
+    public virtual DbSet<ProductVariant> ProductVariants { get; set; }
+    public virtual DbSet<Cart> Carts { get; set; }
+    public virtual DbSet<CartItem> CartItems { get; set; }
+    public virtual DbSet<ProductOrder> ProductOrders { get; set; }
+    public virtual DbSet<ProductOrderItem> ProductOrderItems { get; set; }
 
     // ================= AUTO AUDIT =================
 
@@ -282,6 +292,301 @@ public partial class PetClinicContext : DbContext
                   .WithMany(m => m.Prescriptions)
                   .HasForeignKey(p => p.medicine_id)
                   .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        // ================= SHOP MODULE CONFIG =================
+
+        modelBuilder.Entity<ProductCategory>(entity =>
+        {
+            entity.ToTable("ProductCategories");
+
+            entity.HasKey(e => e.CategoryId);
+
+            entity.HasIndex(e => e.CategoryName)
+                  .IsUnique()
+                  .HasDatabaseName("UQ_ProductCategories_CategoryName");
+
+            entity.Property(e => e.CategoryId).HasColumnName("category_id");
+            entity.Property(e => e.CategoryName)
+                  .HasMaxLength(100)
+                  .HasColumnName("category_name");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.CreatedAt)
+                  .HasColumnType("datetime")
+                  .HasDefaultValueSql("(getdate())")
+                  .HasColumnName("created_at");
+        });
+
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.ToTable("Products");
+
+            entity.HasKey(e => e.ProductId);
+
+            entity.HasIndex(e => e.Sku)
+                  .IsUnique()
+                  .HasDatabaseName("UQ_Products_SKU");
+
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.CategoryId).HasColumnName("category_id");
+            entity.Property(e => e.Name)
+                  .HasMaxLength(200)
+                  .HasColumnName("name");
+            entity.Property(e => e.Sku)
+                  .HasMaxLength(50)
+                  .IsUnicode(false)
+                  .HasColumnName("sku");
+            entity.Property(e => e.Price)
+                  .HasColumnType("decimal(18,2)")
+                  .HasColumnName("price");
+            entity.Property(e => e.StockQuantity)
+                  .HasDefaultValue(0)
+                  .HasColumnName("stock_quantity");
+            entity.Property(e => e.Status)
+                  .HasMaxLength(20)
+                  .HasDefaultValue("Đang bán")
+                  .HasColumnName("status");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.ImageUrl)
+                  .HasMaxLength(255)
+                  .IsUnicode(false)
+                  .HasColumnName("image_url");
+            entity.Property(e => e.CreatedAt)
+                  .HasColumnType("datetime")
+                  .HasDefaultValueSql("(getdate())")
+                  .HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt)
+                  .HasColumnType("datetime")
+                  .HasDefaultValueSql("(getdate())")
+                  .HasColumnName("updated_at");
+
+            entity.HasOne<ProductCategory>()
+                  .WithMany()
+                  .HasForeignKey(e => e.CategoryId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_Products_ProductCategories");
+        });
+
+        modelBuilder.Entity<ProductVariant>(entity =>
+        {
+            entity.ToTable("ProductVariants");
+
+            entity.HasKey(e => e.VariantId);
+
+            entity.Property(e => e.VariantId).HasColumnName("variant_id");
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.VariantName)
+                  .HasMaxLength(255)
+                  .HasColumnName("variant_name");
+            entity.Property(e => e.Color)
+                  .HasMaxLength(50)
+                  .HasColumnName("color");
+            entity.Property(e => e.Size)
+                  .HasMaxLength(50)
+                  .HasColumnName("size");
+            entity.Property(e => e.Material)
+                  .HasMaxLength(100)
+                  .HasColumnName("material");
+            entity.Property(e => e.Sku)
+                  .HasMaxLength(50)
+                  .IsUnicode(false)
+                  .HasColumnName("sku");
+            entity.Property(e => e.PriceOverride)
+                  .HasColumnType("decimal(18,2)")
+                  .HasColumnName("price_override");
+            entity.Property(e => e.StockQuantity)
+                  .HasDefaultValue(0)
+                  .HasColumnName("stock_quantity");
+            entity.Property(e => e.Status)
+                  .HasMaxLength(20)
+                  .HasDefaultValue("Đang bán")
+                  .HasColumnName("status");
+            entity.Property(e => e.ImageUrl)
+                  .HasMaxLength(255)
+                  .IsUnicode(false)
+                  .HasColumnName("image_url");
+            entity.Property(e => e.CreatedAt)
+                  .HasColumnType("datetime")
+                  .HasDefaultValueSql("(getdate())")
+                  .HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt)
+                  .HasColumnType("datetime")
+                  .HasDefaultValueSql("(getdate())")
+                  .HasColumnName("updated_at");
+
+            entity.HasOne<Product>()
+                  .WithMany()
+                  .HasForeignKey(e => e.ProductId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_ProductVariants_Products");
+        });
+
+        modelBuilder.Entity<Cart>(entity =>
+        {
+            entity.ToTable("Carts");
+
+            entity.HasKey(e => e.CartId);
+
+            entity.Property(e => e.CartId).HasColumnName("cart_id");
+            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
+            entity.Property(e => e.Status)
+                  .HasMaxLength(30)
+                  .HasDefaultValue("Đang hoạt động")
+                  .HasColumnName("status");
+            entity.Property(e => e.CreatedAt)
+                  .HasColumnType("datetime")
+                  .HasDefaultValueSql("(getdate())")
+                  .HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt)
+                  .HasColumnType("datetime")
+                  .HasDefaultValueSql("(getdate())")
+                  .HasColumnName("updated_at");
+
+            entity.HasOne<User>()
+                  .WithMany()
+                  .HasForeignKey(e => e.CustomerId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_Carts_Users");
+        });
+
+        modelBuilder.Entity<CartItem>(entity =>
+        {
+            entity.ToTable("CartItems");
+
+            entity.HasKey(e => e.CartItemId);
+
+            entity.HasIndex(e => new { e.CartId, e.ProductId, e.VariantId })
+                  .IsUnique()
+                  .HasDatabaseName("UQ_CartItems_Cart_Product_Variant");
+
+            entity.Property(e => e.CartItemId).HasColumnName("cart_item_id");
+            entity.Property(e => e.CartId).HasColumnName("cart_id");
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.VariantId).HasColumnName("variant_id");
+            entity.Property(e => e.Quantity)
+                  .HasDefaultValue(1)
+                  .HasColumnName("quantity");
+            entity.Property(e => e.UnitPrice)
+                  .HasColumnType("decimal(18,2)")
+                  .HasColumnName("unit_price");
+            entity.Property(e => e.CreatedAt)
+                  .HasColumnType("datetime")
+                  .HasDefaultValueSql("(getdate())")
+                  .HasColumnName("created_at");
+
+            entity.HasOne<Cart>()
+                  .WithMany()
+                  .HasForeignKey(e => e.CartId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_CartItems_Carts");
+
+            entity.HasOne<Product>()
+                  .WithMany()
+                  .HasForeignKey(e => e.ProductId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_CartItems_Products");
+
+            entity.HasOne<ProductVariant>()
+                  .WithMany()
+                  .HasForeignKey(e => e.VariantId)
+                  .HasConstraintName("FK_CartItems_ProductVariants");
+        });
+
+        modelBuilder.Entity<ProductOrder>(entity =>
+        {
+            entity.ToTable("ProductOrders");
+
+            entity.HasKey(e => e.OrderId);
+
+            entity.HasIndex(e => e.OrderCode)
+                  .IsUnique()
+                  .HasDatabaseName("UQ_ProductOrders_OrderCode");
+
+            entity.Property(e => e.OrderId).HasColumnName("order_id");
+            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
+            entity.Property(e => e.OrderCode)
+                  .HasMaxLength(50)
+                  .IsUnicode(false)
+                  .HasColumnName("order_code");
+            entity.Property(e => e.TotalAmount)
+                  .HasColumnType("decimal(18,2)")
+                  .HasDefaultValue(0m)
+                  .HasColumnName("total_amount");
+            entity.Property(e => e.PaymentMethod)
+                  .HasMaxLength(50)
+                  .HasColumnName("payment_method");
+            entity.Property(e => e.PaymentStatus)
+                  .HasMaxLength(30)
+                  .HasDefaultValue("Chưa thanh toán")
+                  .HasColumnName("payment_status");
+            entity.Property(e => e.OrderStatus)
+                  .HasMaxLength(30)
+                  .HasDefaultValue("Chờ xác nhận")
+                  .HasColumnName("order_status");
+            entity.Property(e => e.PickupMethod)
+                  .HasMaxLength(50)
+                  .HasDefaultValue("Nhận tại phòng khám")
+                  .HasColumnName("pickup_method");
+            entity.Property(e => e.PickupNote)
+                  .HasMaxLength(500)
+                  .HasColumnName("pickup_note");
+            entity.Property(e => e.PickupDate)
+                  .HasColumnType("datetime")
+                  .HasColumnName("pickup_date");
+            entity.Property(e => e.CreatedAt)
+                  .HasColumnType("datetime")
+                  .HasDefaultValueSql("(getdate())")
+                  .HasColumnName("created_at");
+
+            entity.HasOne<User>()
+                  .WithMany()
+                  .HasForeignKey(e => e.CustomerId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_ProductOrders_Users");
+        });
+
+        modelBuilder.Entity<ProductOrderItem>(entity =>
+        {
+            entity.ToTable("ProductOrderItems");
+
+            entity.HasKey(e => e.OrderItemId);
+
+            entity.Property(e => e.OrderItemId).HasColumnName("order_item_id");
+            entity.Property(e => e.OrderId).HasColumnName("order_id");
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.VariantId).HasColumnName("variant_id");
+            entity.Property(e => e.ProductName)
+                  .HasMaxLength(200)
+                  .HasColumnName("product_name");
+            entity.Property(e => e.VariantName)
+                  .HasMaxLength(255)
+                  .HasColumnName("variant_name");
+            entity.Property(e => e.UnitPrice)
+                  .HasColumnType("decimal(18,2)")
+                  .HasColumnName("unit_price");
+            entity.Property(e => e.Quantity)
+                  .HasColumnName("quantity");
+            entity.Property(e => e.LineTotal)
+                  .HasColumnType("decimal(18,2)")
+                  .HasColumnName("line_total");
+
+            entity.HasOne<ProductOrder>()
+                  .WithMany()
+                  .HasForeignKey(e => e.OrderId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_ProductOrderItems_ProductOrders");
+
+            entity.HasOne<Product>()
+                  .WithMany()
+                  .HasForeignKey(e => e.ProductId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_ProductOrderItems_Products");
+
+            entity.HasOne<ProductVariant>()
+                  .WithMany()
+                  .HasForeignKey(e => e.VariantId)
+                  .HasConstraintName("FK_ProductOrderItems_ProductVariants");
         });
     }
 
