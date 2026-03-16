@@ -136,7 +136,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         public async Task<int> CreateProductAsync(StaffShoppingUpsertVM vm)
         {
             if (await _context.Products.AnyAsync(x => x.Sku == vm.SKU))
-                throw new Exception("SKU sản phẩm đã tồn tại.");
+                throw new Exception("Mã sản phẩm đã tồn tại.");
 
             var entity = new Product
             {
@@ -156,6 +156,9 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             await _context.SaveChangesAsync();
 
             await SaveVariantsAsync(entity.ProductId, vm.Variants);
+
+            // BẮT BUỘC phải có dòng này để lưu variants
+            await _context.SaveChangesAsync();
 
             return entity.ProductId;
         }
