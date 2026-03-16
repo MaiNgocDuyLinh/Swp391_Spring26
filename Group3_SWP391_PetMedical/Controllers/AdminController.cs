@@ -4,6 +4,7 @@ using Group3_SWP391_PetMedical.ViewModels.Account;
 using Group3_SWP391_PetMedical.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Group3_SWP391_PetMedical.Repository.Interfaces;
 
 namespace Group3_SWP391_PetMedical.Controllers
 {
@@ -12,15 +13,17 @@ namespace Group3_SWP391_PetMedical.Controllers
     {
         private readonly PetClinicContext _context;
         private readonly ILogger<AdminController> _logger;
+        private readonly IFeedbackRepository _feedbackRepo;
 
         // Lưu tạm cấu hình phân quyền theo màn hình trong bộ nhớ ứng dụng.
         // Nếu cần lưu DB thực sự có thể thay bằng bảng riêng trong database.
         private static readonly Dictionary<int, List<ScreenPermissionItem>> _roleScreenPermissions = new();
 
-        public AdminController(PetClinicContext context, ILogger<AdminController> logger)
+        public AdminController(PetClinicContext context, ILogger<AdminController> logger, IFeedbackRepository feedbackRepo)
         {
             _context = context;
             _logger = logger;
+            _feedbackRepo = feedbackRepo;
         }
 
         public async Task<IActionResult> Index(string? searchTerm, string? roleFilter, string? statusFilter, int page = 1, int pageSize = 10)
@@ -415,6 +418,18 @@ namespace Group3_SWP391_PetMedical.Controllers
                 _logger.LogError(ex, "ToggleLock error for user {UserId}", id);
                 return Json(new { success = false, message = "Có lỗi xảy ra." });
             }
+        }
+
+        // ======================= FEEDBACK =======================
+        public async Task<IActionResult> FeedbackList(string? search, int? starFilter, int page = 1, int pageSize = 6)
+        {
+            var result = await _feedbackRepo.GetPagedAsync(search, starFilter, page, pageSize);
+            ViewBag.CurrentPage = result.Page;
+            ViewBag.TotalPages = result.TotalPages;
+            ViewBag.TotalItems = result.TotalItems;
+            ViewBag.Search = search;
+            ViewBag.StarFilter = starFilter;
+            return View(result.Items.ToList());
         }
     }
 }

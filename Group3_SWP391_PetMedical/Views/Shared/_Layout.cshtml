@@ -93,6 +93,7 @@
                                                     <ul class="submenu">
                                                         <li><a href="@Url.Action("Index", "Admin")">Quản lý Tài khoản</a></li>
                                                         <li><a href="@Url.Action("Create", "Admin")">Tạo Tài khoản</a></li>
+                                                        <li><a href="@Url.Action("FeedbackList", "Admin")">Đánh giá của khách hàng</a></li>
                                                     </ul>
                                                 </li>
                                             }
@@ -112,7 +113,6 @@
                                                 </li>
                                             }
 
-                                            @* Menu Manager trên navbar *@
                                             @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Manager"))
                                             {
                                                 <li>
@@ -121,6 +121,7 @@
                                                         <li><a href="@Url.Action("ListServices", "Manager")">Quản lý dịch vụ</a></li>
                                                         <li><a href="@Url.Action("AppointmentList", "Manager")">Quản lý lịch hẹn</a></li>
                                                         <li><a href="@Url.Action("CancelledAppointments", "Manager")">Đơn đã hủy</a></li>
+                                                        <li><a href="@Url.Action("FeedbackList", "Manager")">Đánh giá của khách hàng</a></li>
                                                     </ul>
                                                 </li>
                                             }
@@ -187,6 +188,23 @@
                                                     </a>
                                                     <a class="dropdown-item" href="@Url.Action("Create", "Admin")" style="padding: 0.5rem 1rem;">
                                                         <i class="fas fa-user-plus"></i> Tạo Tài khoản
+                                                    </a>
+                                                    <a class="dropdown-item" href="@Url.Action("FeedbackList", "Admin")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-star"></i> Đánh giá khách hàng
+                                                    </a>
+                                                }
+
+                                                @if (User.IsInRole("Manager") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Manager"))
+                                                {
+                                                    <div class="dropdown-divider"></div>
+                                                    <a class="dropdown-item" href="@Url.Action("ListServices", "Manager")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-briefcase-medical"></i> Quản lý dịch vụ
+                                                    </a>
+                                                    <a class="dropdown-item" href="@Url.Action("AppointmentList", "Manager")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-calendar-alt"></i> Quản lý lịch hẹn
+                                                    </a>
+                                                    <a class="dropdown-item" href="@Url.Action("FeedbackList", "Manager")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-star"></i> Đánh giá khách hàng
                                                     </a>
                                                 }
 

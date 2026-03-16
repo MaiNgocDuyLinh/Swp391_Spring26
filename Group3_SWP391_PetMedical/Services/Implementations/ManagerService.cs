@@ -9,11 +9,13 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
     {
         private readonly IServiceRepository _serviceRepo;
         private readonly IAppointmentRepository _appointmentRepo;
+        private readonly IFeedbackRepository _feedbackRepo;
 
-        public ManagerService(IServiceRepository serviceRepo, IAppointmentRepository appointmentRepo)
+        public ManagerService(IServiceRepository serviceRepo, IAppointmentRepository appointmentRepo, IFeedbackRepository feedbackRepo)
         {
             _serviceRepo = serviceRepo;
             _appointmentRepo = appointmentRepo;
+            _feedbackRepo = feedbackRepo;
         }
 
         // ========== Services ==========
@@ -50,5 +52,12 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
 
         public Task<List<User>> GetDoctorsAsync()
             => _appointmentRepo.GetDoctorsAsync();
+
+        // ========== Feedbacks ==========
+        public Task<PagedResult<Feedback>> GetFeedbacksPagedAsync(string? search, int? starFilter, int page, int pageSize)
+            => _feedbackRepo.GetPagedAsync(search, starFilter, page, pageSize);
+
+        public Task<Feedback?> GetFeedbackByIdAsync(int id)
+            => _feedbackRepo.GetByIdAsync(id);
     }
 }

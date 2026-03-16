@@ -27,10 +27,10 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                search = search.Trim().ToLower();
+                search = search.Trim();
                 query = query.Where(s =>
-                    s.service_name.ToLower().Contains(search) ||
-                    (s.description ?? "").ToLower().Contains(search));
+                    EF.Functions.Collate(s.service_name, "Vietnamese_CI_AI").Contains(search) ||
+                    EF.Functions.Collate(s.description ?? "", "Vietnamese_CI_AI").Contains(search));
             }
 
             var total = await query.CountAsync();

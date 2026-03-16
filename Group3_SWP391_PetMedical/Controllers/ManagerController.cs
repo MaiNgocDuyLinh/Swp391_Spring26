@@ -136,5 +136,18 @@ namespace Group3_SWP391_PetMedical.Controllers
             ViewBag.Search = search;
             return View(result.Items.ToList());
         }
+
+        // ======================= FEEDBACK =======================
+        public async Task<IActionResult> FeedbackList(string? search, int? starFilter, int page = 1)
+        {
+            int PageSize = 6;
+            var result = await _managerService.GetFeedbacksPagedAsync(search, starFilter, page, PageSize);
+            ViewBag.CurrentPage = result.Page;
+            ViewBag.TotalPages = result.TotalPages;
+            ViewBag.TotalItems = result.TotalItems;
+            ViewBag.Search = search;
+            ViewBag.StarFilter = starFilter;
+            return View(result.Items.ToList());
+        }
     }
 }

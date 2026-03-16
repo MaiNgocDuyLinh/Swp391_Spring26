@@ -39,7 +39,7 @@
                 <a class="pc-btn pc-btn--ghost" href="@Url.Action("AppointmentDetail", "Staff", new { id = Model.appointment_id })">
                     <i class="fas fa-arrow-left"></i> Quay lại
                 </a>
-                <button class="pc-btn pc-btn--primary" onclick="window.print()">
+                <button class="pc-btn pc-btn--ghost no-print" onclick="window.print()">
                     <i class="fas fa-print"></i> In
                 </button>
             </div>
@@ -96,9 +96,24 @@
                     </div>
                 }
 
-                <div class="text-end" style="font-size:1.2rem;">
-                    <span class="text-muted">Tổng cộng: </span>
-                    <strong class="pc-money" style="color:var(--pc-red);">@Model.total_amount.ToString("N0") đ</strong>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div style="font-size:1.2rem;">
+                        <span class="text-muted">Tổng cộng: </span>
+                        <strong class="pc-money ms-2" style="color:var(--pc-red);">@Model.total_amount.ToString("N0") đ</strong>
+                    </div>
+                    <div>
+                        @if (Model.payment_status != "Paid" && Model.appointment?.status == "Đã khám")
+                        {
+                            <form asp-action="UpdateStatus" asp-controller="Staff" method="post" class="m-0 p-0 no-print">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.appointment_id" />
+                                <input type="hidden" name="newStatus" value="Đã thanh toán" />
+                                <button type="submit" class="pc-btn pc-btn--primary" onclick="return confirm('Xác nhận thanh toán cho hóa đơn này?')">
+                                    <i class="fas fa-money-check-alt"></i> Xác nhận thanh toán
+                                </button>
+                            </form>
+                        }
+                    </div>
                 </div>
             </div>
         </div>

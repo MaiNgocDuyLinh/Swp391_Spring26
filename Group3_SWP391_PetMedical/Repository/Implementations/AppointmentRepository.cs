@@ -133,6 +133,17 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             var appt = await _context.Appointments.FindAsync(id);
             if (appt == null) return false;
             appt.status = newStatus;
+            
+            // Sync related invoice if newly paid
+            if (newStatus == "Đã thanh toán")
+            {
+                var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.appointment_id == id);
+                if (invoice != null)
+                {
+                    invoice.payment_status = "Paid";
+                }
+            }
+
             await _context.SaveChangesAsync();
             return true;
         }

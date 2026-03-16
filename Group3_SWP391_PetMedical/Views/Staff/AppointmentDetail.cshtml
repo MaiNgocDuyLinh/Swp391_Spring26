@@ -183,22 +183,7 @@
                     </div>
                 }
 
-                @if (Model.status == "Đã khám")
-                {
-                    <div class="pc-card">
-                        <div class="pc-card-head"><i class="fas fa-money-check-alt"></i>Thanh toán</div>
-                        <div class="pc-card-body">
-                            <form asp-action="UpdateStatus" asp-controller="Staff" method="post">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@Model.appointment_id" />
-                                <input type="hidden" name="newStatus" value="Đã thanh toán" />
-                                <button type="submit" class="pc-btn pc-btn--primary" onclick="return confirm('Xác nhận đã thanh toán?')">
-                                    <i class="fas fa-money-check-alt"></i> Xác nhận thanh toán
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                }
+
 
                 @* Cancel — Staff cancel when customer contacts *@
                 @if (Model.status != "Đã Hủy" && Model.status != "Đã thanh toán" && Model.status != "Không đến" && Model.status != "Đã khám" && Model.status != "Đang khám")
@@ -235,9 +220,22 @@
                                     </span>
                                 </div>
                             </div>
-                            <a href="@Url.Action("ViewInvoice", "Staff", new { appointmentId = Model.appointment_id })" class="pc-btn pc-btn--ghost">
-                                <i class="fas fa-eye"></i> Xem hóa đơn
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a href="@Url.Action("ViewInvoice", "Staff", new { appointmentId = Model.appointment_id })" class="pc-btn pc-btn--ghost">
+                                    <i class="fas fa-eye"></i> Xem hóa đơn
+                                </a>
+                                @if (Model.status == "Đã khám" && invoice.payment_status != "Paid")
+                                {
+                                    <form asp-action="UpdateStatus" asp-controller="Staff" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@Model.appointment_id" />
+                                        <input type="hidden" name="newStatus" value="Đã thanh toán" />
+                                        <button type="submit" class="pc-btn pc-btn--primary" onclick="return confirm('Xác nhận đã thanh toán?')">
+                                            <i class="fas fa-money-check-alt"></i> Xác nhận thanh toán
+                                        </button>
+                                    </form>
+                                }
+                            </div>
                         }
                         else if (Model.status == "Đã khám" || Model.status == "Đã thanh toán")
                         {

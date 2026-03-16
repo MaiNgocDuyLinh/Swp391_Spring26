@@ -19,5 +19,9 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         Task<bool> CancelAppointmentAsync(int id, string? reason);
         Task<bool> AssignDoctorAsync(int appointmentId, int doctorId);
         Task<List<User>> GetDoctorsAsync();
+
+        // ========== Feedbacks ==========
+        Task<PagedResult<Feedback>> GetFeedbacksPagedAsync(string? search, int? starFilter, int page, int pageSize);
+        Task<Feedback?> GetFeedbackByIdAsync(int id);
     }
 }
