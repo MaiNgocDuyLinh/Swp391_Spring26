@@ -290,6 +290,12 @@
         font-size: 13px;
     }
 
+    .stock-total-readonly {
+        background: #f8fbff !important;
+        font-weight: 800;
+        color: #0b1c39;
+    }
+
     @@media (max-width: 767.98px) {
         .staff-upsert-actions {
             flex-direction: column;
@@ -396,8 +402,11 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label asp-for="StockQuantity" class="staff-upsert-label">Tồn kho</label>
-                            <input asp-for="StockQuantity" class="staff-upsert-input" placeholder="Nhập tồn kho" />
+                            <label asp-for="StockQuantity" class="staff-upsert-label">Kho</label>
+                            <input asp-for="StockQuantity"
+                                   id="ProductStockQuantity"
+                                   class="staff-upsert-input"
+                                   placeholder="Nhập tồn kho" />
                             <span asp-validation-for="StockQuantity" class="text-danger validation-message"></span>
                         </div>
 
@@ -473,7 +482,9 @@
 
                                     <div class="col-md-6 mb-3">
                                         <label asp-for="Variants[i].StockQuantity" class="staff-upsert-label">Tồn kho</label>
-                                        <input asp-for="Variants[i].StockQuantity" class="staff-upsert-input" />
+                                        <input asp-for="Variants[i].StockQuantity"
+                                               class="staff-upsert-input variant-stock-input"
+                                               oninput="syncTotalStock()" />
                                         <span asp-validation-for="Variants[i].StockQuantity" class="text-danger validation-message"></span>
                                     </div>
 
@@ -558,12 +569,42 @@
             }
         }
 
+        function syncTotalStock() {
+            const totalInput = document.getElementById('ProductStockQuantity');
+            const stockInputs = document.querySelectorAll('#variantContainer .variant-stock-input');
+            const hasVariants = stockInputs.length > 0;
+
+            if (!totalInput) return;
+
+            if (!hasVariants) {
+                totalInput.readOnly = false;
+                totalInput.classList.remove('stock-total-readonly');
+                totalInput.placeholder = 'Nhập tồn kho';
+                return;
+            }
+
+            let total = 0;
+
+            stockInputs.forEach(input => {
+                const value = parseInt(input.value || '0', 10);
+                if (!isNaN(value) && value > 0) {
+                    total += value;
+                }
+            });
+
+            totalInput.value = total;
+            totalInput.readOnly = true;
+            totalInput.classList.add('stock-total-readonly');
+            totalInput.placeholder = 'Tự động tính từ các phân loại';
+        }
+
         function removeClassificationRow(button) {
             const box = button.closest('.classify-box');
             if (box) {
                 box.remove();
                 reIndexClassification();
                 toggleClassificationEmpty();
+                syncTotalStock();
             }
         }
 
@@ -615,7 +656,10 @@
 
                         <div class="col-md-6 mb-3">
                             <label class="staff-upsert-label">Tồn kho</label>
-                            <input name="Variants[${index}].StockQuantity" value="0" class="staff-upsert-input" />
+                            <input name="Variants[${index}].StockQuantity"
+                                   value="0"
+                                   class="staff-upsert-input variant-stock-input"
+                                   oninput="syncTotalStock()" />
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -632,6 +676,7 @@
             container.insertAdjacentHTML('beforeend', html);
             reIndexClassification();
             toggleClassificationEmpty();
+            syncTotalStock();
         }
 
         function reIndexClassification() {
@@ -659,7 +704,13 @@
                 });
             }
 
+            document.querySelectorAll('#variantContainer .variant-stock-input').forEach(input => {
+                input.addEventListener('input', syncTotalStock);
+                input.addEventListener('change', syncTotalStock);
+            });
+
             toggleClassificationEmpty();
+            syncTotalStock();
         });
     </script>
 }

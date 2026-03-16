@@ -49,14 +49,17 @@ namespace Group3_SWP391_PetMedical.Controllers
         {
             vm.Categories = await _staffShoppingService.GetCategoriesAsync();
 
+            SyncProductStockFromVariants(vm);
+            ValidateProductStatusWithStock(vm);
+
             if (!ModelState.IsValid)
                 return View("~/Views/Shopping/StaffCreate.cshtml", vm);
 
             try
             {
-                var id = await _staffShoppingService.CreateProductAsync(vm);
+                await _staffShoppingService.CreateProductAsync(vm);
                 TempData["success"] = "Thêm sản phẩm mới thành công.";
-                return RedirectToAction(nameof(Edit), new { id });
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
@@ -72,6 +75,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             if (vm == null) return NotFound();
 
             vm.Categories = await _staffShoppingService.GetCategoriesAsync();
+            SyncProductStockFromVariants(vm);
 
             return View("~/Views/Shopping/StaffEdit.cshtml", vm);
         }
@@ -82,6 +86,9 @@ namespace Group3_SWP391_PetMedical.Controllers
         {
             vm.Categories = await _staffShoppingService.GetCategoriesAsync();
 
+            SyncProductStockFromVariants(vm);
+            ValidateProductStatusWithStock(vm);
+
             if (!ModelState.IsValid)
                 return View("~/Views/Shopping/StaffEdit.cshtml", vm);
 
@@ -89,7 +96,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             {
                 await _staffShoppingService.UpdateProductAsync(vm);
                 TempData["success"] = "Cập nhật sản phẩm thành công.";
-                return RedirectToAction(nameof(Edit), new { id = vm.ProductId });
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
@@ -153,6 +160,50 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
 
             return RedirectToAction(nameof(OrderDetail), new { id = vm.OrderId });
+        }
+
+        private void SyncProductStockFromVariants(StaffShoppingUpsertVM vm)
+        {
+            if (vm.Variants == null || !vm.Variants.Any())
+                return;
+
+            vm.StockQuantity = vm.Variants.Sum(x => x.StockQuantity);
+        }
+
+        private void ValidateProductStatusWithStock(StaffShoppingUpsertVM vm)
+        {
+            var productStock = vm.StockQuantity;
+            var productStatus = (vm.Status ?? string.Empty).Trim();
+
+            if (productStock <= 0 && productStatus == "Đang bán")
+            {
+                ModelState.AddModelError(nameof(vm.Status), "Sản phẩm đã hết hàng nên không thể để trạng thái Đang bán.");
+            }
+
+            if (productStock > 0 && productStatus == "Hết hàng")
+            {
+                ModelState.AddModelError(nameof(vm.Status), "Sản phẩm vẫn còn hàng, vui lòng cập nhật lại trạng thái.");
+            }
+
+            if (vm.Variants == null || !vm.Variants.Any())
+                return;
+
+            for (int i = 0; i < vm.Variants.Count; i++)
+            {
+                var variant = vm.Variants[i];
+                var variantStock = variant.StockQuantity;
+                var variantStatus = (variant.Status ?? string.Empty).Trim();
+
+                if (variantStock <= 0 && variantStatus == "Đang bán")
+                {
+                    ModelState.AddModelError($"Variants[{i}].Status", "Phân loại đã hết hàng nên không thể để trạng thái Đang bán.");
+                }
+
+                if (variantStock > 0 && variantStatus == "Hết hàng")
+                {
+                    ModelState.AddModelError($"Variants[{i}].Status", "Phân loại vẫn còn hàng, vui lòng cập nhật lại trạng thái.");
+                }
+            }
         }
 
         private void AddErrorsToModelState(string? message)

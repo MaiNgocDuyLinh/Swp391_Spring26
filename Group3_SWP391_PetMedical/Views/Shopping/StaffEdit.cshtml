@@ -110,16 +110,54 @@
         resize: vertical;
     }
 
-    .staff-upsert-select {
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        padding-right: 48px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9' fill='none'%3E%3Cpath d='M1 1.5L7 7.5L13 1.5' stroke='%230b1c39' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 16px center;
-        background-size: 14px 9px;
+    .staff-upsert-file {
+        padding: 8px 14px;
+        line-height: normal;
     }
+
+        .staff-upsert-file::file-selector-button {
+            margin-right: 12px;
+            border: 1px solid #d9e2ee;
+            background: #f7f9fc;
+            color: #0b1c39;
+            height: 38px;
+            padding: 0 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .staff-upsert-file::-webkit-file-upload-button {
+            margin-right: 12px;
+            border: 1px solid #d9e2ee;
+            background: #f7f9fc;
+            color: #0b1c39;
+            height: 38px;
+            padding: 0 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+    .staff-upsert-select {
+        width: 100%;
+        height: 56px;
+        min-height: 56px;
+        border: 1px solid #e6edf5;
+        border-radius: 16px;
+        padding: 14px 18px;
+        font-size: 15px;
+        color: #0b1c39;
+        background-color: #fff;
+        box-sizing: border-box;
+        box-shadow: none;
+        line-height: normal;
+    }
+
+        .staff-upsert-select option {
+            color: #0b1c39;
+            text-align: left;
+        }
 
         .staff-upsert-input:focus,
         .staff-upsert-select:focus,
@@ -129,6 +167,10 @@
             border-color: rgba(255,61,28,.35);
             box-shadow: 0 0 0 .2rem rgba(255,61,28,.10);
         }
+
+    .input-validation-error {
+        border-color: #dc3545 !important;
+    }
 
     .staff-upsert-help {
         color: #7b889d;
@@ -309,7 +351,8 @@
                 <div class="subtitle">Cập nhật thông tin, thay ảnh sản phẩm và chỉnh sửa các phân loại hiện có.</div>
             </div>
 
-            <form asp-controller="StaffShopping"
+            <form id="staffEditForm"
+                  asp-controller="StaffShopping"
                   asp-action="Edit"
                   method="post"
                   enctype="multipart/form-data">
@@ -388,33 +431,10 @@
 
                         <div class="col-md-6 mb-3">
                             <label asp-for="Status" class="staff-upsert-label">Trạng thái</label>
-                            <select asp-for="Status" class="staff-upsert-select">
-                                @if (Model.Status == "Đang bán")
-                                {
-                                    <option value="Đang bán" selected="selected">Đang bán</option>
-                                }
-                                else
-                                {
-                                    <option value="Đang bán">Đang bán</option>
-                                }
-
-                                @if (Model.Status == "Dừng bán")
-                                {
-                                    <option value="Dừng bán" selected="selected">Dừng bán</option>
-                                }
-                                else
-                                {
-                                    <option value="Dừng bán">Dừng bán</option>
-                                }
-
-                                @if (Model.Status == "Hết hàng")
-                                {
-                                    <option value="Hết hàng" selected="selected">Hết hàng</option>
-                                }
-                                else
-                                {
-                                    <option value="Hết hàng">Hết hàng</option>
-                                }
+                            <select asp-for="Status" id="ProductStatus" class="staff-upsert-select">
+                                <option value="Đang bán">Đang bán</option>
+                                <option value="Dừng bán">Dừng bán</option>
+                                <option value="Hết hàng">Hết hàng</option>
                             </select>
                             <span asp-validation-for="Status" class="text-danger validation-message"></span>
                         </div>
@@ -426,8 +446,11 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label asp-for="StockQuantity" class="staff-upsert-label">Tồn kho</label>
-                            <input asp-for="StockQuantity" class="staff-upsert-input" placeholder="Nhập tồn kho" />
+                            <label asp-for="StockQuantity" class="staff-upsert-label">Kho</label>
+                            <input asp-for="StockQuantity"
+                                   id="ProductStockQuantity"
+                                   class="staff-upsert-input"
+                                   placeholder="Nhập số lượng trong kho" />
                             <span asp-validation-for="StockQuantity" class="text-danger validation-message"></span>
                         </div>
 
@@ -503,7 +526,9 @@
 
                                     <div class="col-md-6 mb-3">
                                         <label asp-for="Variants[i].StockQuantity" class="staff-upsert-label">Tồn kho</label>
-                                        <input asp-for="Variants[i].StockQuantity" class="staff-upsert-input" />
+                                        <input asp-for="Variants[i].StockQuantity"
+                                               class="staff-upsert-input variant-stock-input"
+                                               oninput="syncTotalStock()" />
                                         <span asp-validation-for="Variants[i].StockQuantity" class="text-danger validation-message"></span>
                                     </div>
 
@@ -594,6 +619,7 @@
                 box.remove();
                 reIndexClassification();
                 toggleClassificationEmpty();
+                syncTotalStock();
             }
         }
 
@@ -645,7 +671,10 @@
 
                         <div class="col-md-6 mb-3">
                             <label class="staff-upsert-label">Tồn kho</label>
-                            <input name="Variants[${index}].StockQuantity" value="0" class="staff-upsert-input" />
+                            <input name="Variants[${index}].StockQuantity"
+                                   value="0"
+                                   class="staff-upsert-input variant-stock-input"
+                                   oninput="syncTotalStock()" />
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -662,6 +691,7 @@
             container.insertAdjacentHTML('beforeend', html);
             reIndexClassification();
             toggleClassificationEmpty();
+            syncTotalStock();
         }
 
         function reIndexClassification() {
@@ -681,15 +711,47 @@
             });
         }
 
+        function syncTotalStock() {
+            const totalInput = document.getElementById('ProductStockQuantity');
+            const stockInputs = document.querySelectorAll('#variantContainer .variant-stock-input');
+            const hasVariants = stockInputs.length > 0;
+
+            if (!totalInput) return;
+
+            if (!hasVariants) {
+                totalInput.readOnly = false;
+                return;
+            }
+
+            let total = 0;
+
+            stockInputs.forEach(input => {
+                const value = parseInt(input.value || '0', 10);
+                if (!isNaN(value) && value > 0) {
+                    total += value;
+                }
+            });
+
+            totalInput.value = total;
+            totalInput.readOnly = true;
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             const fileInput = document.getElementById('ImageFile');
+
             if (fileInput) {
                 fileInput.addEventListener('change', function () {
                     updatePreviewFromFile(this);
                 });
             }
 
+            document.querySelectorAll('#variantContainer .variant-stock-input').forEach(input => {
+                input.addEventListener('input', syncTotalStock);
+                input.addEventListener('change', syncTotalStock);
+            });
+
             toggleClassificationEmpty();
+            syncTotalStock();
         });
     </script>
 }
