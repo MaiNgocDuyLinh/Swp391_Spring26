@@ -155,6 +155,63 @@
                     </div>
                 }
 
+                @* Medical Record & Prescription *@
+                @if (Model.status == "Đã khám" || Model.status == "Đã thanh toán")
+                {
+                    <div class="pc-card">
+                        <div class="pc-card-head"><i class="fas fa-notes-medical"></i>Kết quả khám & Đơn thuốc</div>
+                        <div class="pc-card-body">
+                            @if (Model.MedicalRecord != null)
+                            {
+                                <div class="pc-readonly mb-4">
+                                    <div class="pc-readonly-row">
+                                        <span class="pc-readonly-label">Chẩn đoán:</span>
+                                        <span class="pc-readonly-val">@(Model.MedicalRecord.diagnosis ?? "N/A")</span>
+                                    </div>
+                                    <div class="pc-readonly-row">
+                                        <span class="pc-readonly-label">Tình trạng:</span>
+                                        <span class="pc-readonly-val">@(Model.MedicalRecord.health_status ?? "N/A")</span>
+                                    </div>
+                                </div>
+                                
+                                @if (Model.MedicalRecord.Prescriptions != null && Model.MedicalRecord.Prescriptions.Any())
+                                {
+                                    <div class="pc-label mb-2"><i class="fas fa-pills" style="color:var(--pc-red);"></i> Đơn thuốc chi tiết</div>
+                                    <div class="table-responsive" style="border:1px solid var(--pc-border); border-radius:12px; overflow:hidden;">
+                                        <table class="table align-middle mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th style="padding:10px 16px; background:#fff7f7; font-weight:800;">Tên thuốc</th>
+                                                    <th style="padding:10px 16px; background:#fff7f7; font-weight:800;">Liều dùng</th>
+                                                    <th class="text-center" style="padding:10px 16px; background:#fff7f7; font-weight:800;">SL</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var p in Model.MedicalRecord.Prescriptions)
+                                                {
+                                                    <tr>
+                                                        <td style="padding:10px 16px; font-weight:600;">@(p.medicine?.name ?? "N/A")</td>
+                                                        <td style="padding:10px 16px; color:var(--pc-muted); font-size:0.9rem;">@p.dosage</td>
+                                                        <td class="text-center" style="padding:10px 16px;"><span class="pc-badge">@p.quantity</span></td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="text-muted mb-0"><i class="fas fa-info-circle"></i> Bác sĩ không kê đơn thuốc.</p>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0"><i class="fas fa-info-circle"></i> Hồ sơ khám đang được cập nhật...</p>
+                            }
+                        </div>
+                    </div>
+                }
+
                 @* Cancel — Manager cancel *@
                 @if (Model.status != "Đã Hủy" && Model.status != "Đã thanh toán" && Model.status != "Không đến" && Model.status != "Đã khám" && Model.status != "Đang khám")
                 {

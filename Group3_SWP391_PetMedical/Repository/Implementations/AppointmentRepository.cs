@@ -90,7 +90,11 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         // ========== Get chi tiet 1 lich ==========
         public async Task<Appointment?> GetByIdAsync(int id)
         {
-            return await BaseQuery().FirstOrDefaultAsync(a => a.appointment_id == id);
+            return await BaseQuery()
+                .Include(a => a.MedicalRecord)
+                    .ThenInclude(mr => mr.Prescriptions)
+                        .ThenInclude(p => p.medicine)
+                .FirstOrDefaultAsync(a => a.appointment_id == id);
         }
 
         // ========== Staff: Cancel appointment ==========
@@ -160,6 +164,10 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     .ThenInclude(a => a.customer)
                 .Include(i => i.appointment)
                     .ThenInclude(a => a.pet)
+                .Include(i => i.appointment)
+                    .ThenInclude(a => a.MedicalRecord)
+                        .ThenInclude(mr => mr.Prescriptions)
+                            .ThenInclude(p => p.medicine)
                 .FirstOrDefaultAsync(i => i.appointment_id == appointmentId);
         }
 
