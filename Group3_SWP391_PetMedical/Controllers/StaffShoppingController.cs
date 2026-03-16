@@ -60,7 +60,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
             catch (Exception ex)
             {
-                TempData["error"] = ex.Message;
+                AddErrorsToModelState(ex.Message);
                 return View("~/Views/Shopping/StaffCreate.cshtml", vm);
             }
         }
@@ -70,6 +70,8 @@ namespace Group3_SWP391_PetMedical.Controllers
         {
             var vm = await _staffShoppingService.GetProductForEditAsync(id);
             if (vm == null) return NotFound();
+
+            vm.Categories = await _staffShoppingService.GetCategoriesAsync();
 
             return View("~/Views/Shopping/StaffEdit.cshtml", vm);
         }
@@ -91,7 +93,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
             catch (Exception ex)
             {
-                TempData["error"] = ex.Message;
+                AddErrorsToModelState(ex.Message);
                 return View("~/Views/Shopping/StaffEdit.cshtml", vm);
             }
         }
@@ -151,6 +153,31 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
 
             return RedirectToAction(nameof(OrderDetail), new { id = vm.OrderId });
+        }
+
+        private void AddErrorsToModelState(string? message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                TempData["error"] = "Có lỗi xảy ra.";
+                return;
+            }
+
+            var items = message.Split(new[] { "||" }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var item in items)
+            {
+                var pair = item.Split(new[] { "##" }, 2, StringSplitOptions.None);
+
+                if (pair.Length == 2)
+                {
+                    ModelState.AddModelError(pair[0], pair[1]);
+                }
+                else
+                {
+                    TempData["error"] = item;
+                }
+            }
         }
     }
 }

@@ -100,34 +100,34 @@
 
     .cusshop-search-input,
     .cusshop-search-select {
-    height: 52px;
-    border-radius: 999px;
-    border: 1px solid #eef0f4;
-    color: #0b1c39;
-    font-size: 16px;
-    font-weight: 600;
-    text-align: center;
-    text-align-last: center;
-    padding: 0 42px 0 18px;
-    line-height: 50px;
-    box-sizing: border-box;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-color: #fff;
-    background-image: none;
-}
+        height: 52px;
+        border-radius: 999px;
+        border: 1px solid #eef0f4;
+        color: #0b1c39;
+        font-size: 16px;
+        font-weight: 600;
+        text-align: center;
+        text-align-last: center;
+        padding: 0 42px 0 18px;
+        line-height: 50px;
+        box-sizing: border-box;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-color: #fff;
+        background-image: none;
+    }
 
-.cusshop-search-select:focus {
-    border-color: rgba(255,61,28,.35);
-    box-shadow: 0 0 0 .2rem rgba(255,61,28,.10);
-}
+    .cusshop-search-select:focus {
+        border-color: rgba(255,61,28,.35);
+        box-shadow: 0 0 0 .2rem rgba(255,61,28,.10);
+    }
 
-.cusshop-search-select option {
-    color: #0b1c39;
-    text-align: left;
-    line-height: normal;
-}
+    .cusshop-search-select option {
+        color: #0b1c39;
+        text-align: left;
+        line-height: normal;
+    }
 
     .cusshop-btn {
         height: 52px;
@@ -254,7 +254,34 @@
     .cusshop-stock {
         color: #6c7a92;
         font-size: 15px;
+        margin-bottom: 8px;
+    }
+
+    .cusshop-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
         margin-bottom: 16px;
+    }
+
+    .cusshop-status-available {
+        background: rgba(40,167,69,.12);
+        color: #218838;
+    }
+
+    .cusshop-status-out {
+        background: rgba(255,193,7,.16);
+        color: #b78103;
+    }
+
+    .cusshop-status-stop {
+        background: rgba(220,53,69,.12);
+        color: #dc3545;
     }
 
     .cusshop-empty {
@@ -451,6 +478,16 @@
                                 ? item.ImageUrl
                                 : Url.Content("~/uploads/products/" + item.ImageUrl));
 
+                        var isAvailable = item.Status == "Đang bán" && item.StockQuantity > 0;
+                        var statusText = isAvailable
+                            ? "Đang bán"
+                            : (item.Status == "Dừng bán" ? "Dừng bán" : "Hết hàng");
+                        var statusClass = isAvailable
+                            ? "cusshop-status cusshop-status-available"
+                            : (item.Status == "Dừng bán"
+                                ? "cusshop-status cusshop-status-stop"
+                                : "cusshop-status cusshop-status-out");
+
                         <div class="col-xl-4 col-lg-4 col-md-6 mb-4">
                             <div class="cusshop-card">
                                 <div class="cusshop-card-imgwrap">
@@ -466,11 +503,22 @@
 
                                 <div class="cusshop-price">@item.Price.ToString("N0") đ</div>
                                 <div class="cusshop-stock">Kho: @item.StockQuantity</div>
+                                <div class="@statusClass">@statusText</div>
 
-                                <a href="@Url.Action("Detail", "CusShopping", new { id = item.ProductId })"
-                                   class="cusshop-btn cusshop-btn-soft w-100">
-                                    Xem sản phẩm
-                                </a>
+                                @if (isAvailable)
+                                {
+                                    <a href="@Url.Action("Detail", "CusShopping", new { id = item.ProductId })"
+                                       class="cusshop-btn cusshop-btn-soft w-100">
+                                        Xem sản phẩm
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="@Url.Action("Detail", "CusShopping", new { id = item.ProductId })"
+                                       class="cusshop-btn cusshop-btn-outline w-100">
+                                        Xem sản phẩm
+                                    </a>
+                                }
                             </div>
                         </div>
                     }

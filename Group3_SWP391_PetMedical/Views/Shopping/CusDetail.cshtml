@@ -20,13 +20,26 @@
     {
         productImg = Url.Content("~/uploads/Shopping/" + Model.ImageUrl);
     }
+
     var selectedVariant = Model.Variants != null && Model.Variants.Any()
         ? Model.Variants.FirstOrDefault(x => x.VariantId == Model.SelectedVariantId) ?? Model.Variants.First()
         : null;
 
     var initialPrice = selectedVariant?.PriceOverride ?? Model.Price;
     var initialStock = selectedVariant?.StockQuantity ?? Model.StockQuantity;
+    var currentStatus = selectedVariant?.Status ?? Model.Status;
 
+    var canAddToCart = currentStatus == "Đang bán" && initialStock > 0;
+
+    var statusText = canAddToCart
+        ? "Đang bán"
+        : (currentStatus == "Dừng bán" ? "Dừng bán" : "Hết hàng");
+
+    var statusClass = canAddToCart
+        ? "cusdetail-status cusdetail-status-available"
+        : (currentStatus == "Dừng bán"
+            ? "cusdetail-status cusdetail-status-stop"
+            : "cusdetail-status cusdetail-status-out");
 }
 
 <style>
@@ -173,7 +186,34 @@
     .cusdetail-stock {
         color: #6c7a92;
         font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .cusdetail-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
         margin-bottom: 18px;
+    }
+
+    .cusdetail-status-available {
+        background: rgba(40,167,69,.12);
+        color: #218838;
+    }
+
+    .cusdetail-status-out {
+        background: rgba(255,193,7,.16);
+        color: #b78103;
+    }
+
+    .cusdetail-status-stop {
+        background: rgba(220,53,69,.12);
+        color: #dc3545;
     }
 
     .cusdetail-desc {
@@ -272,6 +312,11 @@
             min-width: 220px;
         }
 
+    .cusdetail-btn-hidden {
+        visibility: hidden;
+        pointer-events: none;
+    }
+
     @@media (max-width: 991.98px) {
         .cusdetail-name {
             font-size: 30px;
@@ -361,6 +406,10 @@
                             Kho: @initialStock
                         </div>
 
+                        <div class="@statusClass">
+                            @statusText
+                        </div>
+
                         @if (!string.IsNullOrWhiteSpace(Model.Description))
                         {
                             <div class="cusdetail-desc">
@@ -380,7 +429,7 @@
 
                                     <div class="cusdetail-variant-row">
                                         <div class="cusdetail-select-wrap">
-                                            <select name="variantId" class="form-control cusdetail-select">
+                                            <select id="variantSelect" name="variantId" class="form-control cusdetail-select">
                                                 @if (Model.Variants != null && Model.Variants.Any())
                                                 {
                                                     foreach (var v in Model.Variants)
@@ -397,6 +446,15 @@
                                                         if (!string.IsNullOrWhiteSpace(secondField))
                                                         {
                                                             label += $" | {secondField}";
+                                                        }
+
+                                                        if (v.Status == "Dừng bán")
+                                                        {
+                                                            label += " | Dừng bán";
+                                                        }
+                                                        else if (v.StockQuantity <= 0 || v.Status == "Hết hàng")
+                                                        {
+                                                            label += " | Hết hàng";
                                                         }
 
                                                         if (Model.SelectedVariantId.HasValue && v.VariantId == Model.SelectedVariantId.Value)
@@ -426,21 +484,23 @@
                             <form asp-controller="CusShopping" asp-action="AddToCart" method="post" class="cusdetail-form">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="ProductId" value="@Model.ProductId" />
-                                <input type="hidden" name="VariantId" value="@Model.SelectedVariantId" />
+                                <input type="hidden" id="selectedVariantIdInput" name="VariantId" value="@Model.SelectedVariantId" />
 
                                 <div class="form-group">
                                     <label class="cusdetail-label">Số lượng</label>
                                     <input id="quantityInput"
                                            type="number"
                                            min="1"
-                                           max="@initialStock"
+                                           max="@(initialStock > 0 ? initialStock : 1)"
                                            name="Quantity"
                                            value="1"
-                                           class="form-control cusdetail-input cusdetail-qty" />
+                                           class="form-control cusdetail-input cusdetail-qty"
+                                           @(canAddToCart ? "" : "disabled") />
                                 </div>
 
                                 <div class="cusdetail-actions">
-                                    <button type="submit" class="cusdetail-btn cusdetail-btn-soft">
+                                    <button type="submit"
+                                            class="cusdetail-btn cusdetail-btn-soft @(canAddToCart ? "" : "cusdetail-btn-hidden")">
                                         <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
                                     </button>
 
@@ -457,6 +517,7 @@
 
         </div>
     </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const variantSelect = document.getElementById("variantSelect");

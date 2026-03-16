@@ -38,7 +38,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 from p in _context.Products.AsNoTracking()
                 join c in _context.ProductCategories.AsNoTracking()
                     on p.CategoryId equals c.CategoryId
-                where p.Status == "Đang bán"
                 select new CusShoppingProductCardVM
                 {
                     ProductId = p.ProductId,
@@ -68,7 +67,11 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             var pageSize = query.PageSize <= 0 ? 9 : query.PageSize;
 
             var items = await q
-                .OrderBy(x => x.Name)
+                .OrderBy(x =>
+                    x.Status == "Đang bán" && x.StockQuantity > 0 ? 0 :
+                    x.Status == "Hết hàng" ? 1 :
+                    x.Status == "Dừng bán" ? 2 : 3)
+                .ThenByDescending(x => x.ProductId)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -107,8 +110,12 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             product.Variants = await _context.ProductVariants
                 .AsNoTracking()
-                .Where(x => x.ProductId == productId && x.Status == "Đang bán")
-                .OrderBy(x => x.VariantName)
+                .Where(x => x.ProductId == productId)
+                .OrderBy(x =>
+                    x.Status == "Đang bán" && x.StockQuantity > 0 ? 0 :
+                    x.Status == "Hết hàng" ? 1 :
+                    x.Status == "Dừng bán" ? 2 : 3)
+                .ThenBy(x => x.VariantName)
                 .Select(x => new CusShoppingVariantVM
                 {
                     VariantId = x.VariantId,
@@ -175,8 +182,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (product == null)
                 throw new Exception("Sản phẩm không tồn tại.");
 
-            if (product.Status != "Đang bán")
-                throw new Exception("Sản phẩm hiện không khả dụng.");
+            if (product.Status != "Đang bán" || product.StockQuantity <= 0)
+                throw new Exception("Sản phẩm hiện không thể thêm vào giỏ hàng.");
 
             decimal unitPrice = product.Price;
             int availableStock = product.StockQuantity;
@@ -187,10 +194,10 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     .FirstOrDefaultAsync(x => x.VariantId == variantId.Value && x.ProductId == productId);
 
                 if (variant == null)
-                    throw new Exception("Biến thể không tồn tại.");
+                    throw new Exception("Phân loại không tồn tại.");
 
-                if (variant.Status != "Đang bán")
-                    throw new Exception("Biến thể hiện không khả dụng.");
+                if (variant.Status != "Đang bán" || variant.StockQuantity <= 0)
+                    throw new Exception("Phân loại hiện không thể thêm vào giỏ hàng.");
 
                 availableStock = variant.StockQuantity;
                 unitPrice = variant.PriceOverride ?? product.Price;
@@ -261,8 +268,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 var variant = await _context.ProductVariants
                     .FirstOrDefaultAsync(x => x.VariantId == item.VariantId.Value);
 
-                if (variant == null || variant.Status != "Đang bán")
-                    throw new Exception("Biến thể hiện không khả dụng.");
+                if (variant == null || variant.Status != "Đang bán" || variant.StockQuantity <= 0)
+                    throw new Exception("Phân loại hiện không khả dụng.");
 
                 availableStock = variant.StockQuantity;
                 item.UnitPrice = variant.PriceOverride ?? item.UnitPrice;
@@ -272,7 +279,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 var product = await _context.Products
                     .FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
 
-                if (product == null || product.Status != "Đang bán")
+                if (product == null || product.Status != "Đang bán" || product.StockQuantity <= 0)
                     throw new Exception("Sản phẩm hiện không khả dụng.");
 
                 availableStock = product.StockQuantity;
@@ -364,21 +371,24 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             foreach (var x in cartItems)
             {
-                if (x.Product.Status != "Đang bán")
-                    throw new Exception($"Sản phẩm '{x.Product.Name}' hiện không khả dụng.");
+                if (x.Product.Status != "Đang bán" || x.Product.StockQuantity <= 0)
+                    throw new Exception($"Sản phẩm '{x.Product.Name}' hiện không thể mua.");
 
                 if (x.CartItem.VariantId.HasValue)
                 {
-                    if (x.Variant == null || x.Variant.Status != "Đang bán")
-                        throw new Exception($"Biến thể của '{x.Product.Name}' hiện không khả dụng.");
+                    if (x.Variant == null || x.Variant.Status != "Đang bán" || x.Variant.StockQuantity <= 0)
+                        throw new Exception($"Phân loại của '{x.Product.Name}' hiện không thể mua.");
 
                     if (x.CartItem.Quantity > x.Variant.StockQuantity)
-                        throw new Exception($"Sản phẩm '{x.Product.Name}' không đủ tồn kho.");
+                        throw new Exception($"Sản phẩm '{x.Product.Name}' không đủ trong kho.");
                 }
                 else
                 {
+                    if (x.Product.StockQuantity <= 0)
+                        throw new Exception($"Sản phẩm '{x.Product.Name}' hiện không thể mua.");
+
                     if (x.CartItem.Quantity > x.Product.StockQuantity)
-                        throw new Exception($"Sản phẩm '{x.Product.Name}' không đủ tồn kho.");
+                        throw new Exception($"Sản phẩm '{x.Product.Name}' không đủ trong kho.");
                 }
             }
 

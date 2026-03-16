@@ -1,5 +1,695 @@
 ﻿@model Group3_SWP391_PetMedical.ViewModels.Shopping.StaffShoppingUpsertVM
+
 @{
     ViewData["Title"] = "Chỉnh sửa sản phẩm";
+
+    var defaultImg = Url.Content("~/uploads/Shopping/OrderDefault.png");
+    var previewImg = string.IsNullOrWhiteSpace(Model.ImageUrl)
+        ? defaultImg
+        : (Model.ImageUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) || Model.ImageUrl.StartsWith("/")
+            ? Model.ImageUrl
+            : Url.Content("~/uploads/Shopping/" + Model.ImageUrl));
 }
-@await Html.PartialAsync("~/Views/Shopping/StaffProductForm.cshtml", Model)
+
+<style>
+    .staff-upsert-page {
+        padding-top: 140px;
+    }
+
+    @@media (max-width: 991.98px) {
+        .staff-upsert-page {
+            padding-top: 160px;
+        }
+    }
+
+    .staff-upsert-frame {
+        background: #ffffff;
+        border: 1px solid #eef0f4;
+        border-radius: 26px;
+        padding: 44px 34px;
+        box-shadow: 0 18px 40px rgba(0,0,0,.06);
+    }
+
+    @@media (max-width: 575.98px) {
+        .staff-upsert-frame {
+            padding: 28px 18px;
+            border-radius: 20px;
+        }
+    }
+
+    .staff-upsert-hero {
+        text-align: center;
+        margin-bottom: 26px;
+    }
+
+        .staff-upsert-hero .title {
+            font-size: 46px;
+            line-height: 1.15;
+            font-weight: 900;
+            color: #0b1c39;
+            margin: 0;
+        }
+
+        .staff-upsert-hero .subtitle {
+            margin-top: 10px;
+            color: #6c7a92;
+            font-size: 16px;
+        }
+
+    .staff-upsert-card {
+        background: #fff5f7;
+        border-radius: 20px;
+        padding: 22px;
+        border: 1px solid rgba(255, 61, 28, .10);
+        box-shadow: 0 8px 24px rgba(11, 28, 57, .04);
+        margin-bottom: 20px;
+    }
+
+    .staff-upsert-card-title {
+        font-size: 22px;
+        font-weight: 900;
+        color: #0b1c39;
+        margin: 0 0 8px;
+    }
+
+    .staff-upsert-card-sub {
+        color: #6c7a92;
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+
+    .staff-upsert-label {
+        display: block;
+        font-weight: 800;
+        color: #0b1c39;
+        margin-bottom: 8px;
+    }
+
+    .staff-upsert-input,
+    .staff-upsert-select,
+    .staff-upsert-textarea,
+    .staff-upsert-file {
+        width: 100%;
+        height: 56px;
+        min-height: 56px;
+        border: 1px solid #e6edf5;
+        border-radius: 16px;
+        padding: 0 18px;
+        font-size: 15px;
+        color: #0b1c39;
+        background-color: #fff;
+        transition: .2s ease;
+        box-sizing: border-box;
+        box-shadow: none;
+    }
+
+    .staff-upsert-textarea {
+        min-height: 140px;
+        height: auto;
+        padding: 14px 18px;
+        resize: vertical;
+    }
+
+    .staff-upsert-select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding-right: 48px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9' fill='none'%3E%3Cpath d='M1 1.5L7 7.5L13 1.5' stroke='%230b1c39' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 14px 9px;
+    }
+
+        .staff-upsert-input:focus,
+        .staff-upsert-select:focus,
+        .staff-upsert-textarea:focus,
+        .staff-upsert-file:focus {
+            outline: none;
+            border-color: rgba(255,61,28,.35);
+            box-shadow: 0 0 0 .2rem rgba(255,61,28,.10);
+        }
+
+    .staff-upsert-help {
+        color: #7b889d;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    .staff-upsert-preview {
+        background: #fff;
+        border: 1px solid #edf1f6;
+        border-radius: 18px;
+        padding: 16px;
+        height: 100%;
+    }
+
+    .staff-upsert-preview-title {
+        font-size: 16px;
+        font-weight: 900;
+        color: #0b1c39;
+        margin-bottom: 12px;
+    }
+
+    .staff-upsert-preview-box {
+        height: 300px;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #edf1f6;
+        background: #fff;
+    }
+
+        .staff-upsert-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+    .staff-upsert-preview-note {
+        color: #6c7a92;
+        font-size: 13px;
+        margin-top: 10px;
+        line-height: 1.6;
+    }
+
+    .classify-box {
+        background: #fff;
+        border: 1px dashed #ced8e5;
+        border-radius: 18px;
+        padding: 18px;
+        margin-bottom: 16px;
+    }
+
+    .classify-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+
+    .classify-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 900;
+        color: #0b1c39;
+    }
+
+    .classify-empty {
+        border-radius: 18px;
+        background: #fff;
+        border: 1px dashed #d6deea;
+        padding: 22px;
+        text-align: center;
+        color: #6c7a92;
+        font-weight: 600;
+    }
+
+    .staff-upsert-btn {
+        height: 52px;
+        border-radius: 999px;
+        padding: 0 24px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: .2s ease;
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+
+        .staff-upsert-btn:hover {
+            transform: translateY(-1px);
+            text-decoration: none;
+            box-shadow: 0 12px 30px rgba(0,0,0,.08);
+        }
+
+    .staff-upsert-btn-primary {
+        background: #ff3d1c;
+        border-color: #ff3d1c;
+        color: #fff;
+    }
+
+        .staff-upsert-btn-primary:hover {
+            color: #fff;
+        }
+
+    .staff-upsert-btn-soft {
+        background: #5aa9ff;
+        border-color: #5aa9ff;
+        color: #fff;
+    }
+
+        .staff-upsert-btn-soft:hover {
+            color: #fff;
+        }
+
+    .staff-upsert-btn-outline {
+        background: #fff;
+        border-color: #dfe7f2;
+        color: #0b1c39;
+    }
+
+        .staff-upsert-btn-outline:hover {
+            color: #0b1c39;
+            background: #f8fbff;
+        }
+
+    .staff-upsert-btn-danger {
+        background: #fff;
+        border-color: rgba(220,53,69,.22);
+        color: #dc3545;
+    }
+
+        .staff-upsert-btn-danger:hover {
+            color: #dc3545;
+            background: rgba(220,53,69,.06);
+        }
+
+    .staff-upsert-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 6px;
+    }
+
+    .field-validation-error {
+        display: block;
+        margin-top: 6px;
+        font-size: 13px;
+    }
+
+    .text-danger.validation-message {
+        display: block;
+        margin-top: 6px;
+        font-size: 13px;
+    }
+
+    @@media (max-width: 767.98px) {
+        .staff-upsert-actions {
+            flex-direction: column;
+        }
+
+            .staff-upsert-actions .staff-upsert-btn {
+                width: 100%;
+            }
+    }
+</style>
+
+<section class="services-area section-padding40 staff-upsert-page">
+    <div class="container">
+        <div class="staff-upsert-frame">
+            <div class="staff-upsert-hero">
+                <h1 class="title">Chỉnh sửa sản phẩm</h1>
+                <div class="subtitle">Cập nhật thông tin, thay ảnh sản phẩm và chỉnh sửa các phân loại hiện có.</div>
+            </div>
+
+            <form asp-controller="StaffShopping"
+                  asp-action="Edit"
+                  method="post"
+                  enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input asp-for="ProductId" type="hidden" />
+                <input asp-for="ImageUrl" type="hidden" id="CurrentImageUrl" />
+
+                <div class="staff-upsert-card">
+                    <h3 class="staff-upsert-card-title">Ảnh sản phẩm</h3>
+                    <div class="staff-upsert-card-sub">Bạn có thể giữ nguyên ảnh hiện tại hoặc chọn ảnh mới để thay thế.</div>
+
+                    <div class="row align-items-stretch">
+                        <div class="col-lg-7 mb-3 mb-lg-0">
+                            <label asp-for="ImageFile" class="staff-upsert-label">Chọn ảnh sản phẩm</label>
+                            <input asp-for="ImageFile"
+                                   id="ImageFile"
+                                   type="file"
+                                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                                   class="staff-upsert-file" />
+                            <div class="staff-upsert-help">Nếu không chọn ảnh mới, hệ thống sẽ giữ lại ảnh cũ.</div>
+                            <span asp-validation-for="ImageFile" class="text-danger validation-message"></span>
+                        </div>
+
+                        <div class="col-lg-5">
+                            <div class="staff-upsert-preview">
+                                <div class="staff-upsert-preview-title">Xem trước ảnh</div>
+                                <div class="staff-upsert-preview-box">
+                                    <img id="productPreview"
+                                         src="@previewImg"
+                                         alt="Ảnh sản phẩm"
+                                         onerror="this.onerror=null;this.src='@defaultImg';" />
+                                </div>
+                                <div class="staff-upsert-preview-note">
+                                    Ảnh hiện tại sẽ được thay bằng ảnh mới khi bạn bấm lưu.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="staff-upsert-card">
+                    <h3 class="staff-upsert-card-title">Thông tin sản phẩm</h3>
+                    <div class="staff-upsert-card-sub">Chỉnh sửa thông tin cơ bản của sản phẩm.</div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Name" class="staff-upsert-label">Tên sản phẩm</label>
+                            <input asp-for="Name" class="staff-upsert-input" placeholder="Nhập tên sản phẩm" />
+                            <span asp-validation-for="Name" class="text-danger validation-message"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="CategoryId" class="staff-upsert-label">Danh mục</label>
+                            <select asp-for="CategoryId" class="staff-upsert-select">
+                                <option value="">-- Chọn danh mục --</option>
+                                @foreach (var c in Model.Categories)
+                                {
+                                    if (Model.CategoryId == c.CategoryId)
+                                    {
+                                        <option value="@c.CategoryId" selected="selected">@c.CategoryName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@c.CategoryId">@c.CategoryName</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger validation-message"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="SKU" class="staff-upsert-label">Mã sản phẩm</label>
+                            <input asp-for="SKU" class="staff-upsert-input" placeholder="Ví dụ: SP001" />
+                            <span asp-validation-for="SKU" class="text-danger validation-message"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Status" class="staff-upsert-label">Trạng thái</label>
+                            <select asp-for="Status" class="staff-upsert-select">
+                                @if (Model.Status == "Đang bán")
+                                {
+                                    <option value="Đang bán" selected="selected">Đang bán</option>
+                                }
+                                else
+                                {
+                                    <option value="Đang bán">Đang bán</option>
+                                }
+
+                                @if (Model.Status == "Dừng bán")
+                                {
+                                    <option value="Dừng bán" selected="selected">Dừng bán</option>
+                                }
+                                else
+                                {
+                                    <option value="Dừng bán">Dừng bán</option>
+                                }
+
+                                @if (Model.Status == "Hết hàng")
+                                {
+                                    <option value="Hết hàng" selected="selected">Hết hàng</option>
+                                }
+                                else
+                                {
+                                    <option value="Hết hàng">Hết hàng</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger validation-message"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Price" class="staff-upsert-label">Giá bán</label>
+                            <input asp-for="Price" class="staff-upsert-input" placeholder="Nhập giá bán" />
+                            <span asp-validation-for="Price" class="text-danger validation-message"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="StockQuantity" class="staff-upsert-label">Tồn kho</label>
+                            <input asp-for="StockQuantity" class="staff-upsert-input" placeholder="Nhập tồn kho" />
+                            <span asp-validation-for="StockQuantity" class="text-danger validation-message"></span>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label asp-for="Description" class="staff-upsert-label">Mô tả</label>
+                            <textarea asp-for="Description" class="staff-upsert-textarea" placeholder="Nhập mô tả sản phẩm"></textarea>
+                            <span asp-validation-for="Description" class="text-danger validation-message"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="staff-upsert-card">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap:12px;">
+                        <div>
+                            <h3 class="staff-upsert-card-title mb-1">Phân loại sản phẩm</h3>
+                            <div class="staff-upsert-card-sub mb-0">Cập nhật các phân loại đang có hoặc thêm mới.</div>
+                        </div>
+
+                        <button type="button" class="staff-upsert-btn staff-upsert-btn-soft" onclick="addClassificationRow()">
+                            <i class="fas fa-plus"></i> Thêm phân loại
+                        </button>
+                    </div>
+
+                    <div id="variantContainer">
+                        @for (int i = 0; i < Model.Variants.Count; i++)
+                        {
+                            <div class="classify-box">
+                                <div class="classify-head">
+                                    <h4 class="classify-title">Phân loại @(i + 1)</h4>
+                                    <button type="button" class="staff-upsert-btn staff-upsert-btn-danger" onclick="removeClassificationRow(this)">
+                                        <i class="fas fa-trash"></i> Bỏ phân loại
+                                    </button>
+                                </div>
+
+                                <input asp-for="Variants[i].VariantId" type="hidden" />
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Variants[i].VariantName" class="staff-upsert-label">Tên phân loại</label>
+                                        <input asp-for="Variants[i].VariantName" class="staff-upsert-input" />
+                                        <span asp-validation-for="Variants[i].VariantName" class="text-danger validation-message"></span>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Variants[i].Color" class="staff-upsert-label">Màu sắc</label>
+                                        <input asp-for="Variants[i].Color" class="staff-upsert-input" />
+                                        <span asp-validation-for="Variants[i].Color" class="text-danger validation-message"></span>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Variants[i].Size" class="staff-upsert-label">Kích thước</label>
+                                        <input asp-for="Variants[i].Size" class="staff-upsert-input" />
+                                        <span asp-validation-for="Variants[i].Size" class="text-danger validation-message"></span>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Variants[i].Material" class="staff-upsert-label">Chất liệu</label>
+                                        <input asp-for="Variants[i].Material" class="staff-upsert-input" />
+                                        <span asp-validation-for="Variants[i].Material" class="text-danger validation-message"></span>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Variants[i].SKU" class="staff-upsert-label">Mã phân loại</label>
+                                        <input asp-for="Variants[i].SKU" class="staff-upsert-input" />
+                                        <span asp-validation-for="Variants[i].SKU" class="text-danger validation-message"></span>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Variants[i].PriceOverride" class="staff-upsert-label">Giá phân loại</label>
+                                        <input asp-for="Variants[i].PriceOverride" class="staff-upsert-input" />
+                                        <span asp-validation-for="Variants[i].PriceOverride" class="text-danger validation-message"></span>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Variants[i].StockQuantity" class="staff-upsert-label">Tồn kho</label>
+                                        <input asp-for="Variants[i].StockQuantity" class="staff-upsert-input" />
+                                        <span asp-validation-for="Variants[i].StockQuantity" class="text-danger validation-message"></span>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Variants[i].Status" class="staff-upsert-label">Trạng thái</label>
+                                        <select asp-for="Variants[i].Status" class="staff-upsert-select">
+                                            <option value="Đang bán">Đang bán</option>
+                                            <option value="Dừng bán">Dừng bán</option>
+                                            <option value="Hết hàng">Hết hàng</option>
+                                        </select>
+                                        <span asp-validation-for="Variants[i].Status" class="text-danger validation-message"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    @if (!Model.Variants.Any())
+                    {
+                        <div id="variantEmpty" class="classify-empty">
+                            Chưa có phân loại nào. Bấm <b>Thêm phân loại</b> để tạo mới.
+                        </div>
+                    }
+                </div>
+
+                <div class="staff-upsert-actions">
+                    <button type="submit" class="staff-upsert-btn staff-upsert-btn-primary">
+                        <i class="fas fa-save"></i> Cập nhật sản phẩm
+                    </button>
+
+                    <a href="@Url.Action("Index", "StaffShopping")" class="staff-upsert-btn staff-upsert-btn-outline">
+                        <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const defaultPreviewImage = '@defaultImg';
+
+        function updatePreviewFromFile(input) {
+            const preview = document.getElementById('productPreview');
+            const currentImage = document.getElementById('CurrentImageUrl');
+
+            if (!preview || !input) return;
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+                return;
+            }
+
+            if (currentImage && currentImage.value) {
+                preview.src = currentImage.value;
+            } else {
+                preview.src = defaultPreviewImage;
+            }
+        }
+
+        function toggleClassificationEmpty() {
+            const container = document.getElementById('variantContainer');
+            let empty = document.getElementById('variantEmpty');
+            const count = container.querySelectorAll('.classify-box').length;
+
+            if (count === 0) {
+                if (!empty) {
+                    empty = document.createElement('div');
+                    empty.id = 'variantEmpty';
+                    empty.className = 'classify-empty';
+                    empty.innerHTML = 'Chưa có phân loại nào. Bấm <b>Thêm phân loại</b> để tạo mới.';
+                    container.insertAdjacentElement('afterend', empty);
+                }
+            } else if (empty) {
+                empty.remove();
+            }
+        }
+
+        function removeClassificationRow(button) {
+            const box = button.closest('.classify-box');
+            if (box) {
+                box.remove();
+                reIndexClassification();
+                toggleClassificationEmpty();
+            }
+        }
+
+        function addClassificationRow() {
+            const container = document.getElementById('variantContainer');
+            const index = container.querySelectorAll('.classify-box').length;
+
+            const html = `
+                <div class="classify-box">
+                    <div class="classify-head">
+                        <h4 class="classify-title">Phân loại ${index + 1}</h4>
+                        <button type="button" class="staff-upsert-btn staff-upsert-btn-danger" onclick="removeClassificationRow(this)">
+                            <i class="fas fa-trash"></i> Bỏ phân loại
+                        </button>
+                    </div>
+
+                    <input type="hidden" name="Variants[${index}].VariantId" value="" />
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="staff-upsert-label">Tên phân loại</label>
+                            <input name="Variants[${index}].VariantName" class="staff-upsert-input" />
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="staff-upsert-label">Màu sắc</label>
+                            <input name="Variants[${index}].Color" class="staff-upsert-input" />
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="staff-upsert-label">Kích thước</label>
+                            <input name="Variants[${index}].Size" class="staff-upsert-input" />
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="staff-upsert-label">Chất liệu</label>
+                            <input name="Variants[${index}].Material" class="staff-upsert-input" />
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="staff-upsert-label">Mã phân loại</label>
+                            <input name="Variants[${index}].SKU" class="staff-upsert-input" />
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="staff-upsert-label">Giá phân loại</label>
+                            <input name="Variants[${index}].PriceOverride" class="staff-upsert-input" />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="staff-upsert-label">Tồn kho</label>
+                            <input name="Variants[${index}].StockQuantity" value="0" class="staff-upsert-input" />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="staff-upsert-label">Trạng thái</label>
+                            <select name="Variants[${index}].Status" class="staff-upsert-select">
+                                <option value="Đang bán">Đang bán</option>
+                                <option value="Dừng bán">Dừng bán</option>
+                                <option value="Hết hàng">Hết hàng</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>`;
+
+            container.insertAdjacentHTML('beforeend', html);
+            reIndexClassification();
+            toggleClassificationEmpty();
+        }
+
+        function reIndexClassification() {
+            const boxes = document.querySelectorAll('#variantContainer .classify-box');
+
+            boxes.forEach((box, index) => {
+                const title = box.querySelector('.classify-title');
+                if (title) {
+                    title.textContent = `Phân loại ${index + 1}`;
+                }
+
+                const fields = box.querySelectorAll('input, select, textarea');
+                fields.forEach(field => {
+                    if (!field.name) return;
+                    field.name = field.name.replace(/Variants\[\d+\]/g, `Variants[${index}]`);
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.getElementById('ImageFile');
+            if (fileInput) {
+                fileInput.addEventListener('change', function () {
+                    updatePreviewFromFile(this);
+                });
+            }
+
+            toggleClassificationEmpty();
+        });
+    </script>
+}
