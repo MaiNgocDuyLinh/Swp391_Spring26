@@ -200,11 +200,11 @@
                                                     </a>
                                                 }
 
-                                                @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Manager"))
+                                                @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Staff"))
                                                 {
                                                     <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item" href="@Url.Action("Index", "ManShopping")" style="padding: 0.5rem 1rem;">
-                                                        <i class="fas fa-shopping-bag me-2"></i> Mua sắm
+                                                    <a class="dropdown-item" href="@Url.Action("Index", "StaffShopping")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-shopping-bag me-2"></i> Quản lý cửa hàng
                                                     </a>
                                                 }
 

@@ -1,0 +1,286 @@
+﻿@using Group3_SWP391_PetMedical.ViewModels.Shopping
+@model StaffShoppingOrdersVM
+
+@{
+    ViewData["Title"] = "Đơn hàng khách hàng";
+    var totalPages = (int)Math.Ceiling((double)Model.Result.TotalItems / Model.Result.PageSize);
+}
+
+<style>
+    .stafforder-page {
+        padding-top: 140px;
+    }
+
+    .stafforder-frame {
+        background: #fff;
+        border: 1px solid #eef0f4;
+        border-radius: 26px;
+        padding: 44px 34px;
+        box-shadow: 0 18px 40px rgba(0,0,0,.06);
+    }
+
+    .stafforder-title {
+        text-align: center;
+        font-size: 44px;
+        font-weight: 900;
+        color: #0b1c39;
+        margin-bottom: 24px;
+    }
+
+    .stafforder-filter {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 22px;
+    }
+
+        .stafforder-filter .form-control,
+        .stafforder-filter .form-select {
+            min-height: 50px;
+            border-radius: 999px;
+        }
+
+    .stafforder-table {
+        overflow-x: auto;
+    }
+
+        .stafforder-table table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        .stafforder-table th {
+            color: #0b1c39;
+            font-weight: 800;
+        }
+
+        .stafforder-table td,
+        .stafforder-table th {
+            padding: 14px 12px;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .stafforder-table tbody tr {
+            background: #fffaf7;
+            border-radius: 16px;
+        }
+
+    .badge-soft {
+        border-radius: 999px;
+        padding: 7px 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .badge-order {
+        background: rgba(90,169,255,.14);
+        color: #2b6cb0;
+    }
+
+    .badge-payment {
+        background: rgba(255,61,28,.12);
+        color: #d9481c;
+    }
+
+    .stafforder-page .pagination .page-link {
+        border: 1px solid #eef0f4;
+        color: #0b1c39;
+        margin: 0 4px;
+        border-radius: 999px;
+        min-width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stafforder-page .pagination .page-item.active .page-link {
+        background: #5aa9ff;
+        border-color: #5aa9ff;
+        color: #fff;
+    }
+</style>
+
+<section class="services-area section-padding40 stafforder-page">
+    <div class="container">
+        <div class="stafforder-frame">
+            <h1 class="stafforder-title">Đơn hàng khách hàng</h1>
+
+            <div class="mb-3">
+                <a class="btn btn-outline-secondary rounded-pill" href="@Url.Action("Index", "StaffShopping")">
+                    <i class="fas fa-arrow-left me-2"></i> Quay lại sản phẩm
+                </a>
+            </div>
+
+            <form method="get" asp-controller="StaffShopping" asp-action="Orders" class="stafforder-filter">
+                <input type="text"
+                       name="Keyword"
+                       value="@Model.Query.Keyword"
+                       class="form-control"
+                       placeholder="Tìm mã đơn / khách hàng..." />
+
+                <select name="OrderStatus" class="form-select">
+                    <option value="">-- Trạng thái đơn --</option>
+
+                    @if (Model.Query.OrderStatus == "Chờ xác nhận")
+                    {
+                        <option value="Chờ xác nhận" selected="selected">Chờ xác nhận</option>
+                    }
+                    else
+                    {
+                        <option value="Chờ xác nhận">Chờ xác nhận</option>
+                    }
+
+                    @if (Model.Query.OrderStatus == "Đã xác nhận")
+                    {
+                        <option value="Đã xác nhận" selected="selected">Đã xác nhận</option>
+                    }
+                    else
+                    {
+                        <option value="Đã xác nhận">Đã xác nhận</option>
+                    }
+
+                    @if (Model.Query.OrderStatus == "Sẵn sàng nhận hàng")
+                    {
+                        <option value="Sẵn sàng nhận hàng" selected="selected">Sẵn sàng nhận hàng</option>
+                    }
+                    else
+                    {
+                        <option value="Sẵn sàng nhận hàng">Sẵn sàng nhận hàng</option>
+                    }
+
+                    @if (Model.Query.OrderStatus == "Hoàn thành")
+                    {
+                        <option value="Hoàn thành" selected="selected">Hoàn thành</option>
+                    }
+                    else
+                    {
+                        <option value="Hoàn thành">Hoàn thành</option>
+                    }
+
+                    @if (Model.Query.OrderStatus == "Đã hủy")
+                    {
+                        <option value="Đã hủy" selected="selected">Đã hủy</option>
+                    }
+                    else
+                    {
+                        <option value="Đã hủy">Đã hủy</option>
+                    }
+                </select>
+
+                <select name="PaymentStatus" class="form-select">
+                    <option value="">-- Trạng thái thanh toán --</option>
+
+                    @if (Model.Query.PaymentStatus == "Chưa thanh toán")
+                    {
+                        <option value="Chưa thanh toán" selected="selected">Chưa thanh toán</option>
+                    }
+                    else
+                    {
+                        <option value="Chưa thanh toán">Chưa thanh toán</option>
+                    }
+
+                    @if (Model.Query.PaymentStatus == "Đã thanh toán")
+                    {
+                        <option value="Đã thanh toán" selected="selected">Đã thanh toán</option>
+                    }
+                    else
+                    {
+                        <option value="Đã thanh toán">Đã thanh toán</option>
+                    }
+
+                    @if (Model.Query.PaymentStatus == "Thanh toán lỗi")
+                    {
+                        <option value="Thanh toán lỗi" selected="selected">Thanh toán lỗi</option>
+                    }
+                    else
+                    {
+                        <option value="Thanh toán lỗi">Thanh toán lỗi</option>
+                    }
+
+                    @if (Model.Query.PaymentStatus == "Hoàn tiền")
+                    {
+                        <option value="Hoàn tiền" selected="selected">Hoàn tiền</option>
+                    }
+                    else
+                    {
+                        <option value="Hoàn tiền">Hoàn tiền</option>
+                    }
+                </select>
+
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-search me-2"></i> Lọc
+                </button>
+            </form>
+
+            @if (!Model.Result.Items.Any())
+            {
+                <div class="alert alert-info text-center" style="border-radius:16px;">
+                    Không có đơn hàng nào.
+                </div>
+            }
+            else
+            {
+                <div class="stafforder-table">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Tổng tiền</th>
+                                <th>Thanh toán</th>
+                                <th>Đơn hàng</th>
+                                <th>Ngày tạo</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Result.Items)
+                            {
+                                <tr>
+                                    <td><b>@item.OrderCode</b></td>
+                                    <td>@(string.IsNullOrWhiteSpace(item.CustomerName) ? ("User #" + item.CustomerId) : item.CustomerName)</td>
+                                    <td>@item.TotalAmount.ToString("N0") đ</td>
+                                    <td><span class="badge-soft badge-payment">@item.PaymentStatus</span></td>
+                                    <td><span class="badge-soft badge-order">@item.OrderStatus</span></td>
+                                    <td>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <a class="btn btn-outline-primary rounded-pill"
+                                           href="@Url.Action("OrderDetail", "StaffShopping", new { id = item.OrderId })">
+                                            Chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (totalPages > 1)
+                {
+                    <nav class="mt-3">
+                        <ul class="pagination justify-content-center">
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.Result.Page ? "active" : "")">
+                                    <a class="page-link"
+                                       href="@Url.Action("Orders", "StaffShopping", new
+                                       {
+                                           Keyword = Model.Query.Keyword,
+                                           OrderStatus = Model.Query.OrderStatus,
+                                           PaymentStatus = Model.Query.PaymentStatus,
+                                           Page = i,
+                                           PageSize = Model.Result.PageSize
+                                       })">@i</a>
+                    </li>
+                                        }
+                        </ul>
+                    </nav>
+                }
+            }
+        </div>
+    </div>
+</section>

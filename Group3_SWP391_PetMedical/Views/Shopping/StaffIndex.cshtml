@@ -1,0 +1,777 @@
+﻿@using Group3_SWP391_PetMedical.ViewModels.Shopping
+@model StaffShoppingIndexVM
+
+@{
+    ViewData["Title"] = "Quản lý cửa hàng";
+
+    var q = Model.Query.Keyword ?? "";
+    var pageSize = Model.Query.PageSize <= 0 ? 9 : Model.Query.PageSize;
+    var currentCategoryId = Model.Query.CategoryId;
+    var currentStatus = Model.Query.Status;
+    var defaultImg = Url.Content("~/uploads/Shopping/OrderDefault.png");
+
+    var totalPages = (int)Math.Ceiling((double)Model.Result.TotalItems / Model.Result.PageSize);
+    var currentPage = Model.Result.Page <= 0 ? 1 : Model.Result.Page;
+}
+
+<style>
+    .staffshop-page {
+        padding-top: 140px;
+    }
+
+    @@media (max-width: 991.98px) {
+        .staffshop-page {
+            padding-top: 160px;
+        }
+    }
+
+    .staffshop-frame {
+        background: #ffffff;
+        border: 1px solid #eef0f4;
+        border-radius: 26px;
+        padding: 44px 34px;
+        box-shadow: 0 18px 40px rgba(0,0,0,.06);
+    }
+
+    @@media (max-width: 575.98px) {
+        .staffshop-frame {
+            padding: 28px 18px;
+            border-radius: 20px;
+        }
+    }
+
+    .staffshop-hero {
+        text-align: center;
+        margin-bottom: 22px;
+    }
+
+    .staffshop-hero .title {
+        font-size: 52px;
+        line-height: 1.15;
+        font-weight: 900;
+        color: #0b1c39;
+        margin: 0;
+    }
+
+    .staffshop-hero .subtitle {
+        margin-top: 12px;
+        color: #6c7a92;
+        font-size: 16px;
+    }
+
+    @@media (max-width: 991.98px) {
+        .staffshop-hero .title {
+            font-size: 38px;
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .staffshop-hero .title {
+            font-size: 30px;
+        }
+    }
+
+    .staffshop-toolbar {
+        margin: 22px 0 30px;
+    }
+
+    .staffshop-toolbar-line {
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+        flex-wrap: nowrap;
+        width: 100%;
+    }
+
+    .staffshop-toolbar-form {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .staffshop-toolbar-actions {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .staffshop-field {
+        min-width: 0;
+    }
+
+    .staffshop-field.keyword {
+        flex: 1.8 1 0;
+    }
+
+    .staffshop-field.category {
+        flex: 1 1 0;
+    }
+
+    .staffshop-field.status {
+        flex: 1 1 0;
+    }
+
+    .staffshop-btn-icon-wrap {
+        flex: 0 0 58px;
+    }
+
+    .staffshop-order-wrap {
+        flex: 0 0 220px;
+    }
+
+    .staffshop-create-wrap {
+        flex: 0 0 210px;
+    }
+
+    .staffshop-search-input,
+    .staffshop-search-select {
+        width: 100%;
+        height: 52px;
+        border-radius: 999px;
+        border: 1px solid #eef0f4;
+        color: #0b1c39;
+        font-size: 16px;
+        font-weight: 600;
+        text-align: center;
+        text-align-last: center;
+        padding: 0 42px 0 18px;
+        line-height: 50px;
+        box-sizing: border-box;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-color: #fff;
+        background-image: none;
+    }
+
+    .staffshop-search-input:focus,
+    .staffshop-search-select:focus {
+        border-color: rgba(255,61,28,.35);
+        box-shadow: 0 0 0 .2rem rgba(255,61,28,.10);
+        outline: none;
+    }
+
+    .staffshop-search-select option {
+        color: #0b1c39;
+        text-align: left;
+        line-height: normal;
+    }
+
+    .staffshop-btn {
+        width: 100%;
+        height: 52px;
+        border-radius: 999px;
+        padding: 0 24px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: .2s ease;
+        border: 1px solid transparent;
+    }
+
+    .staffshop-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 30px rgba(0,0,0,.08);
+        text-decoration: none;
+    }
+
+    .staffshop-btn-primary {
+        background: #ff3d1c;
+        border-color: #ff3d1c;
+        color: #fff;
+    }
+
+    .staffshop-btn-primary:hover {
+        color: #fff;
+    }
+
+    .staffshop-btn-soft {
+        background: #5aa9ff;
+        border-color: #5aa9ff;
+        color: #fff;
+    }
+
+    .staffshop-btn-soft:hover {
+        color: #fff;
+    }
+
+    .staffshop-btn-dark {
+        background: #1f1b24;
+        border-color: #1f1b24;
+        color: #fff;
+    }
+
+    .staffshop-btn-dark:hover {
+        color: #fff;
+    }
+
+    .staffshop-btn-outline {
+        background: #fff;
+        border-color: #dfe7f2;
+        color: #0b1c39;
+    }
+
+    .staffshop-btn-outline:hover {
+        color: #0b1c39;
+        background: #f8fbff;
+    }
+
+    .staffshop-empty {
+        border-radius: 18px;
+        background: #fff8e8;
+        border: 1px solid rgba(255, 193, 7, .25);
+        padding: 18px;
+        text-align: center;
+        color: #7b5a00;
+        font-weight: 600;
+    }
+
+    .staffshop-card {
+        background: #fff5f7;
+        border-radius: 18px;
+        padding: 16px 16px 18px;
+        height: 100%;
+        border: 1px solid rgba(255, 61, 28, .10);
+        transition: .2s ease;
+        box-shadow: 0 8px 24px rgba(11, 28, 57, .04);
+    }
+
+    .staffshop-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 40px rgba(0,0,0,.10);
+    }
+
+    .staffshop-card-imgwrap {
+        border-radius: 16px;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid #f1f3f7;
+        height: 240px;
+        margin-bottom: 16px;
+    }
+
+    .staffshop-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .staffshop-card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .staffshop-name {
+        font-size: 24px;
+        line-height: 1.35;
+        font-weight: 900;
+        color: #0b1c39;
+        margin: 0;
+        flex: 1;
+    }
+
+    .staffshop-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .status-selling {
+        background: rgba(40,167,69,.12);
+        color: #1e7e34;
+    }
+
+    .status-stop {
+        background: rgba(255,193,7,.18);
+        color: #9c6b00;
+    }
+
+    .status-out {
+        background: rgba(220,53,69,.12);
+        color: #b02a37;
+    }
+
+    .staffshop-category {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(90,169,255,.12);
+        color: #2b6cb0;
+        font-size: 12px;
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+
+    .staffshop-price {
+        font-size: 28px;
+        font-weight: 900;
+        color: #ff3d1c;
+        margin-bottom: 6px;
+    }
+
+    .staffshop-stock {
+        color: #6c7a92;
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+
+    .staffshop-meta {
+        color: #5d6b82;
+        font-size: 15px;
+        line-height: 1.8;
+        margin-bottom: 16px;
+    }
+
+    .staffshop-meta .label {
+        color: #0b1c39;
+        font-weight: 800;
+    }
+
+    .staffshop-card-actions {
+        display: flex;
+        align-items: stretch;
+        gap: 10px;
+        flex-wrap: nowrap;
+    }
+
+    .staffshop-card-actions .action-item {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .staffshop-card-actions form {
+        margin: 0;
+    }
+
+    .staffshop-card-actions .staffshop-btn {
+        height: 46px;
+        padding: 0 16px;
+        font-size: 15px;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .staffshop-pager-wrap {
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    .staffshop-pager {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .staffshop-pager .page-link {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        padding: 0;
+        border-radius: 999px !important;
+        border: 1px solid #dfe7f2;
+        color: #0b1c39;
+        background: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 16px;
+        line-height: 1;
+        box-shadow: none;
+        margin: 0;
+    }
+
+    .staffshop-pager .page-link i {
+        font-size: 14px;
+        line-height: 1;
+    }
+
+    .staffshop-pager .page-item {
+        margin: 0;
+    }
+
+    .staffshop-pager .page-item.active .page-link {
+        background: #5aa9ff;
+        border-color: #5aa9ff;
+        color: #fff;
+    }
+
+    .staffshop-pager .page-item.disabled .page-link {
+        color: #b9c3d3;
+        background: #f4f7fb;
+        border-color: #dfe7f2;
+        opacity: 1;
+        pointer-events: none;
+    }
+
+    .staffshop-pager .page-link:hover {
+        background: rgba(90,169,255,.08);
+        border-color: #5aa9ff;
+        color: #0b1c39;
+    }
+
+    .staffshop-summary {
+        color: #6c7a92;
+        font-size: 15px;
+        margin-top: 12px;
+        text-align: center;
+    }
+
+    @@media (max-width: 1399.98px) {
+        .staffshop-toolbar-line {
+            flex-wrap: wrap;
+        }
+
+        .staffshop-toolbar-form,
+        .staffshop-toolbar-actions {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 991.98px) {
+        .staffshop-toolbar-form {
+            flex-wrap: wrap;
+        }
+
+        .staffshop-field.keyword,
+        .staffshop-field.category,
+        .staffshop-field.status {
+            flex: 1 1 calc(50% - 6px);
+        }
+
+        .staffshop-btn-icon-wrap {
+            flex: 0 0 calc(50% - 6px);
+        }
+
+        .staffshop-toolbar-actions {
+            flex-wrap: wrap;
+        }
+
+        .staffshop-order-wrap,
+        .staffshop-create-wrap {
+            flex: 1 1 calc(50% - 6px);
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .staffshop-name {
+            font-size: 20px;
+        }
+
+        .staffshop-price {
+            font-size: 24px;
+        }
+
+        .staffshop-field.keyword,
+        .staffshop-field.category,
+        .staffshop-field.status,
+        .staffshop-btn-icon-wrap,
+        .staffshop-order-wrap,
+        .staffshop-create-wrap {
+            flex: 1 1 100%;
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .staffshop-frame {
+            padding: 24px 16px;
+        }
+
+        .staffshop-card-top {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .staffshop-card-actions {
+            flex-wrap: wrap;
+        }
+
+        .staffshop-card-actions .action-item {
+            flex: 1 1 100%;
+        }
+
+        .staffshop-pager .page-link {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+        }
+    }
+</style>
+
+<section class="services-area section-padding40 staffshop-page">
+    <div class="container">
+        <div class="staffshop-frame">
+
+            <div class="staffshop-hero">
+                <h1 class="title">Quản lý cửa hàng</h1>
+                <div class="subtitle">Quản lý sản phẩm, trạng thái kinh doanh và tồn kho đồng bộ với giao diện website.</div>
+            </div>
+
+            <div class="staffshop-toolbar">
+                <div class="staffshop-toolbar-line">
+                    <form method="get"
+                          asp-controller="StaffShopping"
+                          asp-action="Index"
+                          class="staffshop-toolbar-form">
+                        <input type="hidden" name="Page" value="1" />
+                        <input type="hidden" name="PageSize" value="@pageSize" />
+
+                        <div class="staffshop-field keyword">
+                            <input type="text"
+                                   name="Keyword"
+                                   value="@Model.Query.Keyword"
+                                   class="form-control staffshop-search-input"
+                                   placeholder="Tìm tên, mã sản phẩm, danh mục..." />
+                        </div>
+
+                        <div class="staffshop-field category">
+                            <select name="CategoryId" class="form-control staffshop-search-select">
+                                <option value="">-- Danh mục --</option>
+                                @foreach (var c in Model.Categories)
+                                {
+                                    if (currentCategoryId == c.CategoryId)
+                                    {
+                                        <option value="@c.CategoryId" selected="selected">@c.CategoryName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@c.CategoryId">@c.CategoryName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="staffshop-field status">
+                            <select name="Status" class="form-control staffshop-search-select">
+                                <option value="">-- Trạng thái --</option>
+
+                                @if (currentStatus == "Đang bán")
+                                {
+                                    <option value="Đang bán" selected="selected">Đang bán</option>
+                                }
+                                else
+                                {
+                                    <option value="Đang bán">Đang bán</option>
+                                }
+
+                                @if (currentStatus == "Dừng bán")
+                                {
+                                    <option value="Dừng bán" selected="selected">Dừng bán</option>
+                                }
+                                else
+                                {
+                                    <option value="Dừng bán">Dừng bán</option>
+                                }
+
+                                @if (currentStatus == "Hết hàng")
+                                {
+                                    <option value="Hết hàng" selected="selected">Hết hàng</option>
+                                }
+                                else
+                                {
+                                    <option value="Hết hàng">Hết hàng</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="staffshop-btn-icon-wrap">
+                            <button type="submit" class="staffshop-btn staffshop-btn-dark" title="Tìm kiếm">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+
+                        <div class="staffshop-btn-icon-wrap">
+                            <a href="@Url.Action("Index", "StaffShopping")"
+                               class="staffshop-btn staffshop-btn-outline"
+                               title="Làm mới">
+                                <i class="fas fa-sync-alt"></i>
+                            </a>
+                        </div>
+                    </form>
+
+                    <div class="staffshop-toolbar-actions">
+                        <div class="staffshop-order-wrap">
+                            <a class="staffshop-btn staffshop-btn-soft"
+                               href="@Url.Action("Orders", "StaffShopping")">
+                                <i class="fas fa-box"></i> Đơn hàng khách hàng
+                            </a>
+                        </div>
+
+                        <div class="staffshop-create-wrap">
+                            <a class="staffshop-btn staffshop-btn-primary"
+                               href="@Url.Action("Create", "StaffShopping")">
+                                <i class="fas fa-plus"></i> Thêm sản phẩm
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (!Model.Result.Items.Any())
+            {
+                <div class="staffshop-empty">
+                    Không có sản phẩm phù hợp.
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var item in Model.Result.Items)
+                    {
+                        var badgeClass = "status-out";
+                        if (item.Status == "Đang bán")
+                        {
+                            badgeClass = "status-selling";
+                        }
+                        else if (item.Status == "Dừng bán")
+                        {
+                            badgeClass = "status-stop";
+                        }
+
+                        var imgUrl = string.IsNullOrWhiteSpace(item.ImageUrl)
+                            ? defaultImg
+                            : (item.ImageUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) || item.ImageUrl.StartsWith("/")
+                                ? item.ImageUrl
+                                : Url.Content("~/uploads/products/" + item.ImageUrl));
+
+                        <div class="col-xl-4 col-lg-4 col-md-6 mb-4">
+                            <div class="staffshop-card">
+                                <div class="staffshop-card-imgwrap">
+                                    <img src="@imgUrl"
+                                         alt="@item.Name"
+                                         class="staffshop-card-img"
+                                         onerror="this.onerror=null;this.src='@defaultImg';" />
+                                </div>
+
+                                <div class="staffshop-card-top">
+                                    <h3 class="staffshop-name">@item.Name</h3>
+                                    <span class="staffshop-badge @badgeClass">@item.Status</span>
+                                </div>
+
+                                <span class="staffshop-category">@item.CategoryName</span>
+
+                                <div class="staffshop-price">@item.Price.ToString("N0") đ</div>
+                                <div class="staffshop-stock">Tồn kho: @item.StockQuantity</div>
+
+                                <div class="staffshop-meta">
+                                    <div><span class="label">Mã sản phẩm:</span> @item.SKU</div>
+                                    <div><span class="label">Biến thể:</span> @item.VariantCount</div>
+                                </div>
+
+                                <div class="staffshop-card-actions">
+                                    <div class="action-item">
+                                        <a class="staffshop-btn staffshop-btn-soft"
+                                           href="@Url.Action("Edit", "StaffShopping", new { id = item.ProductId })">
+                                            <i class="fas fa-edit"></i> Sửa
+                                        </a>
+                                    </div>
+
+                                    @if (item.Status != "Dừng bán")
+                                    {
+                                        <form asp-controller="StaffShopping"
+                                              asp-action="StopSelling"
+                                              asp-route-id="@item.ProductId"
+                                              method="post"
+                                              class="action-item"
+                                              onsubmit="return confirm('Bạn chắc chắn muốn dừng bán sản phẩm này?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="staffshop-btn staffshop-btn-primary">
+                                                <i class="fas fa-ban"></i> Dừng bán
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (totalPages > 1)
+                {
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <div class="staffshop-pager-wrap">
+                                <nav aria-label="Staff shopping pagination">
+                                    <ul class="pagination staffshop-pager mb-0 justify-content-center">
+
+                                        <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                                            <a class="page-link"
+                                               href="@Url.Action("Index", "StaffShopping", new {
+                                                   Keyword = Model.Query.Keyword,
+                                                   CategoryId = Model.Query.CategoryId,
+                                                   Status = Model.Query.Status,
+                                                   Page = currentPage - 1,
+                                                   PageSize = Model.Result.PageSize
+                                               })">
+                                                <i class="fas fa-angle-left"></i>
+                                            </a>
+                                        </li>
+
+                                        @{
+                                            int startPage = Math.Max(1, currentPage - 2);
+                                            int endPage = Math.Min(totalPages, currentPage + 2);
+                                        }
+
+                                        @for (int i = startPage; i <= endPage; i++)
+                                        {
+                                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                                <a class="page-link"
+                                                   href="@Url.Action("Index", "StaffShopping", new {
+                                                       Keyword = Model.Query.Keyword,
+                                                       CategoryId = Model.Query.CategoryId,
+                                                       Status = Model.Query.Status,
+                                                       Page = i,
+                                                       PageSize = Model.Result.PageSize
+                                                   })">
+                                                    @i
+                                                </a>
+                                            </li>
+                                        }
+
+                                        <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                                            <a class="page-link"
+                                               href="@Url.Action("Index", "StaffShopping", new {
+                                                   Keyword = Model.Query.Keyword,
+                                                   CategoryId = Model.Query.CategoryId,
+                                                   Status = Model.Query.Status,
+                                                   Page = currentPage + 1,
+                                                   PageSize = Model.Result.PageSize
+                                               })">
+                                                <i class="fas fa-angle-right"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+
+                                <div class="staffshop-summary">
+                                    Hiển thị @Model.Result.Items.Count / @Model.Result.TotalItems sản phẩm
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>

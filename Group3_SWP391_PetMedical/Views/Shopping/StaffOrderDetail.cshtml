@@ -1,0 +1,133 @@
+﻿@using Group3_SWP391_PetMedical.ViewModels.Shopping
+@model StaffShoppingOrderDetailVM
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<style>
+    .staffod-page {
+        padding-top: 140px;
+    }
+
+    .staffod-frame {
+        background: #fff;
+        border: 1px solid #eef0f4;
+        border-radius: 26px;
+        padding: 44px 34px;
+        box-shadow: 0 18px 40px rgba(0,0,0,.06);
+    }
+
+    .staffod-title {
+        text-align: center;
+        font-size: 42px;
+        font-weight: 900;
+        color: #0b1c39;
+        margin-bottom: 22px;
+    }
+
+    .staffod-card {
+        background: #fffaf7;
+        border: 1px solid rgba(255,61,28,.10);
+        border-radius: 18px;
+        padding: 22px;
+        margin-bottom: 20px;
+    }
+</style>
+
+<section class="services-area section-padding40 staffod-page">
+    <div class="container">
+        <div class="staffod-frame">
+            <h1 class="staffod-title">Chi tiết đơn hàng</h1>
+
+            <div class="mb-3">
+                <a class="btn btn-outline-secondary rounded-pill" href="@Url.Action("Orders", "StaffShopping")">
+                    <i class="fas fa-arrow-left me-2"></i> Quay lại danh sách đơn
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-7">
+                    <div class="staffod-card">
+                        <h4 class="mb-3">Thông tin đơn hàng</h4>
+                        <div><b>Mã đơn:</b> @Model.OrderCode</div>
+                        <div><b>Khách hàng:</b> @(Model.CustomerName ?? $"User #{Model.CustomerId}")</div>
+                        <div><b>Nhận hàng:</b> @Model.PickupMethod</div>
+                        <div><b>Ngày nhận dự kiến:</b> @(Model.PickupDate?.ToString("dd/MM/yyyy HH:mm") ?? "—")</div>
+                        <div><b>Ghi chú:</b> @(string.IsNullOrWhiteSpace(Model.PickupNote) ? "—" : Model.PickupNote)</div>
+                        <div><b>Phương thức thanh toán:</b> @(Model.PaymentMethod ?? "—")</div>
+                        <div><b>Trạng thái thanh toán:</b> @Model.PaymentStatus</div>
+                        <div><b>Trạng thái đơn:</b> @Model.OrderStatus</div>
+                        <div><b>Tổng tiền:</b> @Model.TotalAmount.ToString("N0") đ</div>
+                    </div>
+
+                    <div class="staffod-card">
+                        <h4 class="mb-3">Danh sách sản phẩm</h4>
+
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Sản phẩm</th>
+                                        <th>Biến thể</th>
+                                        <th>Đơn giá</th>
+                                        <th>SL</th>
+                                        <th>Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>@item.ProductName</td>
+                                            <td>@(string.IsNullOrWhiteSpace(item.VariantName) ? "—" : item.VariantName)</td>
+                                            <td>@item.UnitPrice.ToString("N0") đ</td>
+                                            <td>@item.Quantity</td>
+                                            <td>@item.LineTotal.ToString("N0") đ</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="staffod-card">
+                        <h4 class="mb-3">Cập nhật trạng thái</h4>
+
+                        <form asp-controller="StaffShopping" asp-action="UpdateOrderStatus" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="OrderId" value="@Model.OrderId" />
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Trạng thái đơn hàng</label>
+                                <select name="OrderStatus" class="form-select">
+                                    <option value="Chờ xác nhận" selected="@(Model.OrderStatus == "Chờ xác nhận")">Chờ xác nhận</option>
+                                    <option value="Đã xác nhận" selected="@(Model.OrderStatus == "Đã xác nhận")">Đã xác nhận</option>
+                                    <option value="Sẵn sàng nhận hàng" selected="@(Model.OrderStatus == "Sẵn sàng nhận hàng")">Sẵn sàng nhận hàng</option>
+                                    <option value="Hoàn thành" selected="@(Model.OrderStatus == "Hoàn thành")">Hoàn thành</option>
+                                    <option value="Đã hủy" selected="@(Model.OrderStatus == "Đã hủy")">Đã hủy</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Trạng thái thanh toán</label>
+                                <select name="PaymentStatus" class="form-select">
+                                    <option value="Chưa thanh toán" selected="@(Model.PaymentStatus == "Chưa thanh toán")">Chưa thanh toán</option>
+                                    <option value="Đã thanh toán" selected="@(Model.PaymentStatus == "Đã thanh toán")">Đã thanh toán</option>
+                                    <option value="Thanh toán lỗi" selected="@(Model.PaymentStatus == "Thanh toán lỗi")">Thanh toán lỗi</option>
+                                    <option value="Hoàn tiền" selected="@(Model.PaymentStatus == "Hoàn tiền")">Hoàn tiền</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-danger rounded-pill px-4">
+                                <i class="fas fa-save me-2"></i> Cập nhật
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
