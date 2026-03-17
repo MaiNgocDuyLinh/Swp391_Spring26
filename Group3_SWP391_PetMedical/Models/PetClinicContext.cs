@@ -6,8 +6,8 @@ using System.Text.Json;
 
 namespace Group3_SWP391_PetMedical.Models;
 
-public partial class PetClinicContext : DbContext
-{
+    public partial class PetClinicContext : DbContext
+    {
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public PetClinicContext(
@@ -34,7 +34,12 @@ public partial class PetClinicContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     // ✅ NEW TABLE
-    public virtual DbSet<AuditLog> AuditLogs { get; set; }
+        public virtual DbSet<AuditLog> AuditLogs { get; set; }
+
+        public virtual DbSet<RetailOrder> RetailOrders { get; set; }
+        public virtual DbSet<OrderDetail> OrderDetails { get; set; }
+        public virtual DbSet<Cart> Carts { get; set; }
+        public virtual DbSet<CartItem> CartItems { get; set; }
 
     // ================= AUTO AUDIT =================
 
@@ -149,6 +154,63 @@ public partial class PetClinicContext : DbContext
         modelBuilder.Entity<Service>().HasKey(s => s.service_id);
         modelBuilder.Entity<User>().HasKey(u => u.user_id);
         modelBuilder.Entity<AuditLog>().HasKey(a => a.AuditLogId);
+
+        // RetailOrder ↔ OrderDetail / User / Medication
+        modelBuilder.Entity<RetailOrder>(entity =>
+        {
+            entity.HasKey(ro => ro.id);
+            entity.ToTable("RetailOrders");
+
+            entity.HasOne(ro => ro.user)
+                  .WithMany(u => u.RetailOrders)
+                  .HasForeignKey(ro => ro.user_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<OrderDetail>(entity =>
+        {
+            // Composite primary key (order_id, medicine_id)
+            entity.HasKey(od => new { od.order_id, od.medicine_id });
+            entity.ToTable("OrderDetails");
+
+            entity.HasOne(od => od.order)
+                  .WithMany(ro => ro.OrderDetails)
+                  .HasForeignKey(od => od.order_id)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(od => od.medicine)
+                  .WithMany() // no navigation collection on Medication for order details
+                  .HasForeignKey(od => od.medicine_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        // Cart ↔ User / CartItems / Medication
+        modelBuilder.Entity<Cart>(entity =>
+        {
+            entity.HasKey(c => c.id);
+            entity.ToTable("Carts");
+
+            entity.HasOne(c => c.user)
+                  .WithMany(u => u.Carts)
+                  .HasForeignKey(c => c.user_id)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CartItem>(entity =>
+        {
+            entity.HasKey(ci => new { ci.cart_id, ci.medicine_id });
+            entity.ToTable("CartItems");
+
+            entity.HasOne(ci => ci.cart)
+                  .WithMany(c => c.CartItems)
+                  .HasForeignKey(ci => ci.cart_id)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(ci => ci.medicine)
+                  .WithMany() // no navigation collection on Medication for cart items
+                  .HasForeignKey(ci => ci.medicine_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+        });
 
         // ================= AUDIT LOG CONFIG =================
 

@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using PayOS;
 using PayOS.Models.V2.PaymentRequests;
+using Group3_SWP391_PetMedical.Models; // Dùng cho PetClinicContext
+using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace Group3_SWP391_PetMedical.Controllers
 {
@@ -13,25 +16,25 @@ namespace Group3_SWP391_PetMedical.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly PayOSClient _payOSClient;
+        private readonly PetClinicContext _db;
+
         private const string TestBankCode = "BIDV";
-        private const string TestAccountNumber = "4880689237"; // 4880689237
+        private const string TestAccountNumber = "4880689237";
         private const string TestAccountName = "MAI NGOC DUY LINH";
         private const int TestAmount = 2000;
         private const string TestTransferContent = "TEST PAYOS";
 
         private readonly string _baseUrl;
 
-        public PaymentController(IConfiguration configuration)
+        public PaymentController(IConfiguration configuration, PetClinicContext db)
         {
-            _baseUrl = configuration["BaseUrl"] ?? "http://localhost:7000";
+            _db = db;
+            //_baseUrl = configuration["BaseUrl"] ?? "https://localhost:7000";
+            _baseUrl = "https://tamia-pinkish-denzel.ngrok-free.dev";
 
-            // Lấy thông tin từ appsettings.json đã cấu hình
-            string clientId = configuration["PayOS:ClientId"]
-                ?? throw new InvalidOperationException("Missing PayOS:ClientId in configuration.");
-            string apiKey = configuration["PayOS:ApiKey"]
-                ?? throw new InvalidOperationException("Missing PayOS:ApiKey in configuration.");
-            string checksumKey = configuration["PayOS:ChecksumKey"]
-                ?? throw new InvalidOperationException("Missing PayOS:ChecksumKey in configuration.");
+            string clientId = configuration["PayOS:ClientId"] ?? throw new InvalidOperationException("Missing PayOS:ClientId");
+            string apiKey = configuration["PayOS:ApiKey"] ?? throw new InvalidOperationException("Missing PayOS:ApiKey");
+            string checksumKey = configuration["PayOS:ChecksumKey"] ?? throw new InvalidOperationException("Missing PayOS:ChecksumKey");
 
             _payOSClient = new PayOSClient(new PayOSOptions
             {
@@ -41,31 +44,28 @@ namespace Group3_SWP391_PetMedical.Controllers
             });
         }
 
+        // ==============================================================================
+        // 1. CÁC HÀM TEST CỦA LINH (ĐÃ KHÔI PHỤC)
+        // ==============================================================================
+
         [HttpGet("create-test-payment")]
         public async Task<IActionResult> CreateTestPayment()
         {
             try
             {
-                // 1. Tạo mã đơn hàng duy nhất (dùng Timestamp để không bị trùng)
                 long orderCode = long.Parse(DateTimeOffset.Now.ToString("ffffff"));
-
-                // 2. Hardcode giá tiền (Ví dụ: 2000 VNĐ để test tiền thật)
                 int price = TestAmount;
 
-                // 3. Cấu hình thông tin thanh toán hardcode để test nhanh
                 var request = new CreatePaymentLinkRequest
                 {
                     OrderCode = orderCode,
-                    Amount = price,
-                    Description = "Thanh toan Test",
+                    Amount = price, // 2000
+                    Description = "Thanh toan PET1", // Giả lập khách thanh toán cho đơn hàng có ID = 1
                     CancelUrl = $"{_baseUrl}/api/payment/cancel",
                     ReturnUrl = $"{_baseUrl}/api/payment/success"
                 };
 
-                // 4. Gọi PayOS để tạo Link
                 CreatePaymentLinkResponse result = await _payOSClient.PaymentRequests.CreateAsync(request);
-
-                // 5. Trả về URL để bạn click vào thanh toán thử
                 return Ok(new { checkoutUrl = result.CheckoutUrl });
             }
             catch (Exception ex)
@@ -93,52 +93,9 @@ namespace Group3_SWP391_PetMedical.Controllers
             });
         }
 
-        [HttpPost("payos-webhook")]
-        public IActionResult ReceivePayOSWebhook([FromBody] JsonElement webhookBody)
-        {
-            try
-            {
-                // PayOS luôn gửi về một JSON chứa thuộc tính "data". 
-                // Ta trích xuất nó ra để đọc trực tiếp mà không cần phụ thuộc vào thư viện.
-                if (webhookBody.TryGetProperty("data", out JsonElement data))
-                {
-                    // Lấy mã đơn hàng, số tiền và lời nhắn
-                    long orderCode = data.GetProperty("orderCode").GetInt64();
-                    int amount = data.GetProperty("amount").GetInt32();
-                    string description = data.GetProperty("description").GetString() ?? "";
-
-                    // Bỏ qua các giao dịch PayOS tự động gửi để test link ngrok
-                    if (description == "Ma giao dich thu nghiem" || description == "VQRIO123")
-                    {
-                        return Ok(new { success = true });
-                    }
-
-                    // --------------------------------------------------------
-                    // 3. CẬP NHẬT DATABASE CỦA BẠN TẠI ĐÂY
-                    // Ví dụ: _dbContext.Orders.UpdateStatus(orderCode, "PAID");
-                    // --------------------------------------------------------
-
-                    Console.WriteLine($"[WEBHOOK] TUYỆT VỜI! Đã nhận {amount} VNĐ cho đơn hàng {orderCode}");
-                }
-
-                // Luôn phải báo OK để PayOS biết ta đã nhận được, nếu không nó sẽ gửi lại liên tục
-                return Ok(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[WEBHOOK LỖI]: {ex.Message}");
-                return BadRequest(new { success = false, message = ex.Message });
-            }
-        }
-
-        // ==============================================================================
-        // 2 HÀM MỚI ĐỂ HIỂN THỊ GIAO DIỆN KHI NGƯỜI DÙNG QUAY VỀ TỪ TRANG THANH TOÁN
-        // ==============================================================================
-
         [HttpGet("success")]
         public IActionResult PaymentSuccess()
         {
-            // Trả về một mã HTML đơn giản hiển thị giao diện báo thành công
             return Content(@"
                 <html>
                 <head><meta charset='utf-8'></head>
@@ -156,7 +113,6 @@ namespace Group3_SWP391_PetMedical.Controllers
         [HttpGet("cancel")]
         public IActionResult PaymentCancel()
         {
-            // Trả về một mã HTML báo đã hủy
             return Content(@"
                 <html>
                 <head><meta charset='utf-8'></head>
@@ -170,5 +126,128 @@ namespace Group3_SWP391_PetMedical.Controllers
                 </body>
                 </html>", "text/html");
         }
+
+        // ==============================================================================
+        // 2. WEBHOOK: XỬ LÝ THANH TOÁN THÀNH CÔNG VÀ TRỪ KHO
+        // ==============================================================================
+
+        [HttpPost("payos-webhook")]
+        public async Task<IActionResult> ReceivePayOSWebhook([FromBody] JsonElement webhookBody)
+        {
+            try
+            {
+                // 1. IN RA TOÀN BỘ DỮ LIỆU THÔ PAYOS GỬI ĐẾN ĐỂ DEBUG
+                Console.WriteLine("\n==============================================");
+                Console.WriteLine("[WEBHOOK NHẬN ĐƯỢC]: " + webhookBody.GetRawText());
+                Console.WriteLine("==============================================\n");
+
+                if (webhookBody.TryGetProperty("data", out JsonElement data))
+                {
+                    long orderCode = data.GetProperty("orderCode").GetInt64();
+                    int amount = data.GetProperty("amount").GetInt32();
+                    string description = data.GetProperty("description").GetString() ?? "";
+
+                    Console.WriteLine($"[TING TING] Số tiền: {amount} - Nội dung: {description}");
+
+                    if (description == "Ma giao dich thu nghiem" || description == "VQRIO123")
+                    {
+                        return Ok(new { success = true });
+                    }
+
+                    // TÌM MÃ ĐƠN HÀNG "PET{id}" ĐỂ TRỪ KHO
+                    var match = Regex.Match(description, @"PET(?<id>\d+)", RegexOptions.IgnoreCase);
+                    if (match.Success && int.TryParse(match.Groups["id"].Value, out var orderId))
+                    {
+                        var order = await _db.RetailOrders
+                            .Include(o => o.OrderDetails)
+                                .ThenInclude(od => od.medicine)
+                            .FirstOrDefaultAsync(o => o.id == orderId);
+
+                        if (order != null && order.status == "PENDING" && amount >= (int)order.total_amount)
+                        {
+                            order.status = "PAID";
+                            order.transaction_reference = orderCode.ToString();
+
+                            foreach (var detail in order.OrderDetails)
+                            {
+                                if (detail.medicine != null)
+                                {
+                                    int currentStock = detail.medicine.stock_quantity ?? 0;
+                                    detail.medicine.stock_quantity = Math.Max(0, currentStock - detail.quantity);
+                                }
+                            }
+
+                            await _db.SaveChangesAsync();
+                            Console.WriteLine($"[THÀNH CÔNG] Đã trừ kho cho đơn PET{orderId}");
+                        }
+                    }
+                }
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WEBHOOK LỖI]: {ex.Message}");
+                return Ok(new { success = false });
+            }
+        }
+
+
+        //[HttpPost("payos-webhook")]
+        //public async Task<IActionResult> ReceivePayOSWebhook([FromBody] JsonElement webhookBody)
+        //{
+        //    try
+        //    {
+        //        if (webhookBody.TryGetProperty("data", out JsonElement data))
+        //        {
+        //            long orderCode = data.GetProperty("orderCode").GetInt64();
+        //            int amount = data.GetProperty("amount").GetInt32();
+        //            string description = data.GetProperty("description").GetString() ?? "";
+
+        //            Console.WriteLine($"\n[TING TING] Có Webhook gọi tới! Số tiền: {amount} - Nội dung: {description}");
+
+        //            if (description == "Ma giao dich thu nghiem" || description == "VQRIO123")
+        //            {
+        //                Console.WriteLine("-> Đây là giao dịch Test của PayOS, bỏ qua DB.");
+        //                return Ok(new { success = true });
+        //            }
+
+        //            // TÌM MÃ ĐƠN HÀNG "PET{id}" ĐỂ TRỪ KHO
+        //            var match = Regex.Match(description, @"PET(?<id>\d+)", RegexOptions.IgnoreCase);
+        //            if (match.Success && int.TryParse(match.Groups["id"].Value, out var orderId))
+        //            {
+        //                var order = await _db.RetailOrders
+        //                    .Include(o => o.OrderDetails)
+        //                        .ThenInclude(od => od.medicine)
+        //                    .FirstOrDefaultAsync(o => o.id == orderId);
+
+        //                if (order != null && order.status == "PENDING" && amount >= (int)order.total_amount)
+        //                {
+        //                    order.status = "PAID";
+        //                    order.transaction_reference = orderCode.ToString();
+
+        //                    foreach (var detail in order.OrderDetails)
+        //                    {
+        //                        if (detail.medicine != null)
+        //                        {
+        //                            int currentStock = detail.medicine.stock_quantity ?? 0;
+        //                            detail.medicine.stock_quantity = Math.Max(0, currentStock - detail.quantity);
+        //                        }
+        //                    }
+
+        //                    await _db.SaveChangesAsync();
+        //                    Console.WriteLine($"[THÀNH CÔNG] Đã cập nhật đơn PET{orderId} thành PAID và trừ kho thuốc!");
+        //                }
+        //            }
+        //        }
+
+        //        return Ok(new { success = true });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"[WEBHOOK LỖI]: {ex.Message}");
+        //        return Ok(new { success = false });
+        //    }
+        //}
     }
 }

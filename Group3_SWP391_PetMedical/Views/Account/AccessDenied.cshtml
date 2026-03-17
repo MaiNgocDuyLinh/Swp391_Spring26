@@ -1,0 +1,71 @@
+@{
+    ViewData["Title"] = "Truy cập bị từ chối";
+    var returnUrl = ViewBag.ReturnUrl as string;
+}
+
+@section Styles {
+    <style>
+        .access-denied-wrap {
+            margin-top: 150px;
+            min-height: 50vh;
+        }
+        .access-denied-box {
+            background: #fff;
+            border-radius: 18px;
+            padding: 48px 32px;
+            text-align: center;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .access-denied-box i {
+            font-size: 4rem;
+            color: #ff3b3b;
+            margin-bottom: 16px;
+        }
+        .access-denied-box h2 {
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #2b2b2b;
+        }
+        .access-denied-box p {
+            color: #666;
+            margin-bottom: 24px;
+        }
+        .access-denied-box .btn-primary {
+            border-radius: 999px;
+            padding: 12px 24px;
+            font-weight: 700;
+            background: #ff3b3b;
+            border-color: #ff3b3b;
+        }
+        .access-denied-box .btn-primary:hover {
+            background: #e83434;
+            border-color: #e83434;
+        }
+        .access-denied-box .btn-outline {
+            border-radius: 999px;
+            padding: 12px 24px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+    </style>
+}
+
+<section class="container access-denied-wrap">
+    <div class="access-denied-box">
+        <i class="fas fa-lock"></i>
+        <h2>Truy cập bị từ chối</h2>
+        <p>Bạn không có quyền truy cập trang này. Tính năng <strong>Đặt thuốc</strong> và <strong>Giỏ hàng</strong> chỉ dành cho khách hàng (Customer).</p>
+        <div>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                <i class="fas fa-home me-2"></i> Về trang chủ
+            </a>
+            @if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                <a href="@returnUrl" class="btn btn-outline-secondary btn-outline">
+                    <i class="fas fa-arrow-left me-2"></i> Quay lại
+                </a>
+            }
+        </div>
+    </div>
+</section>
