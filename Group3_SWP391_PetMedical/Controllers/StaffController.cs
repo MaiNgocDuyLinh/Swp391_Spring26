@@ -37,6 +37,17 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(result.Items.ToList());
         }
 
+        public async Task<IActionResult> CustomerDetail(int id)
+        {
+            var customer = await _staffService.GetCustomerDetailAsync(id);
+            if (customer == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy khách hàng.";
+                return RedirectToAction(nameof(ListCustomers));
+            }
+            return View(customer);
+        }
+
         // ========== APPOINTMENTS: Daily ==========
         public async Task<IActionResult> AppointmentList(DateTime? date, string? search, int page = 1)
         {

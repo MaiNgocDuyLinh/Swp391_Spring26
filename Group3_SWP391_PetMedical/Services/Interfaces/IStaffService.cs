@@ -10,6 +10,7 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
 
         // ========== Customers ==========
         Task<PagedResult<User>> GetCustomersPagedAsync(string? search, int page, int pageSize);
+        Task<User?> GetCustomerDetailAsync(int customerId);
 
         // ========== Appointments ==========
         Task<PagedResult<Appointment>> GetAppointmentsByDatePagedAsync(DateTime date, string? search, int page, int pageSize);

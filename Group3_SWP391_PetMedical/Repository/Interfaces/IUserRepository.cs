@@ -24,5 +24,7 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
 
         /// <summary>Đổi mật khẩu: kiểm tra currentPassword, gán newPassword và lưu. Trả về (success, errorMessage).</summary>
         Task<(bool success, string? errorMessage)> UpdatePasswordAsync(int userId, string currentPassword, string newPassword);
+        /// <summary>Lấy thông tin chi tiết khách hàng và thú cưng (Staff)</summary>
+        Task<User?> GetCustomerDetailAsync(int customerId);
     }
 }

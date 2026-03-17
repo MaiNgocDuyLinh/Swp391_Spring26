@@ -103,5 +103,20 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             await _context.SaveChangesAsync();
             return (true, null);
         }
+        public async Task<User?> GetCustomerDetailAsync(int customerId)
+        {
+            return await _context.Users
+                .Include(u => u.Pets)
+                    .ThenInclude(p => p.Appointments.OrderByDescending(a => a.appointment_date))
+                        .ThenInclude(a => a.doctor)
+                .Include(u => u.Pets)
+                    .ThenInclude(p => p.Appointments)
+                        .ThenInclude(a => a.AppointmentDetails)
+                            .ThenInclude(ad => ad.service)
+                .Include(u => u.Pets)
+                    .ThenInclude(p => p.Appointments)
+                        .ThenInclude(a => a.Invoice)
+                .FirstOrDefaultAsync(u => u.user_id == customerId);
+        }
     }
 }

@@ -30,6 +30,8 @@
         .pc-pager .page-item .page-link:hover { border-color:rgba(255,59,59,0.35); color:var(--pc-red-dark); }
         .pc-pager .page-item.active .page-link { background:var(--pc-red) !important; border-color:var(--pc-red) !important; color:#fff !important; box-shadow:0 12px 24px rgba(255,59,59,0.25); }
         .pc-pager .page-item.disabled .page-link { opacity:0.45; pointer-events:none; box-shadow:none; }
+        .pc-ico { width:36px; height:36px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(0,0,0,0.10); background:#fff; color:var(--pc-text); box-shadow:0 8px 18px rgba(0,0,0,0.04); text-decoration:none; cursor:pointer; }
+        .pc-ico:hover { border-color:rgba(255,59,59,0.35); box-shadow:0 10px 22px rgba(255,59,59,0.12); color:var(--pc-red-dark); }
     </style>
 }
 
@@ -75,6 +77,7 @@
                             <th>Email</th>
                             <th style="width:120px;">Trạng thái</th>
                             <th style="width:130px;">Ngày tham gia</th>
+                            <th style="width:110px;">Hành động</th>
                         </tr>
                     </thead>
                     @{int idx = (currentPage - 1) * 5 + 1;}
@@ -93,6 +96,14 @@
                                     </span>
                                 </td>
                                 <td>@u.created_at?.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <div class="d-flex justify-content-center">
+                                        <a class="pc-ico" title="Chi tiết"
+                                           href="@Url.Action("CustomerDetail", "Staff", new { id = u.user_id })">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                         idx++;

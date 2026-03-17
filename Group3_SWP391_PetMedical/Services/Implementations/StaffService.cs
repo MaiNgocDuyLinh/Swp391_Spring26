@@ -29,6 +29,9 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<PagedResult<User>> GetCustomersPagedAsync(string? search, int page, int pageSize)
             => _userRepo.GetCustomersPagedAsync(search, page, pageSize);
 
+        public Task<User?> GetCustomerDetailAsync(int customerId)
+            => _userRepo.GetCustomerDetailAsync(customerId);
+
         // ========== Appointments ==========
         public Task<PagedResult<Appointment>> GetAppointmentsByDatePagedAsync(DateTime date, string? search, int page, int pageSize)
             => _appointmentRepo.GetAppointmentsByDatePagedAsync(date, search, page, pageSize);
