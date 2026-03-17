@@ -4,62 +4,496 @@
     ViewData["Title"] = "Chi tiết đơn hàng";
 }
 
-<div class="container py-5 mt-5">
-    <div class="mb-4">
-        <a href="@Url.Action("MyOrders", "CusShopping")" class="btn btn-outline-secondary">← Quay lại đơn hàng</a>
-    </div>
+@functions {
+    public static string NormalizeText(string? value)
+    {
+        return (value ?? "").Trim().ToLower();
+    }
 
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-white">
-            <h3 class="mb-0">Đơn hàng @Model.OrderCode</h3>
+    public static string GetOrderStatusClass(string? status)
+    {
+        var s = NormalizeText(status);
+
+        return s switch
+        {
+            "chờ xác nhận" => "pc-badge--warning",
+            "đang xử lý" => "pc-badge--warning",
+            "đã xác nhận" => "pc-badge--info",
+            "đang giao" => "pc-badge--info",
+            "sẵn sàng nhận hàng" => "pc-badge--info",
+            "đã giao" => "pc-badge--success",
+            "hoàn thành" => "pc-badge--success",
+            "đã hủy" => "pc-badge--danger",
+            "hủy" => "pc-badge--danger",
+            _ => "pc-badge--default"
+        };
+    }
+
+    public static string GetPaymentStatusClass(string? status)
+    {
+        var s = NormalizeText(status);
+
+        return s switch
+        {
+            "đã thanh toán" => "pc-badge--paid",
+            "thanh toán thành công" => "pc-badge--paid",
+            "chưa thanh toán" => "pc-badge--danger",
+            "chờ thanh toán" => "pc-badge--warning",
+            "thanh toán lỗi" => "pc-badge--warning",
+            "đã hoàn tiền" => "pc-badge--info",
+            "hoàn tiền" => "pc-badge--info",
+            _ => "pc-badge--default"
+        };
+    }
+
+    public static string GetOrderStatusIcon(string? status)
+    {
+        var s = NormalizeText(status);
+
+        return s switch
+        {
+            "chờ xác nhận" => "fas fa-hourglass-half",
+            "đang xử lý" => "fas fa-box-open",
+            "đã xác nhận" => "fas fa-check",
+            "đang giao" => "fas fa-truck",
+            "sẵn sàng nhận hàng" => "fas fa-box",
+            "đã giao" => "fas fa-check-circle",
+            "hoàn thành" => "fas fa-check-circle",
+            "đã hủy" => "fas fa-times-circle",
+            "hủy" => "fas fa-times-circle",
+            _ => "fas fa-info-circle"
+        };
+    }
+
+    public static string GetPaymentStatusIcon(string? status)
+    {
+        var s = NormalizeText(status);
+
+        return s switch
+        {
+            "đã thanh toán" => "fas fa-wallet",
+            "thanh toán thành công" => "fas fa-wallet",
+            "chưa thanh toán" => "fas fa-credit-card",
+            "chờ thanh toán" => "fas fa-clock",
+            "thanh toán lỗi" => "fas fa-exclamation-triangle",
+            "đã hoàn tiền" => "fas fa-undo-alt",
+            "hoàn tiền" => "fas fa-undo-alt",
+            _ => "fas fa-money-check-alt"
+        };
+    }
+}
+
+@section Styles {
+    <style>
+        :root {
+            --pc-red: #ff3b3b;
+            --pc-red-dark: #e83434;
+            --pc-pink: #fff2f2;
+            --pc-text: #2b2b2b;
+            --pc-muted: #7a7a7a;
+            --pc-border: rgba(0,0,0,0.06);
+            --pc-success-bg: #e8f5e9;
+            --pc-success-text: #2e7d32;
+            --pc-info-bg: #e0f2fe;
+            --pc-info-text: #0369a1;
+            --pc-warning-bg: #fff3cd;
+            --pc-warning-text: #856404;
+            --pc-danger-bg: #fdeaea;
+            --pc-danger-text: #c62828;
+            --pc-default-bg: #f3f4f6;
+            --pc-default-text: #6b7280;
+        }
+
+        .pc-wrap {
+            background: #f3d7d5;
+            border: 1px solid var(--pc-border);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+            margin-top: 150px;
+            margin-bottom: 24px;
+        }
+
+        .pc-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .pc-title {
+            font-weight: 800;
+            margin: 0;
+            color: var(--pc-text);
+        }
+
+        .pc-sub {
+            color: var(--pc-muted);
+            margin: 0;
+        }
+
+        .pc-btn {
+            border-radius: 999px;
+            padding: 0 18px;
+            height: 42px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            text-decoration: none !important;
+        }
+
+        .pc-btn--primary {
+            background: var(--pc-red);
+            color: #fff !important;
+            box-shadow: 0 10px 20px rgba(255,59,59,0.25);
+        }
+
+            .pc-btn--primary:hover {
+                background: var(--pc-red-dark);
+                color: #fff !important;
+            }
+
+        .pc-btn--ghost {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.10);
+            color: var(--pc-text) !important;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+        }
+
+            .pc-btn--ghost:hover {
+                border-color: rgba(255,59,59,0.35);
+                box-shadow: 0 10px 22px rgba(255,59,59,0.12);
+                color: var(--pc-red-dark) !important;
+            }
+
+        .pc-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .pc-card {
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+        .pc-card-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--pc-text);
+            margin-bottom: 14px;
+        }
+
+        .pc-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px 18px;
+        }
+
+        .pc-info-item {
+            min-width: 0;
+        }
+
+        .pc-info-item--full {
+            grid-column: 1 / -1;
+        }
+
+        .pc-info-label {
+            color: var(--pc-muted);
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .pc-info-value {
+            color: var(--pc-text);
+            font-weight: 700;
+            word-break: break-word;
+        }
+
+        .pc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            border: 1px solid rgba(0,0,0,0.04);
+            white-space: nowrap;
+        }
+
+            .pc-badge i {
+                color: inherit !important;
+            }
+
+        .pc-badge--paid {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .pc-badge--success {
+            background: var(--pc-success-bg);
+            color: var(--pc-success-text);
+        }
+
+        .pc-badge--info {
+            background: var(--pc-info-bg);
+            color: var(--pc-info-text);
+        }
+
+        .pc-badge--warning {
+            background: var(--pc-warning-bg);
+            color: var(--pc-warning-text);
+        }
+
+        .pc-badge--danger {
+            background: var(--pc-danger-bg);
+            color: var(--pc-danger-text);
+        }
+
+        .pc-badge--default {
+            background: var(--pc-default-bg);
+            color: var(--pc-default-text);
+        }
+
+        .pc-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .pc-summary-card {
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            border-radius: 16px;
+            padding: 16px 18px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+        .pc-summary-label {
+            color: var(--pc-muted);
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .pc-summary-value {
+            font-size: 1.35rem;
+            font-weight: 900;
+            color: var(--pc-text);
+            line-height: 1.2;
+        }
+
+        .pc-table {
+            border-radius: 16px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+            .pc-table .table {
+                margin-bottom: 0;
+            }
+
+            .pc-table thead th {
+                background: #fff7f7;
+                font-weight: 800;
+                color: var(--pc-text);
+                border-bottom: 1px solid rgba(0,0,0,0.06);
+                white-space: nowrap;
+                vertical-align: middle;
+            }
+
+            .pc-table tbody tr {
+                transition: background 0.25s ease;
+            }
+
+                .pc-table tbody tr:hover {
+                    background: #fff3f3;
+                }
+
+            .pc-table td {
+                vertical-align: middle;
+            }
+
+        .pc-money {
+            font-weight: 900;
+            color: var(--pc-text);
+            white-space: nowrap;
+        }
+
+        .pc-product-name {
+            font-weight: 700;
+            color: var(--pc-text);
+        }
+
+        .pc-variant {
+            color: var(--pc-muted);
+            font-weight: 600;
+        }
+
+        @@media (max-width: 991.98px) {
+            .pc-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pc-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 767.98px) {
+            .pc-wrap {
+                margin-top: 135px;
+                padding: 14px;
+                border-radius: 16px;
+            }
+
+            .pc-topbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+                .pc-topbar .pc-btn {
+                    width: 100%;
+                }
+
+            .pc-summary-value {
+                font-size: 1.15rem;
+            }
+        }
+    </style>
+}
+
+<section class="container">
+    <div class="pc-wrap">
+        <div class="pc-topbar">
+            <div>
+                <h3 class="pc-title">Chi tiết đơn hàng</h3>
+                <p class="pc-sub">Theo dõi thông tin  đơn hàng của bạn</p>
+            </div>
+
+            <a href="@Url.Action("MyOrders", "CusShopping")" class="pc-btn pc-btn--ghost">
+                <i class="fas fa-arrow-left"></i>
+                <span>Quay lại đơn hàng</span>
+            </a>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6 mb-2"><strong>Ngày tạo:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
-                <div class="col-md-6 mb-2"><strong>Trạng thái đơn:</strong> @Model.OrderStatus</div>
-                <div class="col-md-6 mb-2"><strong>Thanh toán:</strong> @Model.PaymentStatus</div>
-                <div class="col-md-6 mb-2"><strong>Phương thức thanh toán:</strong> @Model.PaymentMethod</div>
-                <div class="col-md-6 mb-2"><strong>Nhận hàng:</strong> @Model.PickupMethod</div>
-                <div class="col-md-6 mb-2"><strong>Ngày nhận mong muốn:</strong> @(Model.PickupDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
-                <div class="col-12"><strong>Ghi chú:</strong> @(string.IsNullOrWhiteSpace(Model.PickupNote) ? "-" : Model.PickupNote)</div>
+
+        <div class="pc-grid">
+            <div class="pc-card">
+                <div class="pc-card-title">Thông tin đơn hàng</div>
+
+                <div class="pc-info-grid">
+                    <div class="pc-info-item">
+                        <div class="pc-info-label">Ngày tạo</div>
+                        <div class="pc-info-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+
+                    <div class="pc-info-item">
+                        <div class="pc-info-label">Phương thức thanh toán</div>
+                        <div class="pc-info-value">@Model.PaymentMethod</div>
+                    </div>
+
+                    <div class="pc-info-item">
+                        <div class="pc-info-label">Trạng thái đơn</div>
+                        <div class="pc-info-value">
+                            <span class="pc-badge @GetOrderStatusClass(Model.OrderStatus)">
+                                <i class="@GetOrderStatusIcon(Model.OrderStatus)"></i>
+                                @Model.OrderStatus
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="pc-info-item">
+                        <div class="pc-info-label">Thanh toán</div>
+                        <div class="pc-info-value">
+                            <span class="pc-badge @GetPaymentStatusClass(Model.PaymentStatus)">
+                                <i class="@GetPaymentStatusIcon(Model.PaymentStatus)"></i>
+                                @Model.PaymentStatus
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="pc-info-item">
+                        <div class="pc-info-label">Nhận hàng</div>
+                        <div class="pc-info-value">@Model.PickupMethod</div>
+                    </div>
+
+                    <div class="pc-info-item">
+                        <div class="pc-info-label">Ngày nhận mong muốn</div>
+                        <div class="pc-info-value">@(Model.PickupDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+                    </div>
+
+                    <div class="pc-info-item pc-info-item--full">
+                        <div class="pc-info-label">Ghi chú</div>
+                        <div class="pc-info-value">@(string.IsNullOrWhiteSpace(Model.PickupNote) ? "-" : Model.PickupNote)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pc-summary">
+                <div class="pc-summary-card">
+                    <div class="pc-summary-label">Mã đơn hàng</div>
+                    <div class="pc-summary-value">@Model.OrderCode</div>
+                </div>
+
             </div>
         </div>
-    </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white">
-            <h4 class="mb-0">Sản phẩm</h4>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered bg-white">
-                    <thead class="thead-light">
+        <div class="pc-card" style="padding:0; background:transparent; border:none; box-shadow:none;">
+            <div class="pc-table table-responsive">
+                <table class="table align-middle">
+                    <thead>
                         <tr>
                             <th>Sản phẩm</th>
-                            <th>Biến thể</th>
-                            <th>Đơn giá</th>
-                            <th>Số lượng</th>
-                            <th>Thành tiền</th>
+                            <th>Phân loại</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-end">Thành tiền</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model.Items)
                         {
                             <tr>
-                                <td>@item.ProductName</td>
-                                <td>@(string.IsNullOrWhiteSpace(item.VariantName) ? "-" : item.VariantName)</td>
-                                <td>@item.UnitPrice.ToString("N0") đ</td>
-                                <td>@item.Quantity</td>
-                                <td>@item.LineTotal.ToString("N0") đ</td>
+                                <td>
+                                    <div class="pc-product-name">@item.ProductName</div>
+                                </td>
+                                <td>
+                                    <div class="pc-variant">@(string.IsNullOrWhiteSpace(item.VariantName) ? "-" : item.VariantName)</div>
+                                </td>
+                                <td class="text-end">
+                                    <span class="pc-money">@item.UnitPrice.ToString("N0") đ</span>
+                                </td>
+                                <td class="text-center">
+                                    @item.Quantity
+                                </td>
+                                <td class="text-end">
+                                    <span class="pc-money">@item.LineTotal.ToString("N0") đ</span>
+                                </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
 
-            <div class="text-right mt-3">
-                <h4>Tổng cộng: <span class="text-danger">@Model.TotalAmount.ToString("N0") đ</span></h4>
+            <div class="text-end mt-3 px-1">
+                <h4 class="mb-0" style="font-weight:900; color: var(--pc-text);">
+                    Tổng cộng:
+                    <span style="color: var(--pc-red);">@Model.TotalAmount.ToString("N0") đ</span>
+                </h4>
             </div>
         </div>
     </div>
-</div>
+</section>
