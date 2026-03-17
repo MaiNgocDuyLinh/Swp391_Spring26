@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PayOS;
-using PayOS.Models.V2.PaymentRequests; // THÊM THƯ VIỆN NÀY ĐỂ TẠO LINK PAYOS
+using PayOS.Models.V2.PaymentRequests;
 using System.Security.Claims;
 
 namespace Group3_SWP391_PetMedical.Controllers
@@ -13,16 +13,13 @@ namespace Group3_SWP391_PetMedical.Controllers
     public class CheckoutController : Controller
     {
         private readonly PetClinicContext _context;
-
-        private const string BankCode = "BIDV";
-        private const string AccountNumber = "4880689237";
         private readonly PayOSClient _payOSClient;
         private readonly string _baseUrl;
 
         public CheckoutController(PetClinicContext context, IConfiguration configuration)
         {
             _context = context;
-            //_baseUrl = configuration["BaseUrl"] ?? "https://localhost:7000";
+            // Dùng link Ngrok để không bị văng đăng nhập
             _baseUrl = "https://tamia-pinkish-denzel.ngrok-free.dev";
 
             string clientId = configuration["PayOS:ClientId"] ?? "";
@@ -37,19 +34,39 @@ namespace Group3_SWP391_PetMedical.Controllers
             });
         }
 
+        // 1. HÀM MỚI: Đón dữ liệu POST từ Giỏ hàng và Redirect sang GET
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index([FromForm] int[] medicineIds)
+        public IActionResult Index([FromForm] int[] medicineIds)
+        {
+            if (medicineIds == null || medicineIds.Length == 0)
+                return RedirectToAction("Index", "Cart");
+
+            // Lưu danh sách ID vào TempData (chỉ sống được qua 1 lần chuyển trang)
+            TempData["SelectedMedicineIds"] = medicineIds;
+
+            // Chuyển hướng sang hàm GET bên dưới
+            return RedirectToAction(nameof(ConfirmOrder));
+        }
+
+        
+        [HttpGet]
+        public async Task<IActionResult> ConfirmOrder() // dùng get để không bị lỗi resubmit
         {
             var userId = GetCurrentUserId();
             if (userId == null) return Forbid();
 
+            // Lấy lại danh sách ID từ TempData
+            var medicineIds = TempData["SelectedMedicineIds"] as int[];
+
             if (medicineIds == null || medicineIds.Length == 0)
                 return RedirectToAction("Index", "Cart");
 
+            // Giữ lại TempData để nếu khách bấm F5 trang này thì vẫn còn dữ liệu
+            TempData.Keep("SelectedMedicineIds");
+
             var cart = await _context.Carts
-                .Include(c => c.CartItems)
-                    .ThenInclude(ci => ci.medicine)
+                .Include(c => c.CartItems).ThenInclude(ci => ci.medicine)
                 .FirstOrDefaultAsync(c => c.user_id == userId.Value && c.status == "ACTIVE");
 
             if (cart == null || !cart.CartItems.Any())
@@ -68,26 +85,24 @@ namespace Group3_SWP391_PetMedical.Controllers
                 })
                 .ToList();
 
-            if (!items.Any())
-                return RedirectToAction("Index", "Cart");
-
             var vm = new CheckoutVm
             {
                 Items = items,
                 TotalAmount = items.Sum(i => i.line_total),
-                SelectedMedicineIds = items.Select(i => i.medicine_id).ToArray()
+                SelectedMedicineIds = medicineIds
             };
 
+            // Check tồn kho
             foreach (var item in items)
             {
                 if (item.quantity > item.stock_quantity)
                 {
-                    vm.StockErrors.Add(
-                        $"Thuốc {item.medicine_name} chỉ còn {item.stock_quantity} đơn vị, nhưng bạn chọn {item.quantity}.");
+                    vm.StockErrors.Add($"Thuốc {item.medicine_name} chỉ còn {item.stock_quantity} đơn vị, nhưng bạn chọn {item.quantity}.");
                 }
             }
 
-            return View(vm);
+            // Trả về View Index.cshtml 
+            return View("Index", vm);
         }
 
         [HttpPost]
@@ -101,128 +116,68 @@ namespace Group3_SWP391_PetMedical.Controllers
                 return RedirectToAction("Index", "Cart");
 
             var cart = await _context.Carts
-                .Include(c => c.CartItems)
-                    .ThenInclude(ci => ci.medicine)
+                .Include(c => c.CartItems).ThenInclude(ci => ci.medicine)
                 .FirstOrDefaultAsync(c => c.user_id == userId.Value && c.status == "ACTIVE");
 
-            if (cart == null || !cart.CartItems.Any())
-                return RedirectToAction("Index", "Cart");
-
             var selectedSet = new HashSet<int>(form.SelectedMedicineIds);
-            var cartItems = cart.CartItems
-                .Where(ci => selectedSet.Contains(ci.medicine_id))
-                .ToList();
+            var cartItems = cart.CartItems.Where(ci => selectedSet.Contains(ci.medicine_id)).ToList();
 
-            if (!cartItems.Any())
-                return RedirectToAction("Index", "Cart");
-
-            var items = cartItems.Select(ci => new CheckoutItemVm
-            {
-                medicine_id = ci.medicine_id,
-                medicine_name = ci.medicine.name,
-                unit_price = ci.medicine.unit_price,
-                quantity = ci.quantity,
-                stock_quantity = ci.medicine.stock_quantity ?? 0
-            }).ToList();
-
-            var stockErrors = new List<string>();
-            foreach (var item in items)
-            {
-                if (item.quantity > item.stock_quantity)
-                {
-                    stockErrors.Add(
-                        $"Thuốc {item.medicine_name} chỉ còn {item.stock_quantity} đơn vị, nhưng bạn chọn {item.quantity}.");
-                }
-            }
-
-            if (stockErrors.Any())
-            {
-                var vm = new CheckoutVm
-                {
-                    Items = items,
-                    TotalAmount = items.Sum(i => i.line_total),
-                    PickupSlot = form.PickupSlot,
-                    Note = form.Note,
-                    SelectedMedicineIds = items.Select(i => i.medicine_id).ToArray(),
-                    StockErrors = stockErrors
-                };
-                return View("Index", vm);
-            }
+            if (!cartItems.Any()) return RedirectToAction("Index", "Cart");
 
             using var tx = await _context.Database.BeginTransactionAsync();
-
-            var total = items.Sum(i => i.line_total);
-
-            var order = new RetailOrder
-            {
-                user_id = userId.Value,
-                total_amount = total,
-                status = "PENDING",
-                created_at = DateTime.UtcNow,
-                pickup_slot = form.PickupSlot,
-                note = form.Note
-            };
-
-            _context.RetailOrders.Add(order);
-            await _context.SaveChangesAsync();
-
-            foreach (var ci in cartItems)
-            {
-                var detail = new OrderDetail
-                {
-                    order_id = order.id,
-                    medicine_id = ci.medicine_id,
-                    quantity = ci.quantity
-                };
-                _context.OrderDetails.Add(detail);
-            }
-
-            _context.CartItems.RemoveRange(cartItems);
-
-            await _context.SaveChangesAsync();
-            await tx.CommitAsync();
-
-            // --------------------------------------------------------
-            // GỌI PAYOS ĐỂ TẠO CỔNG THANH TOÁN
-            // --------------------------------------------------------
             try
             {
+                var total = cartItems.Sum(ci => ci.quantity * ci.medicine.unit_price);
+                var order = new RetailOrder
+                {
+                    user_id = userId.Value,
+                    total_amount = total,
+                    status = "PENDING",
+                    created_at = DateTime.UtcNow,
+                    pickup_slot = form.PickupSlot,
+                    note = form.Note
+                };
+
+                _context.RetailOrders.Add(order);
+                await _context.SaveChangesAsync();
+
+                foreach (var ci in cartItems)
+                {
+                    _context.OrderDetails.Add(new OrderDetail
+                    {
+                        order_id = order.id,
+                        medicine_id = ci.medicine_id,
+                        quantity = ci.quantity
+                    });
+                }
+
+                _context.CartItems.RemoveRange(cartItems);
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                // GỌI PAYOS
                 var request = new CreatePaymentLinkRequest
                 {
                     OrderCode = order.id,
                     Amount = (int)total,
-                    Description = $"PET{order.id}", // Mã này giúp Webhook nhận diện đúng đơn hàng
+                    Description = $"PET{order.id}",
                     CancelUrl = $"{_baseUrl}/api/payment/cancel",
-                    ReturnUrl = $"{_baseUrl}/api/payment/success"
+                    ReturnUrl = $"{_baseUrl}/Home?payment=success" // Vút về trang chủ khi xong
                 };
 
-                CreatePaymentLinkResponse result = await _payOSClient.PaymentRequests.CreateAsync(request);
-
-                // Bay thẳng sang giao diện thanh toán xịn xò của PayOS
+                var result = await _payOSClient.PaymentRequests.CreateAsync(request);
                 return Redirect(result.CheckoutUrl);
             }
             catch (Exception ex)
             {
-                return Content("Lỗi kết nối PayOS: " + ex.Message);
+                await tx.RollbackAsync();
+                return Content("Lỗi: " + ex.Message);
             }
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> CheckOrderStatus(int id)
-        {
-            var order = await _context.RetailOrders
-                .AsNoTracking()
-                .FirstOrDefaultAsync(o => o.id == id);
-
-            if (order == null) return NotFound();
-
-            return Json(new { status = order.status });
         }
 
         private int? GetCurrentUserId()
         {
-            var raw = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                      ?? User.FindFirstValue("user_id");
+            var raw = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("user_id");
             return int.TryParse(raw, out var id) ? id : null;
         }
     }
