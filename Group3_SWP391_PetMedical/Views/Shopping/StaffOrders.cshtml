@@ -6,8 +6,7 @@
 
     var totalOrders = Model?.Result?.TotalItems ?? 0;
     var currentPage = Model?.Result?.Page ?? 1;
-    var pageSize = Model?.Result?.PageSize ?? 6
-    ;
+    var pageSize = Model?.Result?.PageSize ?? 6;
     var totalPages = totalOrders > 0 ? (int)Math.Ceiling((double)totalOrders / pageSize) : 1;
 
     var hasFilter =
@@ -41,10 +40,8 @@
 
         return s switch
         {
-            "chờ xác nhận" => "pc-badge--warning",
-            "đã xác nhận" => "pc-badge--info",
-            "sẵn sàng nhận hàng" => "pc-badge--info",
-            "hoàn thành" => "pc-badge--success",
+            "đặt hàng thành công" => "pc-badge--warning",
+            "đã nhận hàng" => "pc-badge--success",
             "đã hủy" => "pc-badge--danger",
             _ => "pc-badge--default"
         };
@@ -58,8 +55,6 @@
         {
             "đã thanh toán" => "pc-badge--paid",
             "chưa thanh toán" => "pc-badge--danger",
-            "thanh toán lỗi" => "pc-badge--warning",
-            "hoàn tiền" => "pc-badge--info",
             _ => "pc-badge--default"
         };
     }
@@ -70,10 +65,8 @@
 
         return s switch
         {
-            "chờ xác nhận" => "fas fa-hourglass-half",
-            "đã xác nhận" => "fas fa-check",
-            "sẵn sàng nhận hàng" => "fas fa-box-open",
-            "hoàn thành" => "fas fa-check-circle",
+            "đặt hàng thành công" => "fas fa-check-circle",
+            "đã nhận hàng" => "fas fa-box-open",
             "đã hủy" => "fas fa-times-circle",
             _ => "fas fa-info-circle"
         };
@@ -87,8 +80,6 @@
         {
             "đã thanh toán" => "fas fa-wallet",
             "chưa thanh toán" => "fas fa-credit-card",
-            "thanh toán lỗi" => "fas fa-exclamation-triangle",
-            "hoàn tiền" => "fas fa-undo-alt",
             _ => "fas fa-money-check-alt"
         };
     }
@@ -513,7 +504,7 @@
 
         <div class="pc-filter">
             <form method="get" asp-controller="StaffShopping" asp-action="Orders" class="row g-3">
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-5 col-md-6">
                     <div class="pc-label">Tìm kiếm</div>
                     <input type="text"
                            name="Keyword"
@@ -526,22 +517,18 @@
                     <div class="pc-label">Trạng thái đơn</div>
                     <select name="OrderStatus" class="form-select pc-select">
                         <option value="">-- Trạng thái đơn --</option>
-                        <option value="Chờ xác nhận" selected="@(Model.Query.OrderStatus == "Chờ xác nhận")">Chờ xác nhận</option>
-                        <option value="Đã xác nhận" selected="@(Model.Query.OrderStatus == "Đã xác nhận")">Đã xác nhận</option>
-                        <option value="Sẵn sàng nhận hàng" selected="@(Model.Query.OrderStatus == "Sẵn sàng nhận hàng")">Sẵn sàng nhận hàng</option>
-                        <option value="Hoàn thành" selected="@(Model.Query.OrderStatus == "Hoàn thành")">Hoàn thành</option>
+                        <option value="Đặt hàng thành công" selected="@(Model.Query.OrderStatus == "Đặt hàng thành công")">Đặt hàng thành công</option>
+                        <option value="Đã nhận hàng" selected="@(Model.Query.OrderStatus == "Đã nhận hàng")">Đã nhận hàng</option>
                         <option value="Đã hủy" selected="@(Model.Query.OrderStatus == "Đã hủy")">Đã hủy</option>
                     </select>
                 </div>
 
-                <div class="col-lg-3 col-md-6">
-                    <div class="pc-label">Trạng thái thanh toán</div>
+                <div class="col-lg-2 col-md-6">
+                    <div class="pc-label">Thanh toán</div>
                     <select name="PaymentStatus" class="form-select pc-select">
-                        <option value="">-- Trạng thái thanh toán --</option>
+                        <option value="">-- Thanh toán --</option>
                         <option value="Chưa thanh toán" selected="@(Model.Query.PaymentStatus == "Chưa thanh toán")">Chưa thanh toán</option>
                         <option value="Đã thanh toán" selected="@(Model.Query.PaymentStatus == "Đã thanh toán")">Đã thanh toán</option>
-                        <option value="Thanh toán lỗi" selected="@(Model.Query.PaymentStatus == "Thanh toán lỗi")">Thanh toán lỗi</option>
-                        <option value="Hoàn tiền" selected="@(Model.Query.PaymentStatus == "Hoàn tiền")">Hoàn tiền</option>
                     </select>
                 </div>
 

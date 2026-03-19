@@ -11,6 +11,39 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
     {
         private readonly PetClinicContext _context;
 
+        private const string InternalPendingOrderStatus = "Chờ xác nhận";
+        private const string InternalReceivedOrderStatus = "Hoàn thành";
+        private const string InternalCancelledOrderStatus = "Đã hủy";
+
+        private static readonly string[] PendingOrderStatuses =
+        {
+            "Đặt hàng thành công",
+            "Chờ xác nhận",
+            "Đã xác nhận",
+            "Sẵn sàng nhận hàng",
+            "Đang xử lý",
+            "Đang giao"
+        };
+
+        private static readonly string[] ReceivedOrderStatuses =
+        {
+            "Đã nhận hàng",
+            "Đã giao",
+            "Hoàn thành"
+        };
+
+        private static readonly string[] CancelledOrderStatuses =
+        {
+            "Đã hủy",
+            "Hủy"
+        };
+
+        private static readonly string[] PaidStatuses =
+        {
+            "Đã thanh toán",
+            "Thanh toán thành công"
+        };
+
         public StaffShoppingRepository(PetClinicContext context)
         {
             _context = context;
@@ -156,8 +189,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             await _context.SaveChangesAsync();
 
             await SaveVariantsAsync(entity.ProductId, vm.Variants);
-
-            // BẮT BUỘC phải có dòng này để lưu variants
             await _context.SaveChangesAsync();
 
             return entity.ProductId;
@@ -250,10 +281,36 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             }
 
             if (!string.IsNullOrWhiteSpace(query.OrderStatus))
-                q = q.Where(x => x.OrderStatus == query.OrderStatus);
+            {
+                var filterOrderStatus = NormalizeOrderStatus(query.OrderStatus);
+
+                if (filterOrderStatus == "Đã hủy")
+                {
+                    q = q.Where(x => CancelledOrderStatuses.Contains(x.OrderStatus));
+                }
+                else if (filterOrderStatus == "Đã nhận hàng")
+                {
+                    q = q.Where(x => ReceivedOrderStatuses.Contains(x.OrderStatus));
+                }
+                else
+                {
+                    q = q.Where(x => PendingOrderStatuses.Contains(x.OrderStatus));
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(query.PaymentStatus))
-                q = q.Where(x => x.PaymentStatus == query.PaymentStatus);
+            {
+                var filterPaymentStatus = NormalizePaymentStatus(query.PaymentStatus);
+
+                if (filterPaymentStatus == "Đã thanh toán")
+                {
+                    q = q.Where(x => PaidStatuses.Contains(x.PaymentStatus));
+                }
+                else
+                {
+                    q = q.Where(x => !PaidStatuses.Contains(x.PaymentStatus));
+                }
+            }
 
             var page = query.Page <= 0 ? 1 : query.Page;
             var pageSize = query.PageSize <= 0 ? 8 : query.PageSize;
@@ -261,12 +318,21 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             var totalItems = await q.CountAsync();
 
-            var items = await q
+            var rawItems = await q
                 .OrderByDescending(x => x.CreatedAt)
                 .ThenByDescending(x => x.OrderId)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+
+            var items = rawItems
+                .Select(x =>
+                {
+                    x.OrderStatus = NormalizeOrderStatus(x.OrderStatus);
+                    x.PaymentStatus = NormalizePaymentStatus(x.PaymentStatus);
+                    return x;
+                })
+                .ToList();
 
             return new PagedResult<StaffShoppingOrderRowVM>
             {
@@ -316,6 +382,21 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 })
                 .ToListAsync();
 
+            order.OrderStatus = NormalizeOrderStatus(order.OrderStatus);
+            order.PaymentStatus = NormalizePaymentStatus(order.PaymentStatus);
+            order.IsCancelled = order.OrderStatus == "Đã hủy";
+
+            if (order.IsCancelled)
+            {
+                order.IsStatusUpdateLocked = true;
+                order.StatusUpdateLockMessage = "Đơn hàng này đã hủy. Trạng thái hiện tại chỉ được xem, không thể cập nhật thêm.";
+            }
+            else if (order.OrderStatus == "Đã nhận hàng" && order.PaymentStatus == "Đã thanh toán")
+            {
+                order.IsStatusUpdateLocked = true;
+                order.StatusUpdateLockMessage = "Đơn hàng đã hoàn tất (đã nhận hàng và đã thanh toán), không thể cập nhật thêm.";
+            }
+
             return order;
         }
 
@@ -327,36 +408,151 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (order == null)
                 throw new Exception("Đơn hàng không tồn tại.");
 
-            var validOrderStatuses = new[]
+            var currentDisplayOrderStatus = NormalizeOrderStatus(order.OrderStatus);
+            var currentDisplayPaymentStatus = NormalizePaymentStatus(order.PaymentStatus);
+
+            var newDisplayOrderStatus = NormalizeOrderStatus(vm.OrderStatus);
+            var newDisplayPaymentStatus = NormalizePaymentStatus(vm.PaymentStatus);
+
+            if (currentDisplayOrderStatus == "Đã hủy")
+                throw new Exception("Đơn hàng đã hủy, không thể cập nhật thêm.");
+
+            if (currentDisplayOrderStatus == "Đã nhận hàng" && currentDisplayPaymentStatus == "Đã thanh toán")
+                throw new Exception("Đơn hàng đã hoàn tất (đã nhận hàng và đã thanh toán), không thể cập nhật thêm.");
+
+            if (currentDisplayOrderStatus == "Đã nhận hàng" && newDisplayOrderStatus == "Đặt hàng thành công")
+                throw new Exception("Đơn hàng đã nhận hàng, không thể chuyển về trạng thái trước đó.");
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
             {
-                "Chờ xác nhận",
-                "Đã xác nhận",
-                "Sẵn sàng nhận hàng",
-                "Hoàn thành",
-                "Đã hủy"
-            };
+                if (newDisplayOrderStatus == "Đã hủy")
+                {
+                    if (currentDisplayOrderStatus == "Đã nhận hàng")
+                        throw new Exception("Đơn hàng đã nhận hàng, không thể hủy.");
 
-            var validPaymentStatuses = new[]
+                    await CancelOrderInternalAsync(order);
+                }
+                else if (newDisplayOrderStatus == "Đã nhận hàng")
+                {
+                    order.OrderStatus = InternalReceivedOrderStatus;
+                }
+                else
+                {
+                    order.OrderStatus = InternalPendingOrderStatus;
+                }
+
+                order.PaymentStatus = newDisplayPaymentStatus == "Đã thanh toán"
+                    ? "Đã thanh toán"
+                    : "Chưa thanh toán";
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (DbUpdateException)
             {
-                "Chưa thanh toán",
-                "Đã thanh toán",
-                "Thanh toán lỗi",
-                "Hoàn tiền"
-            };
+                await transaction.RollbackAsync();
+                throw new Exception("Không thể cập nhật trạng thái đơn hàng. Vui lòng kiểm tra lại dữ liệu trạng thái trong cơ sở dữ liệu.");
+            }
+        }
 
-            if (!validOrderStatuses.Contains(vm.OrderStatus))
-                throw new Exception("Trạng thái đơn hàng không hợp lệ.");
+        public async Task<int> AutoCancelExpiredOrdersAsync()
+        {
+            var today = DateTime.Today;
 
-            if (!validPaymentStatuses.Contains(vm.PaymentStatus))
-                throw new Exception("Trạng thái thanh toán không hợp lệ.");
+            var expiredOrders = await _context.ProductOrders
+                .Where(x =>
+                    PendingOrderStatuses.Contains(x.OrderStatus) &&
+                    x.PickupDate.HasValue &&
+                    x.PickupDate.Value < today)
+                .OrderBy(x => x.OrderId)
+                .ToListAsync();
 
-            if (order.OrderStatus == "Đã hủy" || order.OrderStatus == "Hoàn thành")
-                throw new Exception("Đơn hàng đã kết thúc, không thể cập nhật thêm.");
+            if (!expiredOrders.Any())
+                return 0;
 
-            order.OrderStatus = vm.OrderStatus;
-            order.PaymentStatus = vm.PaymentStatus;
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            foreach (var order in expiredOrders)
+            {
+                await CancelOrderInternalAsync(order);
+            }
 
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return expiredOrders.Count;
+        }
+
+        private async Task CancelOrderInternalAsync(ProductOrder order)
+        {
+            await RestoreStockForOrderAsync(order.OrderId);
+            order.OrderStatus = InternalCancelledOrderStatus;
+        }
+
+        private async Task RestoreStockForOrderAsync(int orderId)
+        {
+            var orderItems = await _context.ProductOrderItems
+                .Where(x => x.OrderId == orderId)
+                .ToListAsync();
+
+            foreach (var item in orderItems)
+            {
+                if (item.VariantId.HasValue)
+                {
+                    var variant = await _context.ProductVariants
+                        .FirstOrDefaultAsync(x => x.VariantId == item.VariantId.Value);
+
+                    if (variant != null)
+                    {
+                        variant.StockQuantity += item.Quantity;
+
+                        if (variant.Status == "Hết hàng" && variant.StockQuantity > 0)
+                        {
+                            variant.Status = "Đang bán";
+                        }
+                    }
+                }
+                else
+                {
+                    var product = await _context.Products
+                        .FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
+
+                    if (product != null)
+                    {
+                        product.StockQuantity += item.Quantity;
+
+                        if (product.Status == "Hết hàng" && product.StockQuantity > 0)
+                        {
+                            product.Status = "Đang bán";
+                        }
+                    }
+                }
+            }
+        }
+
+        private static string NormalizeOrderStatus(string? status)
+        {
+            var value = (status ?? string.Empty).Trim();
+
+            if (CancelledOrderStatuses.Contains(value))
+                return "Đã hủy";
+
+            if (ReceivedOrderStatuses.Contains(value))
+                return "Đã nhận hàng";
+
+            return "Đặt hàng thành công";
+        }
+
+        private static string NormalizePaymentStatus(string? status)
+        {
+            var value = (status ?? string.Empty).Trim();
+
+            if (PaidStatuses.Contains(value))
+                return "Đã thanh toán";
+
+            return "Chưa thanh toán";
         }
 
         private async Task SaveVariantsAsync(int productId, List<StaffShoppingVariantInputVM>? variants)

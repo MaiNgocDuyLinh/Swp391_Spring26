@@ -125,6 +125,8 @@ namespace Group3_SWP391_PetMedical.Controllers
         [HttpGet]
         public async Task<IActionResult> Orders([FromQuery] StaffShoppingOrderQuery query)
         {
+            await _staffShoppingService.AutoCancelExpiredOrdersAsync();
+
             query ??= new StaffShoppingOrderQuery();
 
             var vm = new StaffShoppingOrdersVM
@@ -139,6 +141,8 @@ namespace Group3_SWP391_PetMedical.Controllers
         [HttpGet]
         public async Task<IActionResult> OrderDetail(int id)
         {
+            await _staffShoppingService.AutoCancelExpiredOrdersAsync();
+
             var vm = await _staffShoppingService.GetOrderDetailAsync(id);
             if (vm == null) return NotFound();
 

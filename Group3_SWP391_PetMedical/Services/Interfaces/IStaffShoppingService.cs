@@ -16,5 +16,6 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         Task<PagedResult<StaffShoppingOrderRowVM>> GetOrdersAsync(StaffShoppingOrderQuery query);
         Task<StaffShoppingOrderDetailVM?> GetOrderDetailAsync(int orderId);
         Task UpdateOrderStatusAsync(StaffShoppingUpdateOrderStatusVM vm);
+        Task<int> AutoCancelExpiredOrdersAsync();
     }
 }

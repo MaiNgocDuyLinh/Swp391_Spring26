@@ -88,6 +88,9 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task UpdateOrderStatusAsync(StaffShoppingUpdateOrderStatusVM vm)
             => _repository.UpdateOrderStatusAsync(vm);
 
+        public Task<int> AutoCancelExpiredOrdersAsync()
+            => _repository.AutoCancelExpiredOrdersAsync();
+
         private void NormalizeVm(StaffShoppingUpsertVM vm)
         {
             vm.Name = string.IsNullOrWhiteSpace(vm.Name) ? null : vm.Name.Trim();

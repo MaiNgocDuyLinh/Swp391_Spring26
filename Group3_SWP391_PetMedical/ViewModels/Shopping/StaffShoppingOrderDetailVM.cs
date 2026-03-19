@@ -16,6 +16,10 @@
         public DateTime? PickupDate { get; set; }
         public DateTime CreatedAt { get; set; }
 
+        public bool IsCancelled { get; set; }
+        public bool IsStatusUpdateLocked { get; set; }
+        public string? StatusUpdateLockMessage { get; set; }
+
         public List<StaffShoppingOrderItemVM> Items { get; set; } = new();
     }
 }
