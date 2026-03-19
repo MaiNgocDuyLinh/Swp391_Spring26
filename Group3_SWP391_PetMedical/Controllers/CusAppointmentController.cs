@@ -470,7 +470,6 @@ namespace Group3_SWP391_PetMedical.Controllers
         }
 
         // CANCEL GET (popup)
-        // /CusAppointment/Cancel?id=34&popup=1
         [HttpGet]
         public async Task<IActionResult> Cancel(int id, int? popup)
         {

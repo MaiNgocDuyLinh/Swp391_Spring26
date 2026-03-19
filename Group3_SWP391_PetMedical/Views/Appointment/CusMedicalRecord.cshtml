@@ -21,6 +21,10 @@
 <link rel="stylesheet" href="~/assets/css/fontawesome-all.min.css" />
 
 <style>
+    * {
+        box-sizing: border-box;
+    }
+
     :root {
         --pet-red: #ff5a5a;
         --pet-red-dark: #ef4444;
@@ -52,21 +56,21 @@
         padding: 0 18px;
     }
 
-
     .mr-box {
         background: #fff;
         border: 1px solid var(--pet-border);
         border-radius: 18px;
-        padding: 18px;
+        padding: 22px;
         box-shadow: 0 8px 24px rgba(0,0,0,0.04);
         margin-bottom: 18px;
+        overflow: hidden;
     }
 
     .mr-box-title {
         font-size: 1rem;
         font-weight: 800;
         color: #666;
-        margin-bottom: 14px;
+        margin-bottom: 16px;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -78,22 +82,25 @@
 
     .mr-pet-info {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 10px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        width: 100%;
     }
 
     .mr-info-row {
         background: var(--pet-soft);
         border: 1px solid var(--pet-border);
-        border-radius: 12px;
-        padding: 10px 12px;
+        border-radius: 14px;
+        padding: 12px 14px;
+        min-width: 0;
+        width: 100%;
     }
 
     .mr-info-label {
         font-size: 0.8rem;
         color: var(--pet-muted);
         font-weight: 700;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
 
     .mr-info-value {
@@ -101,6 +108,7 @@
         font-weight: 700;
         color: var(--pet-text);
         line-height: 1.4;
+        word-break: break-word;
     }
 
     .mr-timeline-item {
@@ -316,6 +324,20 @@
         .mr-summary {
             flex-direction: column;
         }
+
+        .mr-pet-info {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .mr-pet-info {
+            grid-template-columns: 1fr;
+        }
+
+        .mr-box {
+            padding: 16px;
+        }
     }
 </style>
 
@@ -370,7 +392,7 @@
 
                     <div class="mr-timeline-item">
                         <div class="mr-timeline-dot"></div>
-                        <span class="mr-timeline-date">@Model.AppointmentDate.ToString("dd/MM/yyyy HH:mm")</span>
+                        <span class="mr-timeline-date">@Model.AppointmentDate.ToString("dd/MM/yyyy") - @Model.AppointmentShift</span>
                         <p class="mr-timeline-text">Trạng thái: @Model.Status</p>
                     </div>
 

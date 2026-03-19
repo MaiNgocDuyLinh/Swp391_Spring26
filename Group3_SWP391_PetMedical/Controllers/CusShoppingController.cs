@@ -153,9 +153,21 @@ namespace Group3_SWP391_PetMedical.Controllers
                 var vm = await _cusShoppingService.GetCheckoutAsync(customerId, selectedIds);
                 vm.PickupDate = submitVm.PickupDate;
                 vm.PickupNote = submitVm.PickupNote;
-                vm.PaymentMethod = submitVm.PaymentMethod;
 
-                TempData["error"] = ex.Message;
+               
+                vm.PaymentMethod = "Thanh toán tại quầy";
+
+                var message = ex.Message ?? "Dữ liệu không hợp lệ.";
+
+                if (message.Contains("ngày nhận", StringComparison.OrdinalIgnoreCase))
+                {
+                    ModelState.AddModelError(nameof(CusCheckoutVM.PickupDate), message);
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, message);
+                }
+
                 return View("~/Views/Shopping/CusCheckout.cshtml", vm);
             }
         }

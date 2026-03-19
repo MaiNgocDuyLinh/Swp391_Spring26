@@ -7,11 +7,10 @@ namespace Group3_SWP391_PetMedical.ViewModels.Shopping
     public class CusCheckoutVM
     {
         public List<CusCartItemVM> Items { get; set; } = new();
-        public string? PaymentMethod { get; set; } = "Tiền mặt";
+        public string? PaymentMethod { get; set; } = "Thanh toán tại quầy";
         public string? PickupNote { get; set; }
         public DateTime? PickupDate { get; set; }
 
-        // Danh sách cart item được chọn để checkout
         public List<int> SelectedCartItemIds { get; set; } = new();
 
         public decimal SubTotal => Items.Sum(x => x.LineTotal);
@@ -23,7 +22,6 @@ namespace Group3_SWP391_PetMedical.ViewModels.Shopping
         public string? PickupNote { get; set; }
         public DateTime? PickupDate { get; set; }
 
-        // Nhận lại danh sách cart item đã chọn từ form checkout
         public List<int> SelectedCartItemIds { get; set; } = new();
     }
 

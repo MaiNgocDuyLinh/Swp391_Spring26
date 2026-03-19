@@ -120,6 +120,19 @@
             box-shadow: none !important;
         }
 
+    .input-validation-error.pc-equal-control,
+    .input-validation-error.pc-textarea {
+        border-color: #dc3545 !important;
+    }
+
+    .field-validation-error {
+        display: block;
+        color: #dc3545;
+        font-size: 13px;
+        font-weight: 600;
+        margin-top: 8px;
+    }
+
     .pc-btn-primary {
         border: 0;
         border-radius: 999px;
@@ -334,8 +347,7 @@
 
                     <div class="pc-title">Thanh toán đơn hàng</div>
                     <div class="pc-sub">
-                        Kiểm tra lại phương thức thanh toán, thời gian nhận mong muốn và ghi chú trước khi xác nhận đặt hàng.
-                        Đơn hàng sẽ được tạo với trạng thái <b>Chờ xác nhận</b>.
+                        Kiểm tra lại thông tin nhận hàng và ghi chú trước khi xác nhận đặt hàng.
                     </div>
 
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -346,8 +358,10 @@
                         </div>
 
                         <div class="pc-card-body">
-                            <form asp-controller="CusShopping" asp-action="Checkout" method="post">
+                            <form asp-controller="CusShopping" asp-action="Checkout" method="post" novalidate>
                                 @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="PaymentMethod" value="Thanh toán tại quầy" />
 
                                 @if (Model.SelectedCartItemIds != null && Model.SelectedCartItemIds.Any())
                                 {
@@ -360,29 +374,29 @@
                                 <div class="row g-3">
                                     <div class="col-12 pc-field">
                                         <label class="form-label">Phương thức thanh toán</label>
-                                        <select name="PaymentMethod" class="form-control pc-equal-control">
-                                            <option value="Tiền mặt" selected="@(Model.PaymentMethod == "Tiền mặt")">Tiền mặt</option>
-                                            <option value="Chuyển khoản" selected="@(Model.PaymentMethod == "Chuyển khoản")">Chuyển khoản</option>
-                                        </select>
+                                        <input type="text"
+                                               class="form-control pc-equal-control"
+                                               value="Thanh toán tại quầy"
+                                               readonly />
                                     </div>
 
                                     <div class="col-12 pc-field">
-                                        <label class="form-label">Ngày nhận mong muốn</label>
-                                        <input type="datetime-local"
-                                               name="PickupDate"
-                                               value="@(Model.PickupDate.HasValue? Model.PickupDate.Value.ToString("yyyy-MM-ddTHH:mm") : "")"
+                                        <label asp-for="PickupDate" class="form-label">Ngày nhận <span class="text-danger">*</span></label>
+                                        <input asp-for="PickupDate"
+                                               type="date"
                                                class="form-control pc-equal-control" />
+                                        <span asp-validation-for="PickupDate" class="text-danger"></span>
                                         <div class="pc-note">
-                                            Bạn có thể bỏ trống nếu không có yêu cầu thời gian cụ thể.
+                                            Vui lòng chọn ngày nhận. Ngày nhận phải từ ngày mai trở đi (đặt trước tối thiểu 24 giờ).
                                         </div>
                                     </div>
 
                                     <div class="col-12 pc-field">
-                                        <label class="form-label">Ghi chú</label>
-                                        <textarea name="PickupNote"
+                                        <label asp-for="PickupNote" class="form-label">Ghi chú</label>
+                                        <textarea asp-for="PickupNote"
                                                   class="form-control pc-textarea"
                                                   rows="4"
-                                                  placeholder="Lưu ý thêm cho phòng khám...">@Model.PickupNote</textarea>
+                                                  placeholder="Lưu ý thêm cho phòng khám..."></textarea>
                                     </div>
                                 </div>
 
@@ -442,7 +456,7 @@
                                 <div class="pc-pickup-box">
                                     <div class="pc-pickup-title">Hình thức nhận hàng</div>
                                     <p class="pc-pickup-sub">
-                                        Nhận tại phòng khám. Vui lòng đến đúng thời gian hẹn hoặc ghi chú thêm nếu cần hỗ trợ trước.
+                                        Nhận tại phòng khám. Vui lòng đến đúng ngày đã chọn hoặc ghi chú thêm nếu cần hỗ trợ trước.
                                     </p>
                                 </div>
                             }

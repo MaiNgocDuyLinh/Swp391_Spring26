@@ -8,6 +8,7 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
     public class CusShoppingService : ICusShoppingService
     {
         private readonly ICusShoppingRepository _repository;
+        private const string FixedPaymentMethod = "Thanh toán tại quầy";
 
         public CusShoppingService(ICusShoppingRepository repository)
         {
@@ -35,15 +36,56 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task RemoveCartItemAsync(int customerId, int cartItemId)
             => _repository.RemoveCartItemAsync(customerId, cartItemId);
 
-        public Task<CusCheckoutVM> GetCheckoutAsync(int customerId, List<int> selectedCartItemIds)
-    => _repository.GetCheckoutAsync(customerId, selectedCartItemIds);
+        public async Task<CusCheckoutVM> GetCheckoutAsync(int customerId, List<int> selectedCartItemIds)
+        {
+            var vm = await _repository.GetCheckoutAsync(customerId, selectedCartItemIds);
+            vm.PaymentMethod = FixedPaymentMethod;
+            return vm;
+        }
 
-        public Task<int> PlaceOrderAsync(int customerId, List<int> selectedCartItemIds, string? pickupNote, DateTime? pickupDate, string? paymentMethod)
-            => _repository.PlaceOrderAsync(customerId, selectedCartItemIds, pickupNote, pickupDate, paymentMethod);
+        public async Task<int> PlaceOrderAsync(
+            int customerId,
+            List<int> selectedCartItemIds,
+            string? pickupNote,
+            DateTime? pickupDate,
+            string? paymentMethod)
+        {
+            ValidateCheckout(selectedCartItemIds, pickupDate);
+
+            return await _repository.PlaceOrderAsync(
+                customerId,
+                selectedCartItemIds,
+                pickupNote,
+                pickupDate.Value.Date,
+                FixedPaymentMethod);
+        }
+
         public Task<CusShoppingMyOrdersVM> GetMyOrdersAsync(int customerId, CusShoppingOrderQuery query)
             => _repository.GetMyOrdersAsync(customerId, query);
 
         public Task<CusShoppingOrderDetailVM?> GetOrderDetailAsync(int customerId, int orderId)
             => _repository.GetOrderDetailAsync(customerId, orderId);
+
+        private static void ValidateCheckout(List<int> selectedCartItemIds, DateTime? pickupDate)
+        {
+            var selectedIds = selectedCartItemIds?.Distinct().ToList() ?? new List<int>();
+            if (!selectedIds.Any())
+            {
+                throw new Exception("Vui lòng chọn ít nhất 1 sản phẩm.");
+            }
+
+            if (!pickupDate.HasValue)
+            {
+                throw new Exception("Vui lòng chọn ngày nhận.");
+            }
+
+            var selectedDate = pickupDate.Value.Date;
+            var minDate = DateTime.Today.AddDays(1);
+
+            if (selectedDate < minDate)
+            {
+                throw new Exception("Ngày nhận phải từ ngày mai trở đi (đặt trước tối thiểu 24 giờ).");
+            }
+        }
     }
 }

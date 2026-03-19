@@ -327,7 +327,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return new CusCheckoutVM
             {
                 Items = selectedItems,
-                PaymentMethod = "Tiền mặt",
+                PaymentMethod = "Thanh toán tại quầy",
                 SelectedCartItemIds = selectedItems.Select(x => x.CartItemId).ToList()
             };
         }
@@ -397,12 +397,12 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 CustomerId = customerId,
                 OrderCode = $"PO{DateTime.Now:yyyyMMddHHmmssfff}",
                 TotalAmount = cartItems.Sum(x => x.CartItem.UnitPrice * x.CartItem.Quantity),
-                PaymentMethod = string.IsNullOrWhiteSpace(paymentMethod) ? "Tiền mặt" : paymentMethod,
+                PaymentMethod = string.IsNullOrWhiteSpace(paymentMethod) ? "Thanh toán tại quầy" : paymentMethod,
                 PaymentStatus = "Chưa thanh toán",
                 OrderStatus = "Chờ xác nhận",
                 PickupMethod = "Nhận tại phòng khám",
                 PickupNote = pickupNote,
-                PickupDate = pickupDate,
+                PickupDate = pickupDate?.Date,
                 CreatedAt = DateTime.Now
             };
 
