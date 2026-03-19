@@ -1,23 +1,10 @@
 @model List<Group3_SWP391_PetMedical.Models.Appointment>
 @{
-    ViewData["Title"] = "Quản lý lịch hẹn";
+    ViewData["Title"] = "Lịch sử đơn đã hủy";
     int currentPage = ViewBag.CurrentPage;
     int totalPages = ViewBag.TotalPages;
     int totalItems = ViewBag.TotalItems;
     string? search = ViewBag.Search;
-    string statusFilter = ViewBag.StatusFilter ?? "All";
-
-    (string bg, string color, string icon) StatusStyle(string? s) => (s ?? "").Trim() switch {
-        "Chờ xác nhận"        => ("#fef3c7", "#b45309", "fa-clock"),
-        "Đặt lịch thành công" => ("#d1fae5", "#047857", "fa-check-circle"),
-        "Đã Hủy"              => ("#fee2e2", "#dc2626", "fa-times-circle"),
-        "Đã đến"              => ("#e0e7ff", "#4338ca", "fa-map-marker-alt"),
-        "Không đến"           => ("#f3f4f6", "#6b7280", "fa-user-slash"),
-        "Đang khám"           => ("#fce7f3", "#be185d", "fa-stethoscope"),
-        "Đã khám"             => ("#ede9fe", "#6d28d9", "fa-clipboard-check"),
-        "Đã thanh toán"       => ("#dcfce7", "#15803d", "fa-money-check-alt"),
-        _                     => ("#f3f4f6", "#6b7280", "fa-question-circle")
-    };
 }
 
 @section Styles {
@@ -28,14 +15,13 @@
         .pc-filter { background:#fff; border:1px solid var(--pc-border); border-radius:16px; padding:18px; margin:18px 0; box-shadow:0 10px 25px rgba(0,0,0,0.04); }
         .pc-label { font-weight:700; font-size:0.9rem; margin-bottom:6px; }
         .pc-input { border-radius:12px; border:1px solid rgba(0,0,0,0.10); height:42px; padding:0 12px; }
-        .pc-select { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; height:42px !important; padding:0 12px !important; appearance:auto !important; -webkit-appearance:menulist !important; background:#fff !important; }
         .pc-btn { border-radius:999px; padding:0 18px; height:42px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; text-decoration:none; }
         .pc-btn--primary { background:var(--pc-red); color:#fff; box-shadow:0 10px 20px rgba(255,59,59,0.25); }
         .pc-btn--primary:hover { background:var(--pc-red-dark); color:#fff; }
         .pc-btn--ghost { background:#fff; border:1px solid rgba(0,0,0,0.10); color:var(--pc-text) !important; }
         .pc-table { border-radius:16px; overflow:hidden; background:#fff; border:1px solid var(--pc-border); box-shadow:0 10px 25px rgba(0,0,0,0.04); }
         .pc-table thead th { background:#fff7f7; font-weight:800; }
-        .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight:700; font-size:0.82rem; }
+        .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight:700; font-size:0.82rem; background:#fee2e2; color:#dc2626; }
         .pc-ico { width:36px; height:36px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(0,0,0,0.10); background:#fff; color:var(--pc-text); box-shadow:0 8px 18px rgba(0,0,0,0.04); text-decoration:none; cursor:pointer; }
         .pc-ico:hover { border-color:rgba(255,59,59,0.35); box-shadow:0 10px 22px rgba(255,59,59,0.12); color:var(--pc-red-dark); }
         .pc-action-icons { display:flex; justify-content:flex-end; gap:10px; }
@@ -52,33 +38,19 @@
 <section class="container py-4" id="servicesArea">
     <div class="pc-wrap" style="margin-top:150px;">
 
-        <h3 class="pc-title">Quản lý lịch hẹn</h3>
-        <p class="pc-sub">Xem và giám sát toàn bộ lịch hẹn</p>
+        <h3 class="pc-title"><i class="fas fa-times-circle" style="color:var(--pc-red);"></i> Lịch sử đơn đã hủy</h3>
+        <p class="pc-sub">Danh sách các lịch hẹn đã bị hủy</p>
 
         <div class="pc-filter">
-            <form method="get" asp-controller="Manager" asp-action="AppointmentList" class="row g-3">
-                <div class="col-lg-5 col-md-6">
+            <form method="get" asp-controller="Manager" asp-action="CancelledAppointments" class="row g-3">
+                <div class="col-lg-6 col-md-8">
                     <div class="pc-label">Từ khóa</div>
-                    <input class="form-control pc-input" name="search" value="@search" placeholder="Tên thú cưng / bác sĩ / khách hàng..." />
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="pc-label">Trạng thái</div>
-                    <select class="form-select pc-select" name="statusFilter">
-                        <option value="All" selected="@(statusFilter == "All" ? "selected" : null)">Tất cả</option>
-                        <option value="Chờ xác nhận" selected="@(statusFilter == "Chờ xác nhận" ? "selected" : null)">Chờ xác nhận</option>
-                        <option value="Đặt lịch thành công" selected="@(statusFilter == "Đặt lịch thành công" ? "selected" : null)">Đặt lịch thành công</option>
-                        <option value="Đã đến" selected="@(statusFilter == "Đã đến" ? "selected" : null)">Đã đến</option>
-                        <option value="Đang khám" selected="@(statusFilter == "Đang khám" ? "selected" : null)">Đang khám</option>
-                        <option value="Đã khám" selected="@(statusFilter == "Đã khám" ? "selected" : null)">Đã khám</option>
-                        <option value="Đã thanh toán" selected="@(statusFilter == "Đã thanh toán" ? "selected" : null)">Đã thanh toán</option>
-                        <option value="Đã Hủy" selected="@(statusFilter == "Đã Hủy" ? "selected" : null)">Đã Hủy</option>
-                        <option value="Không đến" selected="@(statusFilter == "Không đến" ? "selected" : null)">Không đến</option>
-                    </select>
+                    <input class="form-control pc-input" name="search" value="@search" placeholder="Tên khách hàng / thú cưng / bác sĩ / ghi chú..." />
                 </div>
                 <div class="col-12 mt-2">
                     <div class="d-flex justify-content-between align-items-center">
-                        <a class="pc-btn pc-btn--ghost" href="@Url.Action("AppointmentList", "Manager")#servicesArea"><i class="fas fa-undo-alt"></i> Làm mới</a>
-                        <button type="submit" class="pc-btn pc-btn--primary"><i class="fas fa-filter"></i> Lọc</button>
+                        <a class="pc-btn pc-btn--ghost" href="@Url.Action("CancelledAppointments", "Manager")#servicesArea"><i class="fas fa-undo-alt"></i> Làm mới</a>
+                        <button type="submit" class="pc-btn pc-btn--primary"><i class="fas fa-search"></i> Tìm kiếm</button>
                     </div>
                 </div>
             </form>
@@ -86,7 +58,9 @@
 
         @if (Model == null || !Model.Any())
         {
-            <div class="alert alert-info mb-0" style="border-radius:14px;">Không tìm thấy lịch hẹn nào.</div>
+            <div class="alert alert-info mb-0" style="border-radius:14px;">
+                <i class="fas fa-info-circle"></i> Không có lịch hẹn đã hủy nào.
+            </div>
         }
         else
         {
@@ -99,15 +73,14 @@
                             <th>Khách hàng</th>
                             <th>Thú cưng</th>
                             <th>Bác sĩ</th>
-                            <th>Dịch vụ</th>
-                            <th style="width:160px;">Trạng thái</th>
+                            <th>Ghi chú</th>
+                            <th style="width:120px;">Trạng thái</th>
                             <th style="width:80px;" class="text-end">Thao tác</th>
                         </tr>
                     </thead>
                     @{int idx = (currentPage - 1) * 5 + 1;}
                     @foreach (var a in Model)
                     {
-                        var s = StatusStyle(a.status);
                         <tbody class="pc-record">
                             <tr>
                                 <td>@idx</td>
@@ -118,15 +91,9 @@
                                     @if (a.pet?.species != null) { <small class="text-muted">(@a.pet.species)</small> }
                                 </td>
                                 <td>@(a.doctor?.full_name ?? "Chưa phân công")</td>
+                                <td><small class="text-muted">@(a.notes ?? "-")</small></td>
                                 <td>
-                                    @if (a.AppointmentDetails != null && a.AppointmentDetails.Any())
-                                    { @string.Join(", ", a.AppointmentDetails.Select(d => d.service?.service_name ?? "")) }
-                                    else { <span class="text-muted">N/A</span> }
-                                </td>
-                                <td>
-                                    <span class="pc-badge" style="background:@s.bg; color:@s.color;">
-                                        <i class="fas @s.icon"></i> @(a.status ?? "-")
-                                    </span>
+                                    <span class="pc-badge"><i class="fas fa-times-circle"></i> Đã Hủy</span>
                                 </td>
                                 <td class="text-end">
                                     <div class="pc-action-icons">
@@ -146,21 +113,21 @@
             <div class="mt-3 d-flex justify-content-center">
                 <ul class="pagination pc-pager">
                     <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("AppointmentList", "Manager", new { search, statusFilter, page = currentPage - 1 })"><i class="fas fa-chevron-left"></i></a>
+                        <a class="page-link" href="@Url.Action("CancelledAppointments", "Manager", new { search, page = currentPage - 1 })"><i class="fas fa-chevron-left"></i></a>
                     </li>
                     @for (int i = 1; i <= Math.Max(totalPages, 1); i++)
                     {
                         <li class="page-item @(i == currentPage ? "active" : "")">
-                            <a class="page-link" href="@Url.Action("AppointmentList", "Manager", new { search, statusFilter, page = i })">@i</a>
+                            <a class="page-link" href="@Url.Action("CancelledAppointments", "Manager", new { search, page = i })">@i</a>
                         </li>
                     }
                     <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("AppointmentList", "Manager", new { search, statusFilter, page = currentPage + 1 })"><i class="fas fa-chevron-right"></i></a>
+                        <a class="page-link" href="@Url.Action("CancelledAppointments", "Manager", new { search, page = currentPage + 1 })"><i class="fas fa-chevron-right"></i></a>
                     </li>
                 </ul>
             </div>
             <div class="text-center mt-2" style="color:var(--pc-muted); font-size:0.95rem;">
-                Tổng: <strong>@totalItems</strong> lịch hẹn
+                Tổng: <strong>@totalItems</strong> đơn đã hủy
             </div>
         }
     </div>

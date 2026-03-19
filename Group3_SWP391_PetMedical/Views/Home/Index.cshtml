@@ -269,54 +269,42 @@
             <div class="row d-flex justify-content-center">
                 <div class="col-xl-8 col-lg-8 col-md-10">
                     <div class="h1-testimonial-active dot-style">
-                        <!-- Single Testimonial -->
-                        <div class="single-testimonial text-center">
-                            <div class="testimonial-caption ">
-                                <!-- founder -->
-                                <div class="testimonial-founder">
-                                    <div class="founder-img mb-40">
-                                        <img src="~/assets/img/gallery/testi-logo.png" alt="">
-                                        <span>Margaret Lawson</span>
-                                        <p>Creative Director</p>
+                        @if (ViewBag.TopFeedbacks != null)
+                        {
+                            var feedbacks = ViewBag.TopFeedbacks as List<Group3_SWP391_PetMedical.Models.Feedback>;
+                            if (feedbacks != null && feedbacks.Any())
+                            {
+                                foreach (var fb in feedbacks)
+                                {
+                                    <div class="single-testimonial text-center">
+                                        <div class="testimonial-caption ">
+                                            <div class="testimonial-founder">
+                                                <div class="founder-img mb-40">
+                                                    <i class="fas fa-user-circle" style="font-size:3rem; color:#ff5e62; margin-bottom:10px;"></i><br/>
+                                                    <span style="color:#2b2b2b; font-weight:bold; display:block; margin-bottom:5px;">@(fb.customer?.full_name ?? "Khách hàng")</span>
+                                                    <p style="margin-bottom:0;">
+                                                        @for(int i=0; i<fb.rating; i++) { <i class="fas fa-star text-warning"></i> }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="testimonial-top-cap">
+                                                <p style="color:#4a4a4a; font-size:1.1rem; font-style:italic;">“@fb.comment”</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="single-testimonial text-center">
+                                    <div class="testimonial-caption ">
+                                        <div class="testimonial-top-cap">
+                                            <p style="color:#4a4a4a; font-size:1.1rem; font-style:italic;">“Chưa có đánh giá nào từ khách hàng.”</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="testimonial-top-cap">
-                                    <p>“I am at an age where I just want to be fit and healthy our bodies are our responsibility! So start caring for your body and it will care for you. Eat clean it will care for you and workout hard.”</p>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Single Testimonial -->
-                        <div class="single-testimonial text-center">
-                            <div class="testimonial-caption ">
-                                <!-- founder -->
-                                <div class="testimonial-founder">
-                                    <div class="founder-img mb-40">
-                                        <img src="~/assets/img/gallery/testi-logo.png" alt="">
-                                        <span>Margaret Lawson</span>
-                                        <p>Creative Director</p>
-                                    </div>
-                                </div>
-                                <div class="testimonial-top-cap">
-                                    <p>“I am at an age where I just want to be fit and healthy our bodies are our responsibility! So start caring for your body and it will care for you. Eat clean it will care for you and workout hard.”</p>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Single Testimonial -->
-                        <div class="single-testimonial text-center">
-                            <div class="testimonial-caption ">
-                                <!-- founder -->
-                                <div class="testimonial-founder">
-                                    <div class="founder-img mb-40">
-                                        <img src="~/assets/img/gallery/testi-logo.png" alt="">
-                                        <span>Margaret Lawson</span>
-                                        <p>Creative Director</p>
-                                    </div>
-                                </div>
-                                <div class="testimonial-top-cap">
-                                    <p>“I am at an age where I just want to be fit and healthy our bodies are our responsibility! So start caring for your body and it will care for you. Eat clean it will care for you and workout hard.”</p>
-                                </div>
-                            </div>
-                        </div>
+                            }
+                        }
                     </div>
                 </div>
             </div>

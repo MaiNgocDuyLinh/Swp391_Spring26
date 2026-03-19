@@ -1,0 +1,167 @@
+@model IEnumerable<Group3_SWP391_PetMedical.Models.Feedback>
+
+@{
+    ViewData["Title"] = "Quản lý đánh giá";
+    int currentPage = ViewBag.CurrentPage;
+    int totalPages = ViewBag.TotalPages;
+    int totalItems = ViewBag.TotalItems;
+    string? search = ViewBag.Search;
+    int? starFilter = ViewBag.StarFilter;
+
+    string renderStars(int? rating)
+    {
+        var html = "";
+        for (int i = 1; i <= 5; i++)
+        {
+            if (i <= (rating ?? 0))
+                html += "<i class=\"fas fa-star text-warning\"></i>";
+            else
+                html += "<i class=\"far fa-star text-muted\"></i>";
+        }
+        return html;
+    }
+}
+
+@section Styles {
+    <style>
+        :root { --pc-red:#ff3b3b; --pc-red-dark:#e83434; --pc-text:#2b2b2b; --pc-muted:#7a7a7a; --pc-border:rgba(0,0,0,0.06); }
+        .pc-wrap { background:#f3d7d5; border:1px solid var(--pc-border); border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(0,0,0,0.06); }
+        .pc-title { font-weight:800; margin:0; } .pc-sub { color:var(--pc-muted); margin:0; }
+        .pc-filter { background:#fff; border:1px solid var(--pc-border); border-radius:16px; padding:18px; margin:18px 0; box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+        .pc-label { font-weight:700; font-size:0.9rem; margin-bottom:6px; }
+        .pc-input { border-radius:12px; border:1px solid rgba(0,0,0,0.10); height:42px; padding:0 12px; }
+        .pc-select { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; height:42px !important; padding:0 12px !important; appearance:auto !important; -webkit-appearance:menulist !important; background:#fff !important; }
+        .pc-btn { border-radius:999px; padding:0 18px; height:42px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; text-decoration:none; cursor:pointer; font-size:0.9rem; }
+        .pc-btn--primary { background:var(--pc-red); color:#fff; box-shadow:0 10px 20px rgba(255,59,59,0.25); }
+        .pc-btn--primary:hover { background:var(--pc-red-dark); color:#fff; }
+        .pc-btn--ghost { background:#fff; border:1px solid rgba(0,0,0,0.10); color:var(--pc-text) !important; }
+
+        .fb-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px; }
+        .fb-card { background:#fff; border:1px solid var(--pc-border); border-radius:16px; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,0.04); display:flex; flex-direction:column; }
+        .fb-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+        .fb-customer { font-weight:700; color:var(--pc-text); margin:0; font-size:1.05rem; }
+        .fb-date { font-size:0.8rem; color:var(--pc-muted); }
+        .fb-rating { margin-bottom:10px; font-size:0.9rem; }
+        .fb-comment { color:var(--pc-text); font-size:0.95rem; line-height:1.5; flex-grow:1; background:#f9f9f9; padding:12px; border-radius:10px; border-left:4px solid var(--pc-red); }
+        .fb-meta { font-size:0.85rem; color:var(--pc-muted); margin-top:14px; padding-top:10px; border-top:1px dashed var(--pc-border); display:flex; flex-direction:column; gap:4px; }
+        
+        .pc-pager.pagination { gap:10px; margin:0; justify-content:center; margin-top:20px; }
+        .pc-pager .page-item .page-link { border-radius:999px !important; width:44px; height:44px; display:inline-flex; align-items:center; justify-content:center; padding:0 !important; border:1px solid rgba(0,0,0,0.10); color:var(--pc-text); background:#fff; box-shadow:0 8px 18px rgba(0,0,0,0.04); }
+        .pc-pager .page-item .page-link:hover { border-color:rgba(255,59,59,0.35); color:var(--pc-red-dark); }
+        .pc-pager .page-item.active .page-link { background:var(--pc-red) !important; border-color:var(--pc-red) !important; color:#fff !important; box-shadow:0 12px 24px rgba(255,59,59,0.25); }
+        .pc-pager .page-item.disabled .page-link { opacity:0.45; pointer-events:none; box-shadow:none; }
+    </style>
+}
+
+<section class="container py-4">
+    <div class="pc-wrap" style="margin-top:150px;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <h3 class="pc-title">Đánh giá từ khách hàng</h3>
+                <p class="pc-sub">Xem và phân tích các phản hồi từ khách hàng.</p>
+            </div>
+            <span class="pc-badge" style="background:#fff; color:var(--pc-red); border:1px solid rgba(255,59,59,0.2); border-radius:99px; padding:8px 16px; font-weight:800;">
+                <i class="fas fa-comment-dots mr-2"></i> @totalItems Tổng đánh giá
+            </span>
+        </div>
+
+        <div class="pc-filter">
+            <form method="get" class="row g-3">
+                <div class="col-md-5">
+                    <label class="pc-label">Tìm kiếm đánh giá</label>
+                    <input type="text" name="search" class="form-control pc-input" value="@search" placeholder="Tên khách, thú cưng, nội dung..." />
+                </div>
+                <div class="col-md-4">
+                    <label class="pc-label">Lọc theo số sao</label>
+                    <select name="starFilter" class="form-select pc-select">
+                        <option value="">Tất cả đánh giá</option>
+                        @for(int i=5; i>=1; i--)
+                        {
+                            if (starFilter == i)
+                            {
+                                <option value="@i" selected>@i Sao</option>
+                            }
+                            else
+                            {
+                                <option value="@i">@i Sao</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="pc-btn pc-btn--primary w-100">
+                        <i class="fas fa-search"></i> Lọc
+                    </button>
+                    @if (!string.IsNullOrEmpty(search) || starFilter != null)
+                    {
+                        <a href="?" class="pc-btn pc-btn--ghost w-100" style="text-align:center;">
+                            Hủy
+                        </a>
+                    }
+                </div>
+            </form>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-warning text-center" style="border-radius:16px; padding:30px; background:#fff7f7; color:var(--pc-red); border:1px dashed rgba(255,59,59,0.3);">
+                <i class="fas fa-folder-open mb-2" style="font-size:2rem; opacity:0.5;"></i><br/>
+                <strong>Chưa có đánh giá nào.</strong>
+            </div>
+        }
+        else
+        {
+            <div class="fb-grid">
+                @foreach(var fb in Model)
+                {
+                    <div class="fb-card">
+                        <div class="fb-header">
+                            <div>
+                                <h5 class="fb-customer">@(fb.customer?.full_name ?? "Khách vãn lai")</h5>
+                                <span class="fb-date">@fb.created_at?.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                        </div>
+                        <div class="fb-rating">
+                            @Html.Raw(renderStars(fb.rating))
+                        </div>
+                        <div class="fb-comment">
+                            @if(string.IsNullOrWhiteSpace(fb.comment))
+                            {
+                                <em class="text-muted">Khách hàng không để lại bình luận.</em>
+                            }
+                            else
+                            {
+                                @fb.comment
+                            }
+                        </div>
+                        <div class="fb-meta">
+                            <div><strong>Lịch hẹn:</strong> #@fb.appointment_id (@fb.appointment?.appointment_date.ToString("dd/MM/yyyy"))</div>
+                            <div><strong>Thú cưng:</strong> @(fb.appointment?.pet?.name ?? "N/A")</div>
+                            <div><strong>Bác sĩ:</strong> @(fb.appointment?.doctor?.full_name ?? "Chưa phân công")</div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (totalPages > 1)
+            {
+                <nav>
+                    <ul class="pagination pc-pager">
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="?page=@(currentPage - 1)&search=@search&starFilter=@starFilter"><i class="fas fa-chevron-left"></i></a>
+                        </li>
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(currentPage == i ? "active" : "")">
+                                <a class="page-link" href="?page=@i&search=@search&starFilter=@starFilter">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="?page=@(currentPage + 1)&search=@search&starFilter=@starFilter"><i class="fas fa-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        }
+    </div>
+</section>

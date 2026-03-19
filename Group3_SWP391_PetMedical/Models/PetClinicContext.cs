@@ -22,7 +22,7 @@ public partial class PetClinicContext : DbContext
 
     public virtual DbSet<Appointment> Appointments { get; set; }
     public virtual DbSet<AppointmentDetail> AppointmentDetails { get; set; }
-    public virtual DbSet<Feedback> Feedbacks { get; set; }
+    public virtual DbSet<Feedback> Feedback { get; set; }
     public virtual DbSet<Invoice> Invoices { get; set; }
     public virtual DbSet<MedicalRecord> MedicalRecords { get; set; }
     public virtual DbSet<Medication> Medications { get; set; }
@@ -251,6 +251,20 @@ public partial class PetClinicContext : DbContext
             entity.HasOne(ad => ad.service)
                   .WithMany(s => s.AppointmentDetails)
                   .HasForeignKey(ad => ad.service_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        // Feedback ↔ User / Appointment
+        modelBuilder.Entity<Feedback>(entity =>
+        {
+            entity.HasOne(f => f.customer)
+                  .WithMany(u => u.Feedbacks)
+                  .HasForeignKey(f => f.customer_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(f => f.appointment)
+                  .WithMany(a => a.Feedbacks)
+                  .HasForeignKey(f => f.appointment_id)
                   .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
