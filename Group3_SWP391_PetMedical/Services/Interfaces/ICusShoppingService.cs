@@ -19,5 +19,8 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
 
         Task<CusShoppingMyOrdersVM> GetMyOrdersAsync(int customerId, CusShoppingOrderQuery query);
         Task<CusShoppingOrderDetailVM?> GetOrderDetailAsync(int customerId, int orderId);
+
+        Task CancelOrderAsync(int customerId, int orderId);
+        Task<int> AutoCancelExpiredOrdersAsync();
     }
 }

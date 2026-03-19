@@ -27,66 +27,79 @@
         return (value ?? "").Trim().ToLower();
     }
 
-    public static string GetOrderStatusClass(string? status)
+    public static string GetDisplayOrderStatus(string? status)
     {
         var s = NormalizeText(status);
 
         return s switch
         {
-            "chờ xác nhận" => "pc-badge--warning",
-            "đang xử lý" => "pc-badge--warning",
-            "đang giao" => "pc-badge--info",
-            "đã giao" => "pc-badge--success",
-            "hoàn thành" => "pc-badge--success",
-            "đã hủy" => "pc-badge--danger",
-            "hủy" => "pc-badge--danger",
+            "đã hủy" => "Đã hủy",
+            "hủy" => "Đã hủy",
+            "đã nhận hàng" => "Đã nhận hàng",
+            "đã giao" => "Đã nhận hàng",
+            "hoàn thành" => "Đã nhận hàng",
+            _ => "Đặt hàng thành công"
+        };
+    }
+
+    public static string GetDisplayPaymentStatus(string? status)
+    {
+        var s = NormalizeText(status);
+
+        return s switch
+        {
+            "đã thanh toán" => "Đã thanh toán",
+            "thanh toán thành công" => "Đã thanh toán",
+            _ => "Chưa thanh toán"
+        };
+    }
+
+    public static string GetOrderStatusClass(string? status)
+    {
+        var s = GetDisplayOrderStatus(status);
+
+        return s switch
+        {
+            "Đặt hàng thành công" => "pc-badge--warning",
+            "Đã nhận hàng" => "pc-badge--success",
+            "Đã hủy" => "pc-badge--danger",
             _ => "pc-badge--default"
         };
     }
 
     public static string GetPaymentStatusClass(string? status)
     {
-        var s = NormalizeText(status);
+        var s = GetDisplayPaymentStatus(status);
 
         return s switch
         {
-            "đã thanh toán" => "pc-badge--paid",
-            "thanh toán thành công" => "pc-badge--paid",
-            "chưa thanh toán" => "pc-badge--danger",
-            "chờ thanh toán" => "pc-badge--warning",
-            "đã hoàn tiền" => "pc-badge--info",
+            "Đã thanh toán" => "pc-badge--paid",
+            "Chưa thanh toán" => "pc-badge--danger",
             _ => "pc-badge--default"
         };
     }
 
     public static string GetOrderStatusIcon(string? status)
     {
-        var s = NormalizeText(status);
+        var s = GetDisplayOrderStatus(status);
 
         return s switch
         {
-            "chờ xác nhận" => "fas fa-hourglass-half",
-            "đang xử lý" => "fas fa-box-open",
-            "đang giao" => "fas fa-truck",
-            "đã giao" => "fas fa-check-circle",
-            "hoàn thành" => "fas fa-check-circle",
-            "đã hủy" => "fas fa-times-circle",
-            "hủy" => "fas fa-times-circle",
+            "Đặt hàng thành công" => "fas fa-check-circle",
+            "Đã nhận hàng" => "fas fa-box-open",
+            "Đã hủy" => "fas fa-times-circle",
             _ => "fas fa-info-circle"
         };
     }
 
     public static string GetPaymentStatusIcon(string? status)
     {
-        var s = NormalizeText(status);
+        var s = GetDisplayPaymentStatus(status);
 
         return s switch
         {
-            "đã thanh toán" => "fas fa-wallet",
-            "thanh toán thành công" => "fas fa-wallet",
-            "chưa thanh toán" => "fas fa-credit-card",
-            "chờ thanh toán" => "fas fa-clock",
-            "đã hoàn tiền" => "fas fa-undo-alt",
+            "Đã thanh toán" => "fas fa-wallet",
+            "Chưa thanh toán" => "fas fa-credit-card",
             _ => "fas fa-money-check-alt"
         };
     }
@@ -558,14 +571,14 @@
                                 <td>
                                     <span class="pc-badge @GetOrderStatusClass(item.OrderStatus)">
                                         <i class="@GetOrderStatusIcon(item.OrderStatus)"></i>
-                                        @item.OrderStatus
+                                        @GetDisplayOrderStatus(item.OrderStatus)
                                     </span>
                                 </td>
 
                                 <td>
                                     <span class="pc-badge @GetPaymentStatusClass(item.PaymentStatus)">
                                         <i class="@GetPaymentStatusIcon(item.PaymentStatus)"></i>
-                                        @item.PaymentStatus
+                                        @GetDisplayPaymentStatus(item.PaymentStatus)
                                     </span>
                                 </td>
 

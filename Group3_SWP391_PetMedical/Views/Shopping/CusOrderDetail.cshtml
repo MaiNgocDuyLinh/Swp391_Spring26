@@ -10,74 +10,79 @@
         return (value ?? "").Trim().ToLower();
     }
 
-    public static string GetOrderStatusClass(string? status)
+    public static string GetDisplayOrderStatus(string? status)
     {
         var s = NormalizeText(status);
 
         return s switch
         {
-            "chờ xác nhận" => "pc-badge--warning",
-            "đang xử lý" => "pc-badge--warning",
-            "đã xác nhận" => "pc-badge--info",
-            "đang giao" => "pc-badge--info",
-            "sẵn sàng nhận hàng" => "pc-badge--info",
-            "đã giao" => "pc-badge--success",
-            "hoàn thành" => "pc-badge--success",
-            "đã hủy" => "pc-badge--danger",
-            "hủy" => "pc-badge--danger",
+            "đã hủy" => "Đã hủy",
+            "hủy" => "Đã hủy",
+            "đã nhận hàng" => "Đã nhận hàng",
+            "đã giao" => "Đã nhận hàng",
+            "hoàn thành" => "Đã nhận hàng",
+            _ => "Đặt hàng thành công"
+        };
+    }
+
+    public static string GetDisplayPaymentStatus(string? status)
+    {
+        var s = NormalizeText(status);
+
+        return s switch
+        {
+            "đã thanh toán" => "Đã thanh toán",
+            "thanh toán thành công" => "Đã thanh toán",
+            _ => "Chưa thanh toán"
+        };
+    }
+
+    public static string GetOrderStatusClass(string? status)
+    {
+        var s = GetDisplayOrderStatus(status);
+
+        return s switch
+        {
+            "Đặt hàng thành công" => "pc-badge--warning",
+            "Đã nhận hàng" => "pc-badge--success",
+            "Đã hủy" => "pc-badge--danger",
             _ => "pc-badge--default"
         };
     }
 
     public static string GetPaymentStatusClass(string? status)
     {
-        var s = NormalizeText(status);
+        var s = GetDisplayPaymentStatus(status);
 
         return s switch
         {
-            "đã thanh toán" => "pc-badge--paid",
-            "thanh toán thành công" => "pc-badge--paid",
-            "chưa thanh toán" => "pc-badge--danger",
-            "chờ thanh toán" => "pc-badge--warning",
-            "thanh toán lỗi" => "pc-badge--warning",
-            "đã hoàn tiền" => "pc-badge--info",
-            "hoàn tiền" => "pc-badge--info",
+            "Đã thanh toán" => "pc-badge--paid",
+            "Chưa thanh toán" => "pc-badge--danger",
             _ => "pc-badge--default"
         };
     }
 
     public static string GetOrderStatusIcon(string? status)
     {
-        var s = NormalizeText(status);
+        var s = GetDisplayOrderStatus(status);
 
         return s switch
         {
-            "chờ xác nhận" => "fas fa-hourglass-half",
-            "đang xử lý" => "fas fa-box-open",
-            "đã xác nhận" => "fas fa-check",
-            "đang giao" => "fas fa-truck",
-            "sẵn sàng nhận hàng" => "fas fa-box",
-            "đã giao" => "fas fa-check-circle",
-            "hoàn thành" => "fas fa-check-circle",
-            "đã hủy" => "fas fa-times-circle",
-            "hủy" => "fas fa-times-circle",
+            "Đặt hàng thành công" => "fas fa-check-circle",
+            "Đã nhận hàng" => "fas fa-box-open",
+            "Đã hủy" => "fas fa-times-circle",
             _ => "fas fa-info-circle"
         };
     }
 
     public static string GetPaymentStatusIcon(string? status)
     {
-        var s = NormalizeText(status);
+        var s = GetDisplayPaymentStatus(status);
 
         return s switch
         {
-            "đã thanh toán" => "fas fa-wallet",
-            "thanh toán thành công" => "fas fa-wallet",
-            "chưa thanh toán" => "fas fa-credit-card",
-            "chờ thanh toán" => "fas fa-clock",
-            "thanh toán lỗi" => "fas fa-exclamation-triangle",
-            "đã hoàn tiền" => "fas fa-undo-alt",
-            "hoàn tiền" => "fas fa-undo-alt",
+            "Đã thanh toán" => "fas fa-wallet",
+            "Chưa thanh toán" => "fas fa-credit-card",
             _ => "fas fa-money-check-alt"
         };
     }
@@ -134,6 +139,26 @@
             margin: 0;
         }
 
+        .pc-alert {
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        .pc-alert--success {
+            background: #eaf8ec;
+            border-color: #cfe9d3;
+            color: #2e7d32;
+        }
+
+        .pc-alert--danger {
+            background: #fdecec;
+            border-color: #f3c7c7;
+            color: #c62828;
+        }
+
         .pc-btn {
             border-radius: 999px;
             padding: 0 18px;
@@ -169,6 +194,20 @@
                 border-color: rgba(255,59,59,0.35);
                 box-shadow: 0 10px 22px rgba(255,59,59,0.12);
                 color: var(--pc-red-dark) !important;
+            }
+
+        .pc-btn--danger {
+            width: 100%;
+            background: #fff1f1;
+            border: 1px solid rgba(198, 40, 40, 0.18);
+            color: #c62828 !important;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+        }
+
+            .pc-btn--danger:hover {
+                background: #ffe7e7;
+                border-color: rgba(198, 40, 40, 0.28);
+                color: #b71c1c !important;
             }
 
         .pc-grid {
@@ -292,6 +331,14 @@
             font-weight: 900;
             color: var(--pc-text);
             line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .pc-cancel-note {
+            margin-top: 10px;
+            color: var(--pc-muted);
+            font-size: 0.92rem;
+            line-height: 1.5;
         }
 
         .pc-table {
@@ -378,10 +425,20 @@
 
 <section class="container">
     <div class="pc-wrap">
+        @if (TempData["success"] != null)
+        {
+            <div class="pc-alert pc-alert--success">@TempData["success"]</div>
+        }
+
+        @if (TempData["error"] != null)
+        {
+            <div class="pc-alert pc-alert--danger">@TempData["error"]</div>
+        }
+
         <div class="pc-topbar">
             <div>
                 <h3 class="pc-title">Chi tiết đơn hàng</h3>
-                <p class="pc-sub">Theo dõi thông tin  đơn hàng của bạn</p>
+                <p class="pc-sub">Theo dõi thông tin đơn hàng của bạn</p>
             </div>
 
             <a href="@Url.Action("MyOrders", "CusShopping")" class="pc-btn pc-btn--ghost">
@@ -410,7 +467,7 @@
                         <div class="pc-info-value">
                             <span class="pc-badge @GetOrderStatusClass(Model.OrderStatus)">
                                 <i class="@GetOrderStatusIcon(Model.OrderStatus)"></i>
-                                @Model.OrderStatus
+                                @GetDisplayOrderStatus(Model.OrderStatus)
                             </span>
                         </div>
                     </div>
@@ -420,7 +477,7 @@
                         <div class="pc-info-value">
                             <span class="pc-badge @GetPaymentStatusClass(Model.PaymentStatus)">
                                 <i class="@GetPaymentStatusIcon(Model.PaymentStatus)"></i>
-                                @Model.PaymentStatus
+                                @GetDisplayPaymentStatus(Model.PaymentStatus)
                             </span>
                         </div>
                     </div>
@@ -431,8 +488,8 @@
                     </div>
 
                     <div class="pc-info-item">
-                        <div class="pc-info-label">Ngày nhận mong muốn</div>
-                        <div class="pc-info-value">@(Model.PickupDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+                        <div class="pc-info-label">Ngày nhận</div>
+                        <div class="pc-info-value">@(Model.PickupDate?.ToString("dd/MM/yyyy") ?? "-")</div>
                     </div>
 
                     <div class="pc-info-item pc-info-item--full">
@@ -446,8 +503,32 @@
                 <div class="pc-summary-card">
                     <div class="pc-summary-label">Mã đơn hàng</div>
                     <div class="pc-summary-value">@Model.OrderCode</div>
-                </div>
 
+                    @if (Model.CanCancel)
+                    {
+                        <form asp-controller="CusShopping" asp-action="CancelOrder" method="post" class="mt-3">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.OrderId" />
+
+                            <button type="submit"
+                                    class="pc-btn pc-btn--danger"
+                                    onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?');">
+                                <i class="fas fa-times-circle"></i>
+                                <span>Hủy đơn hàng</span>
+                            </button>
+                        </form>
+
+                        <div class="pc-cancel-note">
+                            Có thể hủy trước ngày nhận.
+                        </div>
+                    }
+                    else if (GetDisplayOrderStatus(Model.OrderStatus) == "Đặt hàng thành công")
+                    {
+                        <div class="pc-cancel-note mt-3">
+                            Đơn hàng này không còn trong thời gian cho phép hủy.
+                        </div>
+                    }
+                </div>
             </div>
         </div>
 

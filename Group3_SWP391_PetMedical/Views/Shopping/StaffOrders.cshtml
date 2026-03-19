@@ -6,7 +6,7 @@
 
     var totalOrders = Model?.Result?.TotalItems ?? 0;
     var currentPage = Model?.Result?.Page ?? 1;
-    var pageSize = Model?.Result?.PageSize ?? 9
+    var pageSize = Model?.Result?.PageSize ?? 6
     ;
     var totalPages = totalOrders > 0 ? (int)Math.Ceiling((double)totalOrders / pageSize) : 1;
 

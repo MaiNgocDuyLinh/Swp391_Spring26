@@ -56,7 +56,7 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                 customerId,
                 selectedCartItemIds,
                 pickupNote,
-                pickupDate.Value.Date,
+                pickupDate?.Date,
                 FixedPaymentMethod);
         }
 
@@ -65,6 +65,13 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
 
         public Task<CusShoppingOrderDetailVM?> GetOrderDetailAsync(int customerId, int orderId)
             => _repository.GetOrderDetailAsync(customerId, orderId);
+
+        public Task CancelOrderAsync(int customerId, int orderId)
+            => _repository.CancelOrderAsync(customerId, orderId);
+
+        //auto huy lich
+        public Task<int> AutoCancelExpiredOrdersAsync()
+            => _repository.AutoCancelExpiredOrdersAsync();
 
         private static void ValidateCheckout(List<int> selectedCartItemIds, DateTime? pickupDate)
         {
@@ -84,7 +91,7 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
 
             if (selectedDate < minDate)
             {
-                throw new Exception("Ngày nhận phải từ ngày mai trở đi (đặt trước tối thiểu 24 giờ).");
+                throw new Exception("Ngày nhận phải từ ngày mai trở đi.");
             }
         }
     }

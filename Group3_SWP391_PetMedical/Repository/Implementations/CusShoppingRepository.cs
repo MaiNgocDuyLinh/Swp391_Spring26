@@ -11,6 +11,29 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
     {
         private readonly PetClinicContext _context;
 
+        private static readonly string[] PendingOrderStatuses =
+        {
+            "Đặt hàng thành công",
+            "Chờ xác nhận",
+            "Đang xử lý",
+            "Đã xác nhận",
+            "Đang giao",
+            "Sẵn sàng nhận hàng"
+        };
+
+        private static readonly string[] ReceivedOrderStatuses =
+        {
+            "Đã nhận hàng",
+            "Đã giao",
+            "Hoàn thành"
+        };
+
+        private static readonly string[] CancelledOrderStatuses =
+        {
+            "Đã hủy",
+            "Hủy"
+        };
+
         public CusShoppingRepository(PetClinicContext context)
         {
             _context = context;
@@ -399,7 +422,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 TotalAmount = cartItems.Sum(x => x.CartItem.UnitPrice * x.CartItem.Quantity),
                 PaymentMethod = string.IsNullOrWhiteSpace(paymentMethod) ? "Thanh toán tại quầy" : paymentMethod,
                 PaymentStatus = "Chưa thanh toán",
-                OrderStatus = "Chờ xác nhận",
+                OrderStatus = "Đặt hàng thành công",
                 PickupMethod = "Nhận tại phòng khám",
                 PickupNote = pickupNote,
                 PickupDate = pickupDate?.Date,
@@ -431,7 +454,10 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     if (x.Variant.StockQuantity <= 0)
                     {
                         x.Variant.StockQuantity = 0;
-                        x.Variant.Status = "Hết hàng";
+                        if (x.Variant.Status == "Đang bán")
+                        {
+                            x.Variant.Status = "Hết hàng";
+                        }
                     }
                 }
                 else
@@ -440,7 +466,10 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     if (x.Product.StockQuantity <= 0)
                     {
                         x.Product.StockQuantity = 0;
-                        x.Product.Status = "Hết hàng";
+                        if (x.Product.Status == "Đang bán")
+                        {
+                            x.Product.Status = "Hết hàng";
+                        }
                     }
                 }
             }
@@ -547,6 +576,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .Where(x => x.OrderId == orderId)
                 .Select(x => new CusShoppingOrderDetailItemVM
                 {
+                    ProductId = x.ProductId,
+                    VariantId = x.VariantId,
                     ProductName = x.ProductName,
                     VariantName = x.VariantName,
                     UnitPrice = x.UnitPrice,
@@ -555,7 +586,132 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 })
                 .ToListAsync();
 
+            order.CancelDeadline = order.PickupDate?.Date;
+            order.CanCancel = IsPendingStatus(order.OrderStatus)
+                              && order.PickupDate.HasValue
+                              && DateTime.Now < order.PickupDate.Value.Date;
+
             return order;
+        }
+
+        public async Task CancelOrderAsync(int customerId, int orderId)
+        {
+            var order = await _context.ProductOrders
+                .FirstOrDefaultAsync(x => x.OrderId == orderId && x.CustomerId == customerId);
+
+            if (order == null)
+                throw new Exception("Không tìm thấy đơn hàng.");
+
+            if (IsCancelledStatus(order.OrderStatus))
+                throw new Exception("Đơn hàng này đã được hủy.");
+
+            if (IsReceivedStatus(order.OrderStatus))
+                throw new Exception("Đơn hàng đã nhận, không thể hủy.");
+
+            if (!IsPendingStatus(order.OrderStatus))
+                throw new Exception("Đơn hàng hiện không thể hủy.");
+
+            if (!order.PickupDate.HasValue)
+                throw new Exception("Đơn hàng chưa có ngày nhận, không thể hủy.");
+
+            if (DateTime.Now >= order.PickupDate.Value.Date)
+                throw new Exception("Chỉ có thể hủy trước ngày nhận.");
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            await CancelOrderInternalAsync(order);
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+
+        public async Task<int> AutoCancelExpiredOrdersAsync()
+        {
+            var today = DateTime.Today;
+
+            var expiredOrders = await _context.ProductOrders
+                .Where(x => PendingOrderStatuses.Contains(x.OrderStatus)
+                            && x.PickupDate.HasValue
+                            && x.PickupDate.Value < today)
+                .OrderBy(x => x.OrderId)
+                .ToListAsync();
+
+            if (!expiredOrders.Any())
+                return 0;
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            foreach (var order in expiredOrders)
+            {
+                await CancelOrderInternalAsync(order);
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return expiredOrders.Count;
+        }
+
+        private async Task CancelOrderInternalAsync(ProductOrder order)
+        {
+            await RestoreStockForOrderAsync(order.OrderId);
+            order.OrderStatus = "Đã hủy";
+        }
+
+        private async Task RestoreStockForOrderAsync(int orderId)
+        {
+            var orderItems = await _context.ProductOrderItems
+                .Where(x => x.OrderId == orderId)
+                .ToListAsync();
+
+            foreach (var item in orderItems)
+            {
+                if (item.VariantId.HasValue)
+                {
+                    var variant = await _context.ProductVariants
+                        .FirstOrDefaultAsync(x => x.VariantId == item.VariantId.Value);
+
+                    if (variant != null)
+                    {
+                        variant.StockQuantity += item.Quantity;
+
+                        if (variant.Status == "Hết hàng" && variant.StockQuantity > 0)
+                        {
+                            variant.Status = "Đang bán";
+                        }
+                    }
+                }
+                else
+                {
+                    var product = await _context.Products
+                        .FirstOrDefaultAsync(x => x.ProductId == item.ProductId);
+
+                    if (product != null)
+                    {
+                        product.StockQuantity += item.Quantity;
+
+                        if (product.Status == "Hết hàng" && product.StockQuantity > 0)
+                        {
+                            product.Status = "Đang bán";
+                        }
+                    }
+                }
+            }
+        }
+
+        private static bool IsPendingStatus(string? status)
+        {
+            return PendingOrderStatuses.Contains(status ?? string.Empty);
+        }
+
+        private static bool IsReceivedStatus(string? status)
+        {
+            return ReceivedOrderStatuses.Contains(status ?? string.Empty);
+        }
+
+        private static bool IsCancelledStatus(string? status)
+        {
+            return CancelledOrderStatuses.Contains(status ?? string.Empty);
         }
 
         private async Task<Cart> GetOrCreateCartAsync(int customerId)

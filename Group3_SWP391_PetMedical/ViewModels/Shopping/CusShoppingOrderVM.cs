@@ -10,9 +10,7 @@ namespace Group3_SWP391_PetMedical.ViewModels.Shopping
         public string? PaymentMethod { get; set; } = "Thanh toán tại quầy";
         public string? PickupNote { get; set; }
         public DateTime? PickupDate { get; set; }
-
         public List<int> SelectedCartItemIds { get; set; } = new();
-
         public decimal SubTotal => Items.Sum(x => x.LineTotal);
     }
 
@@ -21,7 +19,6 @@ namespace Group3_SWP391_PetMedical.ViewModels.Shopping
         public string? PaymentMethod { get; set; }
         public string? PickupNote { get; set; }
         public DateTime? PickupDate { get; set; }
-
         public List<int> SelectedCartItemIds { get; set; } = new();
     }
 
@@ -47,12 +44,17 @@ namespace Group3_SWP391_PetMedical.ViewModels.Shopping
         public DateTime? PickupDate { get; set; }
         public DateTime CreatedAt { get; set; }
 
+        public bool CanCancel { get; set; }
+        public DateTime? CancelDeadline { get; set; }
+
         public List<CusShoppingOrderDetailItemVM> Items { get; set; } = new();
         public decimal TotalAmount => Items.Sum(x => x.LineTotal);
     }
 
     public class CusShoppingOrderDetailItemVM
     {
+        public int ProductId { get; set; }
+        public int? VariantId { get; set; }
         public string ProductName { get; set; } = "";
         public string? VariantName { get; set; }
         public decimal UnitPrice { get; set; }

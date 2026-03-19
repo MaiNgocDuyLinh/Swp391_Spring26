@@ -153,8 +153,6 @@ namespace Group3_SWP391_PetMedical.Controllers
                 var vm = await _cusShoppingService.GetCheckoutAsync(customerId, selectedIds);
                 vm.PickupDate = submitVm.PickupDate;
                 vm.PickupNote = submitVm.PickupNote;
-
-               
                 vm.PaymentMethod = "Thanh toán tại quầy";
 
                 var message = ex.Message ?? "Dữ liệu không hợp lệ.";
@@ -172,6 +170,49 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> MyOrders([FromQuery] CusShoppingOrderQuery query)
+        {
+            await _cusShoppingService.AutoCancelExpiredOrdersAsync();
+
+            int customerId = GetCurrentUserId();
+            query ??= new CusShoppingOrderQuery();
+
+            var vm = await _cusShoppingService.GetMyOrdersAsync(customerId, query);
+            return View("~/Views/Shopping/CusMyOrders.cshtml", vm);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> OrderDetail(int id)
+        {
+            await _cusShoppingService.AutoCancelExpiredOrdersAsync();
+
+            int customerId = GetCurrentUserId();
+            var vm = await _cusShoppingService.GetOrderDetailAsync(customerId, id);
+            if (vm == null) return NotFound();
+
+            return View("~/Views/Shopping/CusOrderDetail.cshtml", vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelOrder(int id)
+        {
+            int customerId = GetCurrentUserId();
+
+            try
+            {
+                await _cusShoppingService.CancelOrderAsync(customerId, id);
+                TempData["success"] = "Hủy đơn hàng thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["error"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(OrderDetail), new { id });
+        }
+
         private List<int> ParseSelectedCartItemIds(string? raw)
         {
             if (string.IsNullOrWhiteSpace(raw))
@@ -184,26 +225,6 @@ namespace Group3_SWP391_PetMedical.Controllers
                 .Select(int.Parse)
                 .Distinct()
                 .ToList();
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> MyOrders([FromQuery] CusShoppingOrderQuery query)
-        {
-            int customerId = GetCurrentUserId();
-            query ??= new CusShoppingOrderQuery();
-
-            var vm = await _cusShoppingService.GetMyOrdersAsync(customerId, query);
-            return View("~/Views/Shopping/CusMyOrders.cshtml", vm);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> OrderDetail(int id)
-        {
-            int customerId = GetCurrentUserId();
-            var vm = await _cusShoppingService.GetOrderDetailAsync(customerId, id);
-            if (vm == null) return NotFound();
-
-            return View("~/Views/Shopping/CusOrderDetail.cshtml", vm);
         }
 
         private int GetCurrentUserId()
