@@ -10,7 +10,6 @@ using System.Security.Claims;
 namespace Group3_SWP391_PetMedical.Controllers;
 
 [Authorize(Roles = "Customer")]
-
 public class PetController : Controller
 {
     private readonly IPetService _petService;
@@ -36,17 +35,16 @@ public class PetController : Controller
     }
 
     public int GetCurrentUserId()
-        {
-            var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            idStr ??= User.FindFirstValue("user_id");
+    {
+        var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        idStr ??= User.FindFirstValue("user_id");
 
-            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out int id))
-                throw new Exception("Không lấy được user_id từ Claims. Hãy kiểm tra Login tạo Claims.");
+        if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out int id))
+            throw new Exception("Không lấy được user_id từ Claims. Hãy kiểm tra Login tạo Claims.");
 
-            return id;
-        }
+        return id;
+    }
 
-    // ====== CREATE =======
     [HttpGet]
     public IActionResult Create()
     {
@@ -74,7 +72,6 @@ public class PetController : Controller
         }
     }
 
-    // ====== EDIT ======
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
@@ -109,15 +106,24 @@ public class PetController : Controller
         }
     }
 
-    // ====== DELETE ======
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
         int ownerId = GetCurrentUserId();
 
-        var ok = await _petService.DeletePetAsync(ownerId, id);
-        if (!ok) return NotFound();
+        try
+        {
+            var ok = await _petService.DeletePetAsync(ownerId, id);
+            if (!ok) return NotFound();
+
+            TempData["success"] = "Xóa thú cưng thành công.";
+        }
+        catch (Exception ex)
+        {
+            TempData["DeleteError"] = ex.Message;
+            TempData["DeleteErrorPetId"] = id;
+        }
 
         return RedirectToAction(nameof(MyPets));
     }

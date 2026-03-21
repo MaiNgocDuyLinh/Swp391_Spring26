@@ -6,10 +6,19 @@
     var q = Model.Query.Q ?? "";
     var pageSize = Model.Query.PageSize;
     var defaultImg = Url.Content("~/assets/img/Avt/AvtPetDefault.png");
+
+    var deleteError = TempData["DeleteError"]?.ToString();
+    int? deleteErrorPetId = null;
+    if (TempData["DeleteErrorPetId"] != null &&
+        int.TryParse(TempData["DeleteErrorPetId"]!.ToString(), out int parsedPetId))
+    {
+        deleteErrorPetId = parsedPetId;
+    }
+
+    var successMessage = TempData["success"]?.ToString();
 }
 
 <style>
-    /* ====== PAGE SPACING (header sticky) ====== */
     .mypets-page {
         padding-top: 140px;
     }
@@ -20,7 +29,6 @@
         }
     }
 
-    /* ====== OUTER ROUNDED FRAME ====== */
     .mypets-frame {
         background: #ffffff;
         border: 1px solid #eef0f4;
@@ -36,7 +44,6 @@
         }
     }
 
-    /* ====== HERO ====== */
     .mypets-hero {
         text-align: center;
         margin-bottom: 22px;
@@ -62,7 +69,6 @@
         }
     }
 
-    /* ====== SEARCH + ADD ROW ====== */
     .mypets-search-row {
         display: flex;
         align-items: center;
@@ -142,7 +148,6 @@
             color: #fff;
         }
 
-    /* ====== ADD PET BUTTON ====== */
     .mypets-add-btn {
         height: 52px;
         border-radius: 999px;
@@ -174,7 +179,6 @@
         }
     }
 
-    /* ====== PET CARD ====== */
     .mypets-card {
         background: #fff5f7;
         border-radius: 18px;
@@ -191,6 +195,11 @@
             transform: translateY(-4px);
             box-shadow: 0 18px 40px rgba(0,0,0,.10);
         }
+
+    .mypets-card--error {
+        border: 1px solid rgba(220, 53, 69, .35);
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, .08);
+    }
 
     .mypets-avatar {
         width: 92px;
@@ -238,7 +247,6 @@
             font-weight: 800;
         }
 
-    /* ====== ACTION BUTTONS ====== */
     .mypets-actions {
         display: flex;
         justify-content: center;
@@ -276,7 +284,16 @@
                 background: rgba(255,61,28,.10);
             }
 
-    /* ====== PAGER ====== */
+    .mypets-inline-alert {
+        margin-top: 14px;
+        margin-bottom: 0;
+        border-radius: 14px;
+        padding: 10px 12px;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
     .mypets-page .pc-pager .page-link {
         border: 1px solid #eef0f4;
         color: #0b1c39;
@@ -298,15 +315,20 @@
 
 <section class="services-area section-padding40 mypets-page">
     <div class="container">
-
         <div class="mypets-frame">
 
             <div class="mypets-hero">
                 <h1 class="title">Thú cưng của tôi</h1>
             </div>
 
-            <div id="servicesArea">
+            @if (!string.IsNullOrWhiteSpace(successMessage))
+            {
+                <div class="alert alert-success text-center" style="border-radius:16px;">
+                    @successMessage
+                </div>
+            }
 
+            <div id="servicesArea">
                 <div class="mypets-search-row">
                     <div class="mypets-search-left">
                         @await Html.PartialAsync("_SearchBar", ("MyPets", "Pet", q, pageSize))
@@ -344,33 +366,32 @@
                                 imgUrl = Url.Content("~/uploads/pets/" + pet.PetImg);
                             }
 
-                        <div class="col-xl-4 col-lg-4 col-md-6 mb-4">
-                            <div class="mypets-card">
+                            var hasDeleteError = deleteErrorPetId == pet.PetId && !string.IsNullOrWhiteSpace(deleteError);
 
-                                <div class="mypets-avatar">
-                                    <img src="@imgUrl"
-                                         alt="@pet.Name"
-                                         onerror="this.onerror=null;this.src='@defaultImg';" />
-                                </div>
+                            <div class="col-xl-4 col-lg-4 col-md-6 mb-4">
+                                <div class="mypets-card @(hasDeleteError ? "mypets-card--error" : "")">
 
-                                <h3 class="mypets-name">@pet.Name</h3>
+                                    <div class="mypets-avatar">
+                                        <img src="@imgUrl"
+                                             alt="@pet.Name"
+                                             onerror="this.onerror=null;this.src='@defaultImg';" />
+                                    </div>
 
-                                <ul class="mypets-meta">
-                                    <li><b>Loài:</b> @(pet.Species ?? "—")</li>
-                                    <li><b>Giống:</b> @(pet.Breed ?? "—")</li>
-                                    <li><b>Giới tính:</b> @(pet.PetGender ?? "—")</li>
-                                    <li><b>Ngày sinh:</b> @(pet.PetBirthdate.HasValue? pet.PetBirthdate.Value.ToString("dd/MM/yyyy") : "—")</li>
+                                    <h3 class="mypets-name">@pet.Name</h3>
 
-                                    <!-- Chỉ còn 1 dòng tuổi -->
-                                    <li>
-                                        <b>Tuổi:</b>
-                                        @(string.IsNullOrWhiteSpace(pet.RealAgeText)
-                                                                            ? ((pet.Age?.ToString() ?? "—") + " (năm)")
-                                                                            : pet.RealAgeText)
+                                    <ul class="mypets-meta">
+                                        <li><b>Loài:</b> @(pet.Species ?? "—")</li>
+                                        <li><b>Giống:</b> @(pet.Breed ?? "—")</li>
+                                        <li><b>Giới tính:</b> @(pet.PetGender ?? "—")</li>
+                                        <li><b>Ngày sinh:</b> @(pet.PetBirthdate.HasValue? pet.PetBirthdate.Value.ToString("dd/MM/yyyy") : "—")</li>
+                                        <li>
+                                            <b>Tuổi:</b>
+                                            @(string.IsNullOrWhiteSpace(pet.RealAgeText)
+                                                                                ? ((pet.Age?.ToString() ?? "—") + " (năm)")
+                                                                                : pet.RealAgeText)
                                 </li>
-
-                                        <li><b>Cân nặng:</b> @(pet.Weight?.ToString("0.##") ?? "—") <i>(kg)</i></li>
-                                    </ul>
+                                <li><b>Cân nặng:</b> @(pet.Weight?.ToString("0.##") ?? "—") <i>(kg)</i></li>
+                            </ul>
 
                                     <div class="mypets-actions">
                                         <a class="btn btn-edit"
@@ -391,9 +412,16 @@
                                         </form>
                                     </div>
 
+                            @if (hasDeleteError)
+                                    {
+                                        <div class="alert alert-danger mypets-inline-alert">
+                                            thú cưng đang có lịch khám
+                                        </div>
+                                    }
+
                                 </div>
                             </div>
-                                        }
+                        }
                     </div>
 
                     <div class="row mt-2">
@@ -402,7 +430,6 @@
                         </div>
                     </div>
                 }
-
             </div>
         </div>
     </div>
