@@ -1,4 +1,4 @@
-﻿using Group3_SWP391_PetMedical.Attributes;
+using Group3_SWP391_PetMedical.Attributes;
 using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.ViewModels.Account;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +17,13 @@ namespace Group3_SWP391_PetMedical.Controllers
 
         public IActionResult Index()
         {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied(string? returnUrl = null)
+        {
+            ViewBag.ReturnUrl = returnUrl;
             return View();
         }
     }
