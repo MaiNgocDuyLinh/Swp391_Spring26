@@ -16,5 +16,11 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
 
         // Cập nhật toàn bộ thông tin dịch vụ (Manager only)
         Task<bool> UpdateAsync(int id, string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService, bool status);
+
+        // Thêm dịch vụ mới (Manager only)
+        Task<bool> CreateAsync(string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService);
+
+        // Xóa dịch vụ (Manager only)
+        Task<bool> DeleteAsync(int id);
     }
 }

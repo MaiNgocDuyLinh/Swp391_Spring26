@@ -4,30 +4,19 @@
     ViewData["Title"] = "Chi tiết Lịch hẹn";
     var doctors = ViewBag.Doctors as List<User> ?? new List<User>();
 
-    string NormalizeStatus(string? s) => (s ?? "").Trim().ToLower() switch {
-        "chờ xác nhận"  => "Pending",
-        "đã đặt cọc"    => "Deposited",
-        "đã xác nhận"   => "Confirmed",
-        "đã đến"        => "Arrived",
-        "hoàn thành"    => "Completed",
-        "đã hủy"        => "Cancelled",
-        "không đến"     => "NoShow",
-        "đã thanh toán" => "Completed",
-        _ => s ?? ""
+    // Status color mapping
+    (string bg, string color, string icon) StatusStyle(string? s) => (s ?? "").Trim() switch {
+        "Đặt lịch thành công" => ("#d1fae5", "#047857", "fa-check-circle"),
+        "Đã Hủy"              => ("#fee2e2", "#dc2626", "fa-times-circle"),
+        "Đã đến"              => ("#e0e7ff", "#4338ca", "fa-map-marker-alt"),
+        "Không đến"           => ("#f3f4f6", "#6b7280", "fa-user-slash"),
+        "Đang khám"           => ("#fce7f3", "#be185d", "fa-stethoscope"),
+        "Đã khám"             => ("#ede9fe", "#6d28d9", "fa-clipboard-check"),
+        "Đã thanh toán"       => ("#dcfce7", "#15803d", "fa-money-check-alt"),
+        _                     => ("#f3f4f6", "#6b7280", "fa-question-circle")
     };
 
-    var normalizedStatus = NormalizeStatus(Model.status);
-
-    string StatusViet(string? s) => NormalizeStatus(s) switch {
-        "Pending"   => "Chờ xác nhận",
-        "Deposited" => "Đã đặt cọc",
-        "Confirmed" => "Đã xác nhận",
-        "Arrived"   => "Đã đến",
-        "Completed" => "Hoàn thành",
-        "Cancelled" => "Đã hủy",
-        "NoShow"    => "Không đến",
-        _ => s ?? "-"
-    };
+    var st = StatusStyle(Model.status);
 }
 
 @section Styles {
@@ -41,17 +30,13 @@
         .pc-card-head i { margin-right:8px; color:var(--pc-red); }
         .pc-card-body { padding:18px; }
 
-        .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight:800; font-size:0.85rem; border:1px solid rgba(0,0,0,0.06); background:#fff; }
-        .pc-badge i { color:var(--pc-red); }
-        .pc-btn { border-radius:999px; padding:0 18px; height:42px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; text-decoration:none; cursor:pointer; }
+        .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:999px; font-weight:700; font-size:0.85rem; }
+        .pc-btn { border-radius:999px; padding:0 18px; height:42px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; text-decoration:none; cursor:pointer; font-size:0.9rem; }
         .pc-btn--primary { background:var(--pc-red); color:#fff; box-shadow:0 10px 20px rgba(255,59,59,0.25); }
         .pc-btn--primary:hover { background:var(--pc-red-dark); color:#fff; }
         .pc-btn--ghost { background:#fff; border:1px solid rgba(0,0,0,0.10); color:var(--pc-text) !important; }
-        .pc-btn--success { background:#22c55e; color:#fff; }
-        .pc-btn--success:hover { background:#16a34a; color:#fff; }
-        .pc-btn--danger { background:var(--pc-red); color:#fff; }
-        .pc-label { font-weight:700; font-size:0.9rem; margin-bottom:6px; }
-        .pc-input { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; height:42px !important; padding:0 12px !important; }
+        .pc-btn--danger { background:#dc2626; color:#fff; }
+        .pc-btn--danger:hover { background:#b91c1c; color:#fff; }
         .pc-select { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; height:42px !important; padding:0 12px !important; appearance:auto !important; -webkit-appearance:menulist !important; background:#fff !important; }
         .pc-readonly { background:#f8f8f8; border-left:4px solid var(--pc-red); border-radius:0 12px 12px 0; padding:14px; }
         .pc-readonly-row { display:flex; margin-bottom:6px; font-size:0.95rem; }
@@ -59,15 +44,11 @@
         .pc-readonly-label { width:120px; color:var(--pc-muted); font-weight:700; flex-shrink:0; }
         .pc-readonly-val { font-weight:600; }
         .pc-money { font-weight:900; }
+        .pc-input { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; }
 
         .pc-modal .modal-content { border-radius:16px; overflow:hidden; border:1px solid var(--pc-border); box-shadow:0 20px 60px rgba(0,0,0,0.18); }
         .pc-modal .modal-header { background:var(--pc-red); color:#fff; }
         .pc-modal .modal-header .close { color:#fff; opacity:1; }
-
-        .nice-select { height:42px !important; line-height:40px !important; border-radius:12px !important; padding-left:14px !important; padding-right:36px !important; float:none !important; display:inline-flex !important; align-items:center !important; width:auto !important; min-width:200px; background:#fff !important; border:1px solid rgba(0,0,0,0.10) !important; }
-        .nice-select .current { font-weight:400; color:#495057; }
-        .nice-select::after { right:14px !important; }
-        .nice-select .list { width:100% !important; border-radius:12px !important; box-shadow:0 4px 12px rgba(0,0,0,0.1) !important; z-index:9999 !important; }
     </style>
 }
 
@@ -77,7 +58,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <h3 class="pc-title">Chi tiết Lịch hẹn #@Model.appointment_id</h3>
-                <p class="pc-sub">Xem và quản lý thông tin lịch hẹn</p>
+                <p class="pc-sub">Xem thông tin lịch hẹn</p>
             </div>
             <a class="pc-btn pc-btn--ghost" href="@Url.Action("AppointmentList", "Manager")">
                 <i class="fas fa-arrow-left"></i> Quay lại
@@ -92,13 +73,20 @@
         }
 
         <div class="row">
-            <!-- Col 1: Thông tin -->
+            <!-- Col 1: Info -->
             <div class="col-md-6">
                 <div class="pc-card">
                     <div class="pc-card-head"><i class="fas fa-info-circle"></i>Thông tin lịch hẹn</div>
                     <div class="pc-card-body">
                         <div class="pc-readonly">
-                            <div class="pc-readonly-row"><span class="pc-readonly-label">Trạng thái:</span><span class="pc-readonly-val"><span class="pc-badge"><i class="fas fa-calendar-check"></i> @StatusViet(Model.status)</span></span></div>
+                            <div class="pc-readonly-row">
+                                <span class="pc-readonly-label">Trạng thái:</span>
+                                <span class="pc-readonly-val">
+                                    <span class="pc-badge" style="background:@st.bg; color:@st.color;">
+                                        <i class="fas @st.icon"></i> @(Model.status ?? "-")
+                                    </span>
+                                </span>
+                            </div>
                             <div class="pc-readonly-row"><span class="pc-readonly-label">Ngày giờ:</span><span class="pc-readonly-val">@Model.appointment_date.ToString("dd/MM/yyyy HH:mm")</span></div>
                             <div class="pc-readonly-row"><span class="pc-readonly-label">Khách hàng:</span><span class="pc-readonly-val">@(Model.customer?.full_name ?? "N/A") <small class="text-muted">@(Model.customer?.phone ?? "")</small></span></div>
                             <div class="pc-readonly-row"><span class="pc-readonly-label">Thú cưng:</span><span class="pc-readonly-val">@(Model.pet?.name ?? "N/A") <small class="text-muted">(@(Model.pet?.species ?? ""))</small></span></div>
@@ -139,26 +127,9 @@
 
             <!-- Col 2: Actions -->
             <div class="col-md-6">
-                @if (normalizedStatus == "Pending" || normalizedStatus == "Deposited")
-                {
-                    <div class="pc-card">
-                        <div class="pc-card-head"><i class="fas fa-gavel"></i>Duyệt / Hủy</div>
-                        <div class="pc-card-body d-flex gap-3 flex-wrap">
-                            <form asp-action="ApproveAppointment" asp-controller="Manager" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@Model.appointment_id" />
-                                <button type="submit" class="pc-btn pc-btn--success" onclick="return confirm('Xác nhận duyệt?')">
-                                    <i class="fas fa-check"></i> Xác nhận
-                                </button>
-                            </form>
-                            <button class="pc-btn pc-btn--danger" data-toggle="modal" data-target="#rejectModal">
-                                <i class="fas fa-times"></i> Hủy lịch
-                            </button>
-                        </div>
-                    </div>
-                }
 
-                @if (normalizedStatus != "Cancelled" && normalizedStatus != "Completed")
+                @* Assign Doctor *@
+                @if (Model.status != "Đã Hủy" && Model.status != "Đã thanh toán" && Model.status != "Không đến")
                 {
                     <div class="pc-card">
                         <div class="pc-card-head"><i class="fas fa-user-md"></i>Chỉ định Bác sĩ</div>
@@ -182,26 +153,97 @@
                         </div>
                     </div>
                 }
+
+                @* Medical Record & Prescription *@
+                @if (Model.status == "Đã khám" || Model.status == "Đã thanh toán")
+                {
+                    <div class="pc-card">
+                        <div class="pc-card-head"><i class="fas fa-notes-medical"></i>Kết quả khám & Đơn thuốc</div>
+                        <div class="pc-card-body">
+                            @if (Model.MedicalRecord != null)
+                            {
+                                <div class="pc-readonly mb-4">
+                                    <div class="pc-readonly-row">
+                                        <span class="pc-readonly-label">Chẩn đoán:</span>
+                                        <span class="pc-readonly-val">@(Model.MedicalRecord.diagnosis ?? "N/A")</span>
+                                    </div>
+                                    <div class="pc-readonly-row">
+                                        <span class="pc-readonly-label">Tình trạng:</span>
+                                        <span class="pc-readonly-val">@(Model.MedicalRecord.health_status ?? "N/A")</span>
+                                    </div>
+                                </div>
+                                
+                                @if (Model.MedicalRecord.Prescriptions != null && Model.MedicalRecord.Prescriptions.Any())
+                                {
+                                    <div class="pc-label mb-2"><i class="fas fa-pills" style="color:var(--pc-red);"></i> Đơn thuốc chi tiết</div>
+                                    <div class="table-responsive" style="border:1px solid var(--pc-border); border-radius:12px; overflow:hidden;">
+                                        <table class="table align-middle mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th style="padding:10px 16px; background:#fff7f7; font-weight:800;">Tên thuốc</th>
+                                                    <th style="padding:10px 16px; background:#fff7f7; font-weight:800;">Liều dùng</th>
+                                                    <th class="text-center" style="padding:10px 16px; background:#fff7f7; font-weight:800;">SL</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var p in Model.MedicalRecord.Prescriptions)
+                                                {
+                                                    <tr>
+                                                        <td style="padding:10px 16px; font-weight:600;">@(p.medicine?.name ?? "N/A")</td>
+                                                        <td style="padding:10px 16px; color:var(--pc-muted); font-size:0.9rem;">@p.dosage</td>
+                                                        <td class="text-center" style="padding:10px 16px;"><span class="pc-badge">@p.quantity</span></td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="text-muted mb-0"><i class="fas fa-info-circle"></i> Bác sĩ không kê đơn thuốc.</p>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0"><i class="fas fa-info-circle"></i> Hồ sơ khám đang được cập nhật...</p>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Cancel — Manager cancel *@
+                @if (Model.status != "Đã Hủy" && Model.status != "Đã thanh toán" && Model.status != "Không đến" && Model.status != "Đã khám" && Model.status != "Đang khám")
+                {
+                    <div class="pc-card">
+                        <div class="pc-card-head"><i class="fas fa-times-circle"></i>Hủy lịch hẹn</div>
+                        <div class="pc-card-body">
+                            <p class="text-muted mb-3" style="font-size:0.9rem;">Hủy khi khách hàng liên hệ yêu cầu</p>
+                            <button class="pc-btn pc-btn--danger" data-toggle="modal" data-target="#cancelModal">
+                                <i class="fas fa-times"></i> Hủy lịch hẹn
+                            </button>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     </div>
 </section>
 
-<!-- Modal Reject -->
-<div class="modal fade pc-modal" id="rejectModal" tabindex="-1" role="dialog">
+<!-- Modal Cancel -->
+<div class="modal fade pc-modal" id="cancelModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title"><i class="fas fa-times-circle mr-2"></i>Hủy lịch hẹn</h5>
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <form asp-action="RejectAppointment" asp-controller="Manager" method="post">
+            <form asp-action="CancelAppointment" asp-controller="Manager" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="id" value="@Model.appointment_id" />
                 <div class="modal-body" style="padding:20px;">
-                    <div class="pc-label">Lý do hủy (tùy chọn):</div>
-                    <textarea class="form-control pc-input" name="reason" rows="3"
-                              placeholder="Nhập lý do hủy..." style="height:auto !important;"></textarea>
+                    <label class="form-label" style="font-weight:700;">Lý do hủy:</label>
+                    <textarea class="form-control" name="reason" rows="3"
+                              placeholder="Nhập lý do hủy..." style="height:auto !important; border-radius:12px;"></textarea>
                 </div>
                 <div class="modal-footer" style="border-top:1px solid var(--pc-border);">
                     <button type="button" class="pc-btn pc-btn--ghost" data-dismiss="modal">Đóng</button>

@@ -198,6 +198,9 @@
                 var iconClass = icons[i % icons.Length];
                 i++;
 
+                var svcDisc = s.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= DateTime.Now && sd.end_date >= DateTime.Now);
+                var effectivePrice = svcDisc != null ? s.base_price * (1 - (decimal)svcDisc.discount_percent / 100) : s.base_price;
+
                 <div class=" col-lg-4 col-md-6 col-sm-6">
                     <div class="single-services text-center mb-30 service-card"
                          style="cursor:pointer;"
@@ -205,6 +208,8 @@
                          data-service-name="@s.service_name"
                          data-description="@(s.description ?? "")"
                          data-base-price="@s.base_price"
+                         data-effective-price="@effectivePrice"
+                         data-discount-percent="@(svcDisc?.discount_percent ?? 0)"
                          data-duration="@(s.duration ?? 0)"
                          data-is-home-service="@(s.is_home_service == true ? "Có" : "Không")">
 
@@ -213,7 +218,13 @@
                         </div>
 
                         <div class="services-cap">
-                            <h5><a href="javascript:void(0)">@s.service_name</a></h5>
+                            <h5>
+                                <a href="javascript:void(0)">@s.service_name</a>
+                                @if (svcDisc != null)
+                                {
+                                    <span style="background:#dc2626; color:#fff; padding:2px 8px; border-radius:999px; font-size:0.7rem; font-weight:800; margin-left:4px;">-@svcDisc.discount_percent%</span>
+                                }
+                            </h5>
                             <p>@(string.IsNullOrWhiteSpace(s.description) ? "Chưa có mô tả cho dịch vụ này." : s.description)</p>
 
                             <a href="@Url.Action("Book", "CusAppointment", new { serviceId = s.service_id })"
@@ -244,15 +255,26 @@
             var name = $(this).data('service-name');
             var desc = $(this).data('description');
             var basePrice = $(this).data('base-price');
+            var effectivePrice = $(this).data('effective-price');
+            var discountPercent = $(this).data('discount-percent');
             var duration = $(this).data('duration');
             var isHome = $(this).data('is-home-service');
 
             $('#md_service_id').text(id);
             $('#md_service_name').text(name);
             $('#md_description').text(desc || 'Chưa có mô tả.');
-            $('#md_base_price').text(Number(basePrice).toLocaleString('vi-VN') + ' VND');
             $('#md_duration').text(duration);
             $('#md_is_home_service').text(isHome);
+
+            if (discountPercent > 0) {
+                $('#md_base_price').html(
+                    '<small style="text-decoration:line-through; color:rgba(0,0,0,.45); margin-right:6px;">' + Number(basePrice).toLocaleString('vi-VN') + ' VND</small>' +
+                    '<span style="color:#dc2626; font-weight:900;">' + Number(effectivePrice).toLocaleString('vi-VN') + ' VND</span>' +
+                    ' <span style="background:#dc2626; color:#fff; padding:1px 6px; border-radius:999px; font-size:0.7rem; font-weight:800;">-' + discountPercent + '%</span>'
+                );
+            } else {
+                $('#md_base_price').text(Number(basePrice).toLocaleString('vi-VN') + ' VND');
+            }
 
             $('#md_book_now').attr('href', '@Url.Action("Book", "CusAppointment")' + '?serviceId=' + id);
 

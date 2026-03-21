@@ -47,5 +47,7 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         /// Lấy role mặc định cho đăng ký: ưu tiên \"User\" hoặc \"Customer\", không có thì lấy role đầu tiên.
         /// </summary>
         Task<Role?> GetDefaultRoleAsync();
+        /// <summary>Lấy thông tin chi tiết khách hàng và thú cưng (Staff)</summary>
+        Task<User?> GetCustomerDetailAsync(int customerId);
     }
 }

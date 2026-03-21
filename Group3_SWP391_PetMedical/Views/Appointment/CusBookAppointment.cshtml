@@ -13,6 +13,18 @@
         : Model.Form.AppointmentDate.ToString("yyyy-MM-dd");
 
     var shiftKey = (Model.Form.Shift ?? "").Trim().ToLowerInvariant();
+
+    // Tính giá sau giảm (nếu có discount đang active)
+    Func<Group3_SWP391_PetMedical.Models.Service, decimal> getEffectivePrice = (svc) =>
+    {
+        var disc = svc.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= DateTime.Now && sd.end_date >= DateTime.Now);
+        if (disc != null) return svc.base_price * (1 - (decimal)disc.discount_percent / 100);
+        return svc.base_price;
+    };
+
+    var _priceMap1 = _allSvcs.ToDictionary(x => x.service_id, x => getEffectivePrice(x));
+    var _originalPriceMap = _allSvcs.ToDictionary(x => x.service_id, x => (decimal)x.base_price);
+    var _discountMap = _allSvcs.ToDictionary(x => x.service_id, x => x.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= DateTime.Now && sd.end_date >= DateTime.Now));
 }
 
 <style>
@@ -324,7 +336,7 @@
                     <div class="pc-title">Đặt lịch ngay</div>
                     <div class="pc-sub">
                         Chọn thú cưng, ngày khám, ca khám và dịch vụ mong muốn.
-                        Hệ thống sẽ tạo lịch với trạng thái <b>Chờ xác nhận</b>.
+                        Hệ thống sẽ tạo lịch với trạng thái <b>Đặt lịch thành công</b>.
                     </div>
 
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -412,6 +424,8 @@
                                                 var isChecked = Model.Form.ServiceIds != null && Model.Form.ServiceIds.Contains(sid);
                                                 var inputId = $"svc_{sid}";
                                                 var price = _priceMap.ContainsKey(sid) ? _priceMap[sid] : 0m;
+                                                var origPrice = _originalPriceMap.ContainsKey(sid) ? _originalPriceMap[sid] : 0m;
+                                                var discInfo = _discountMap.ContainsKey(sid) ? _discountMap[sid] : null;
 
                                                 <div class="pc-service-item2">
                                                     <div class="form-check m-0 pc-svc-row">
@@ -423,11 +437,25 @@
                                                                    value="@sid"
                                                                    data-price="@price"
                                                                    @(isChecked ? "checked" : "") />
-                                                            <label class="form-check-label" for="@inputId">@s.Text</label>
+                                                            <label class="form-check-label" for="@inputId">
+                                                                @s.Text
+                                                                @if (discInfo != null)
+                                                                {
+                                                                    <span style="background:#dc2626; color:#fff; padding:1px 6px; border-radius:999px; font-size:0.7rem; font-weight:800; margin-left:4px;">-@discInfo.discount_percent%</span>
+                                                                }
+                                                            </label>
                                                         </div>
 
                                                         <div class="pc-svc-price">
-                                                            @price.ToString("N0") VNĐ
+                                                            @if (discInfo != null)
+                                                            {
+                                                                <small style="text-decoration:line-through; color:rgba(0,0,0,.40); margin-right:4px;">@origPrice.ToString("N0")</small>
+                                                                <span style="color:#dc2626; font-weight:900;">@price.ToString("N0") VNĐ</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                @price.ToString("N0") <text>VNĐ</text>
+                                                            }
                                                         </div>
                                                     </div>
                                                 </div>
@@ -519,8 +547,8 @@
                                 <div class="pc-step">
                                     <div class="pc-step-num">6</div>
                                     <div>
-                                        <div style="font-weight:800;">Chờ xác nhận</div>
-                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Trạng thái mặc định: <b>Chờ xác nhận</b>.Khách hàng đến phòng khám để nhận vé vào khám .</div>
+                                        <div style="font-weight:800;">Đặt lịch thành công</div>
+                                        <div style="color:rgba(0,0,0,.60); font-size:13px;">Trạng thái mặc định: <b>Đặt lịch thành công</b>.Khách hàng đến phòng khám để nhận vé vào khám .</div>
                                     </div>
                                 </div>
                             </div>

@@ -40,13 +40,26 @@
 <section class="container py-4" id="servicesArea">
     <div class="pc-wrap" style="margin-top:150px;">
 
-        <h3 class="pc-title">Quản lý Dịch vụ</h3>
-        <p class="pc-sub">Xem và chỉnh sửa danh sách dịch vụ tại phòng khám</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="pc-title">Quản lý Dịch vụ</h3>
+                <p class="pc-sub">Xem và quản lý danh sách dịch vụ tại phòng khám</p>
+            </div>
+            <a class="pc-btn pc-btn--primary" href="@Url.Action("AddService", "Manager")">
+                <i class="fas fa-plus"></i> Thêm dịch vụ
+            </a>
+        </div>
 
         @if (TempData["SuccessMessage"] != null)
         {
             <div class="alert alert-success mt-3 mb-0" style="border-radius:14px;">
                 <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger mt-3 mb-0" style="border-radius:14px;">
+                <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
             </div>
         }
 
@@ -98,7 +111,23 @@
                                 <td>@idx</td>
                                 <td><strong>@s.service_name</strong></td>
                                 <td><small class="text-muted">@(s.description ?? "-")</small></td>
-                                <td class="text-end pc-money">@s.base_price.ToString("N0")</td>
+                                <td class="text-end">
+                                    @{
+                                        var disc = s.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= DateTime.Now && sd.end_date >= DateTime.Now);
+                                    }
+                                    @if (disc != null)
+                                    {
+                                        <div>
+                                            <small style="text-decoration:line-through; color:var(--pc-muted);">@s.base_price.ToString("N0")</small>
+                                            <span class="pc-money" style="color:var(--pc-red);">@((s.base_price * (1 - (decimal)disc.discount_percent / 100)).ToString("N0"))</span>
+                                            <span style="background:#dc2626; color:#fff; padding:1px 6px; border-radius:999px; font-size:0.7rem; font-weight:800; margin-left:4px;">-@disc.discount_percent%</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="pc-money">@s.base_price.ToString("N0")</span>
+                                    }
+                                </td>
                                 <td>@(s.duration?.ToString() ?? "N/A") phút</td>
                                 <td>@(s.is_home_service == true ? "Có" : "Không")</td>
                                 <td>
@@ -113,6 +142,14 @@
                                            href="@Url.Action("EditService", "Manager", new { id = s.service_id })">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        <button class="pc-ico" title="Xóa" style="color:#dc2626; border-color:rgba(220,38,38,0.2);"
+                                                type="button" data-delete-id="@s.service_id" data-delete-name="@s.service_name">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                        <form id="deleteForm-@s.service_id" asp-action="DeleteService" asp-controller="Manager" method="post" style="display:none;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@s.service_id" />
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -144,3 +181,15 @@
         }
     </div>
 </section>
+
+<script>
+    document.querySelectorAll('[data-delete-id]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var id = this.getAttribute('data-delete-id');
+            var name = this.getAttribute('data-delete-name');
+            if (confirm('Xác nhận xóa dịch vụ "' + name + '"?')) {
+                document.getElementById('deleteForm-' + id).submit();
+            }
+        });
+    });
+</script>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -72,7 +72,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                          Notes = a.notes,
                          ServiceNames = string.Join(", ", a.AppointmentDetails.Select(d => d.service.service_name)),
                          TotalAmount = a.Invoice != null ? a.Invoice.total_amount : null,
-                         HasFeedback = _context.Feedbacks.Any(f =>
+                         HasFeedback = _context.Feedback.Any(f =>
                              f.appointment_id == a.appointment_id &&
                              f.customer_id == customerId)
                      });
@@ -290,7 +290,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 pet_id = cmd.PetId,
                 appointment_date = appointmentDateTime,
                 notes = cmd.Notes,
-                status = "Chờ xác nhận",
+                status = "Đặt lịch thành công",
                 doctor_id = cmd.DoctorId,
                 created_at = DateTime.Now
             };
@@ -467,8 +467,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (appt == null) return false;
 
-            if (appt.status != "Chờ xác nhận" && appt.status != "Đặt lịch thành công")
-                throw new Exception("Chỉ được chỉnh sửa lịch khi trạng thái là 'Chờ xác nhận' hoặc 'Đặt lịch thành công'.");
+            if (appt.status != "Đặt lịch thành công")
+                throw new Exception("Chỉ được chỉnh sửa lịch khi trạng thái là 'Đặt lịch thành công'.");
             DateTime createdAt;
             try
             {
@@ -572,8 +572,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (appt == null) return false;
 
-            if (appt.status != "Chờ xác nhận" && appt.status != "Đặt lịch thành công")
-                throw new Exception("Chỉ được hủy lịch khi trạng thái là 'Chờ xác nhận' hoặc 'Đặt lịch thành công'.");
+            if (appt.status != "Đặt lịch thành công")
+                throw new Exception("Chỉ được hủy lịch khi trạng thái là 'Đặt lịch thành công'.");
 
             if (appt.appointment_date <= DateTime.Now.AddHours(8))
                 throw new Exception("Không được hủy lịch khi còn dưới 8 giờ trước giờ khám.");

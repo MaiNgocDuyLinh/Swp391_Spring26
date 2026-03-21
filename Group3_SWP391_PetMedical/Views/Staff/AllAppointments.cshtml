@@ -7,27 +7,15 @@
     string? search = ViewBag.Search;
     string statusFilter = ViewBag.StatusFilter ?? "All";
 
-    string NormalizeStatus(string? s) => (s ?? "").Trim().ToLower() switch {
-        "chờ xác nhận"  => "Pending",
-        "đã đặt cọc"    => "Deposited",
-        "đã xác nhận"   => "Confirmed",
-        "đã đến"        => "Arrived",
-        "hoàn thành"    => "Completed",
-        "đã hủy"        => "Cancelled",
-        "không đến"     => "NoShow",
-        "đã thanh toán" => "Completed",
-        _ => s ?? ""
-    };
-
-    string StatusViet(string? s) => NormalizeStatus(s) switch {
-        "Pending"   => "Chờ xác nhận",
-        "Deposited" => "Đã đặt cọc",
-        "Confirmed" => "Đã xác nhận",
-        "Arrived"   => "Đã đến",
-        "Completed" => "Hoàn thành",
-        "Cancelled" => "Đã hủy",
-        "NoShow"    => "Không đến",
-        _ => s ?? "-"
+    (string bg, string color, string icon) StatusStyle(string? s) => (s ?? "").Trim() switch {
+        "Đặt lịch thành công" => ("#d1fae5", "#047857", "fa-check-circle"),
+        "Đã Hủy"              => ("#fee2e2", "#dc2626", "fa-times-circle"),
+        "Đã đến"              => ("#e0e7ff", "#4338ca", "fa-map-marker-alt"),
+        "Không đến"           => ("#f3f4f6", "#6b7280", "fa-user-slash"),
+        "Đang khám"           => ("#fce7f3", "#be185d", "fa-stethoscope"),
+        "Đã khám"             => ("#ede9fe", "#6d28d9", "fa-clipboard-check"),
+        "Đã thanh toán"       => ("#dcfce7", "#15803d", "fa-money-check-alt"),
+        _                     => ("#f3f4f6", "#6b7280", "fa-question-circle")
     };
 }
 
@@ -38,16 +26,15 @@
         .pc-title { font-weight:800; margin:0; } .pc-sub { color:var(--pc-muted); margin:0; }
         .pc-filter { background:#fff; border:1px solid var(--pc-border); border-radius:16px; padding:18px; margin:18px 0; box-shadow:0 10px 25px rgba(0,0,0,0.04); }
         .pc-label { font-weight:700; font-size:0.9rem; margin-bottom:6px; }
-        .pc-input,.pc-select { border-radius:12px; border:1px solid rgba(0,0,0,0.10); height:42px; padding:0 12px; }
-        .pc-select.form-select { line-height:42px !important; padding-top:0 !important; padding-bottom:0 !important; }
+        .pc-input { border-radius:12px; border:1px solid rgba(0,0,0,0.10); height:42px; padding:0 12px; }
+        .pc-select { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; height:42px !important; padding:0 12px !important; appearance:auto !important; -webkit-appearance:menulist !important; background:#fff !important; }
         .pc-btn { border-radius:999px; padding:0 18px; height:42px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; text-decoration:none; }
         .pc-btn--primary { background:var(--pc-red); color:#fff; box-shadow:0 10px 20px rgba(255,59,59,0.25); }
         .pc-btn--primary:hover { background:var(--pc-red-dark); color:#fff; }
         .pc-btn--ghost { background:#fff; border:1px solid rgba(0,0,0,0.10); color:var(--pc-text) !important; }
         .pc-table { border-radius:16px; overflow:hidden; background:#fff; border:1px solid var(--pc-border); box-shadow:0 10px 25px rgba(0,0,0,0.04); }
         .pc-table thead th { background:#fff7f7; font-weight:800; }
-        .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight:800; font-size:0.85rem; border:1px solid rgba(0,0,0,0.06); background:#fff; }
-        .pc-badge i { color:var(--pc-red); }
+        .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight:700; font-size:0.82rem; }
         .pc-ico { width:36px; height:36px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(0,0,0,0.10); background:#fff; color:var(--pc-text); box-shadow:0 8px 18px rgba(0,0,0,0.04); text-decoration:none; cursor:pointer; }
         .pc-ico:hover { border-color:rgba(255,59,59,0.35); box-shadow:0 10px 22px rgba(255,59,59,0.12); color:var(--pc-red-dark); }
         .pc-action-icons { display:flex; justify-content:flex-end; gap:10px; }
@@ -71,30 +58,25 @@
             <form method="get" asp-controller="Staff" asp-action="AllAppointments" class="row g-3">
                 <div class="col-lg-5 col-md-6">
                     <div class="pc-label">Từ khóa</div>
-                    <input class="form-control pc-input" name="search" value="@search"
-                           placeholder="Tên thú cưng / bác sĩ / khách hàng..." />
+                    <input class="form-control pc-input" name="search" value="@search" placeholder="Tên thú cưng / bác sĩ / khách hàng..." />
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="pc-label">Trạng thái</div>
                     <select class="form-select pc-select" name="statusFilter">
                         <option value="All" selected="@(statusFilter == "All" ? "selected" : null)">Tất cả</option>
-                        <option value="Pending" selected="@(statusFilter == "Pending" ? "selected" : null)">Chờ xác nhận</option>
-                        <option value="Deposited" selected="@(statusFilter == "Deposited" ? "selected" : null)">Đã đặt cọc</option>
-                        <option value="Confirmed" selected="@(statusFilter == "Confirmed" ? "selected" : null)">Đã xác nhận</option>
-                        <option value="Arrived" selected="@(statusFilter == "Arrived" ? "selected" : null)">Đã đến</option>
-                        <option value="Completed" selected="@(statusFilter == "Completed" ? "selected" : null)">Hoàn thành</option>
-                        <option value="Cancelled" selected="@(statusFilter == "Cancelled" ? "selected" : null)">Đã hủy</option>
-                        <option value="NoShow" selected="@(statusFilter == "NoShow" ? "selected" : null)">Không đến</option>
+                        <option value="Đặt lịch thành công" selected="@(statusFilter == "Đặt lịch thành công" ? "selected" : null)">Đặt lịch thành công</option>
+                        <option value="Đã đến" selected="@(statusFilter == "Đã đến" ? "selected" : null)">Đã đến</option>
+                        <option value="Đang khám" selected="@(statusFilter == "Đang khám" ? "selected" : null)">Đang khám</option>
+                        <option value="Đã khám" selected="@(statusFilter == "Đã khám" ? "selected" : null)">Đã khám</option>
+                        <option value="Đã thanh toán" selected="@(statusFilter == "Đã thanh toán" ? "selected" : null)">Đã thanh toán</option>
+                        <option value="Đã Hủy" selected="@(statusFilter == "Đã Hủy" ? "selected" : null)">Đã Hủy</option>
+                        <option value="Không đến" selected="@(statusFilter == "Không đến" ? "selected" : null)">Không đến</option>
                     </select>
                 </div>
                 <div class="col-12 mt-2">
                     <div class="d-flex justify-content-between align-items-center">
-                        <a class="pc-btn pc-btn--ghost" href="@Url.Action("AllAppointments", "Staff")#servicesArea">
-                            <i class="fas fa-undo-alt"></i> Làm mới
-                        </a>
-                        <button type="submit" class="pc-btn pc-btn--primary">
-                            <i class="fas fa-filter"></i> Lọc
-                        </button>
+                        <a class="pc-btn pc-btn--ghost" href="@Url.Action("AllAppointments", "Staff")#servicesArea"><i class="fas fa-undo-alt"></i> Làm mới</a>
+                        <button type="submit" class="pc-btn pc-btn--primary"><i class="fas fa-filter"></i> Lọc</button>
                     </div>
                 </div>
             </form>
@@ -102,7 +84,7 @@
 
         @if (Model == null || !Model.Any())
         {
-            <div class="alert alert-info mb-0" style="border-radius:14px;">Chưa có lịch hẹn nào.</div>
+            <div class="alert alert-info mb-0" style="border-radius:14px;">Không tìm thấy lịch hẹn nào.</div>
         }
         else
         {
@@ -111,31 +93,39 @@
                     <thead>
                         <tr>
                             <th style="width:60px;">#</th>
-                            <th>Ngày khám</th>
+                            <th>Ngày giờ</th>
                             <th>Khách hàng</th>
                             <th>Thú cưng</th>
                             <th>Bác sĩ</th>
                             <th>Dịch vụ</th>
-                            <th style="width:140px;">Trạng thái</th>
+                            <th style="width:160px;">Trạng thái</th>
                             <th style="width:80px;" class="text-end">Thao tác</th>
                         </tr>
                     </thead>
                     @{int idx = (currentPage - 1) * 5 + 1;}
                     @foreach (var a in Model)
                     {
+                        var s = StatusStyle(a.status);
                         <tbody class="pc-record">
                             <tr>
                                 <td>@idx</td>
-                                <td><strong>@a.appointment_date.ToString("HH:mm dd/MM/yyyy")</strong></td>
+                                <td><strong>@a.appointment_date.ToString("dd/MM/yyyy HH:mm")</strong></td>
                                 <td>@(a.customer?.full_name ?? "N/A")</td>
-                                <td><strong>@(a.pet?.name ?? "N/A")</strong></td>
+                                <td>
+                                    <strong>@(a.pet?.name ?? "N/A")</strong>
+                                    @if (a.pet?.species != null) { <small class="text-muted">(@a.pet.species)</small> }
+                                </td>
                                 <td>@(a.doctor?.full_name ?? "Chưa phân công")</td>
                                 <td>
                                     @if (a.AppointmentDetails != null && a.AppointmentDetails.Any())
                                     { @string.Join(", ", a.AppointmentDetails.Select(d => d.service?.service_name ?? "")) }
                                     else { <span class="text-muted">N/A</span> }
                                 </td>
-                                <td><span class="pc-badge"><i class="fas fa-calendar-check"></i> @StatusViet(a.status)</span></td>
+                                <td>
+                                    <span class="pc-badge" style="background:@s.bg; color:@s.color;">
+                                        <i class="fas @s.icon"></i> @(a.status ?? "-")
+                                    </span>
+                                </td>
                                 <td class="text-end">
                                     <div class="pc-action-icons">
                                         <a class="pc-ico" title="Chi tiết"

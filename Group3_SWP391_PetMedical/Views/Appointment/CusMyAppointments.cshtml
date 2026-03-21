@@ -1,4 +1,4 @@
-﻿@using Group3_SWP391_PetMedical.Models.Common
+@using Group3_SWP391_PetMedical.Models.Common
 @using Group3_SWP391_PetMedical.Services.Interfaces
 @model Group3_SWP391_PetMedical.ViewModels.Appointment.CusBookedAppointmentListVM
 
@@ -624,7 +624,7 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
 
-                                        @if (item.Status == "Chờ xác nhận" || item.Status == "Đặt lịch thành công")
+                                        @if (item.Status == "Đặt lịch thành công")
                                         {
                                             <a class="pc-ico edit-check"
                                                title="Chỉnh sửa"
@@ -641,7 +641,7 @@
                                             </span>
                                         }
 
-                                        @if (item.Status == "Chờ xác nhận" || item.Status == "Đặt lịch thành công")
+                                        @if (item.Status == "Đặt lịch thành công")
                                         {
                                             <a class="pc-ico cancel-check"
                                                title="Hủy lịch"
@@ -781,8 +781,8 @@
 
             const diffHours = (appointmentDate - now) / (1000 * 60 * 60);
 
-            if (status !== "Chờ xác nhận" && status !== "Đặt lịch thành công") {
-                alert("Chỉ được hủy lịch khi trạng thái là 'Chờ xác nhận' hoặc 'Đặt lịch thành công'.");
+            if (status !== "Đặt lịch thành công") {
+                alert("Chỉ được hủy lịch khi trạng thái là 'Đặt lịch thành công'.");
                 return false;
             }
 
@@ -809,9 +809,9 @@
 
                 const diffHours = (now - created) / (1000 * 60 * 60);
 
-                if (status !== "Chờ xác nhận" && status !== "Đặt lịch thành công") {
+                if (status !== "Đặt lịch thành công") {
                     e.preventDefault();
-                    alert("Chỉ được chỉnh sửa lịch khi trạng thái là 'Chờ xác nhận' hoặc 'Đặt lịch thành công'.");
+                    alert("Chỉ được chỉnh sửa lịch khi trạng thái là 'Đặt lịch thành công'.");
                     return false;
                 }
 

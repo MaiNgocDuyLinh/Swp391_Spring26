@@ -365,9 +365,9 @@ namespace Group3_SWP391_PetMedical.Controllers
             var vm = await _cusAppointmentService.GetCusEditAppointmentAsync(customerId, id);
             if (vm == null) return NotFound();
 
-            if (vm.Status != "Chờ xác nhận" && vm.Status != "Đặt lịch thành công")
+            if (vm.Status != "Đặt lịch thành công")
             {
-                TempData["error"] = "Chỉ được chỉnh sửa lịch khi trạng thái là 'Chờ xác nhận' hoặc 'Đặt lịch thành công'.";
+                TempData["error"] = "Chỉ được chỉnh sửa lịch khi trạng thái là 'Đặt lịch thành công'.";
                 return RedirectToAction(nameof(MyAppointments));
             }
 
@@ -483,9 +483,9 @@ namespace Group3_SWP391_PetMedical.Controllers
                 TempData["error"] = "Không được hủy lịch khám trước dưới 8 giờ.";
                 return RedirectToAction(nameof(MyAppointments));
             }
-            if (detail.Status != "Chờ xác nhận" && detail.Status != "Đặt lịch thành công")
+            if (detail.Status != "Đặt lịch thành công")
             {
-                TempData["error"] = "Chỉ được hủy lịch khi trạng thái là 'Chờ xác nhận' hoặc 'Đặt lịch thành công'.";
+                TempData["error"] = "Chỉ được hủy lịch khi trạng thái là 'Đặt lịch thành công'.";
                 return RedirectToAction(nameof(MyAppointments));
             }
             var vm = new CusCancelAppointmentVM
