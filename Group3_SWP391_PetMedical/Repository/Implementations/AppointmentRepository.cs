@@ -11,7 +11,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         private readonly PetClinicContext _context;
         public AppointmentRepository(PetClinicContext context) => _context = context;
 
-        // ========== Helper: Include đầy đủ navigation properties ==========
+        // ========== Helper: Include navigation properties ==========
         private IQueryable<Appointment> BaseQuery() =>
             _context.Appointments
                 .AsNoTracking()
@@ -21,7 +21,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .Include(a => a.AppointmentDetails)
                     .ThenInclude(ad => ad.service);
 
-        // ========== Staff: Xem lịch theo ngày ==========
+        // ========== Staff: Xem lich theo ngay ==========
         public async Task<PagedResult<Appointment>> GetAppointmentsByDatePagedAsync(
             DateTime date, string? search, int page, int pageSize)
         {
@@ -29,28 +29,27 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                search = search.Trim().ToLower();
+                search = search.Trim();
                 query = query.Where(a =>
-                    (a.customer != null && a.customer.full_name.ToLower().Contains(search)) ||
-                    (a.pet != null && a.pet.name.ToLower().Contains(search)) ||
-                    (a.doctor != null && a.doctor.full_name.ToLower().Contains(search)) ||
-                    (a.notes ?? "").ToLower().Contains(search));
+                    (a.customer != null && EF.Functions.Collate(a.customer.full_name, "Vietnamese_CI_AI").Contains(search)) ||
+                    (a.pet != null && EF.Functions.Collate(a.pet.name, "Vietnamese_CI_AI").Contains(search)) ||
+                    (a.doctor != null && EF.Functions.Collate(a.doctor.full_name, "Vietnamese_CI_AI").Contains(search)) ||
+                    EF.Functions.Collate(a.notes ?? "", "Vietnamese_CI_AI").Contains(search));
             }
 
             query = query.OrderBy(a => a.appointment_date);
             return await query.ToPagedResultAsync(page, pageSize);
         }
 
-        // ========== Manager + Staff: Xem tất cả lịch (có filter status) ==========
+        // ========== Manager + Staff: Xem tat ca lich (filter status) ==========
         public async Task<PagedResult<Appointment>> GetAllAppointmentsPagedAsync(
             string? search, string? statusFilter, int page, int pageSize)
         {
             var query = BaseQuery();
 
-            // Lọc theo status (hỗ trợ cả English và Vietnamese status)
+            // Filter by Vietnamese status directly
             if (!string.IsNullOrWhiteSpace(statusFilter) && statusFilter != "All")
             {
-                // Map English status sang Vietnamese tương ứng để lọc cả 2
                 var vietMap = new Dictionary<string, string> {
                     {"Pending", "Chờ xác nhận"}, {"Deposited", "Đã đặt cọc"},
                     {"Confirmed", "Đã xác nhận"}, {"Arrived", "Đã đến"},
@@ -59,30 +58,53 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 };
                 var vietStatus = vietMap.ContainsKey(statusFilter) ? vietMap[statusFilter] : statusFilter;
                 query = query.Where(a => a.status == statusFilter || a.status == vietStatus);
+                query = query.Where(a => a.status == statusFilter);
             }
 
-            // Tìm kiếm
             if (!string.IsNullOrWhiteSpace(search))
             {
-                search = search.Trim().ToLower();
+                search = search.Trim();
                 query = query.Where(a =>
-                    (a.customer != null && a.customer.full_name.ToLower().Contains(search)) ||
-                    (a.pet != null && a.pet.name.ToLower().Contains(search)) ||
-                    (a.doctor != null && a.doctor.full_name.ToLower().Contains(search)) ||
-                    (a.notes ?? "").ToLower().Contains(search));
+                    (a.customer != null && EF.Functions.Collate(a.customer.full_name, "Vietnamese_CI_AI").Contains(search)) ||
+                    (a.pet != null && EF.Functions.Collate(a.pet.name, "Vietnamese_CI_AI").Contains(search)) ||
+                    (a.doctor != null && EF.Functions.Collate(a.doctor.full_name, "Vietnamese_CI_AI").Contains(search)) ||
+                    EF.Functions.Collate(a.notes ?? "", "Vietnamese_CI_AI").Contains(search));
             }
 
             query = query.OrderByDescending(a => a.appointment_date);
             return await query.ToPagedResultAsync(page, pageSize);
         }
 
-        // ========== Get chi tiết 1 lịch ==========
-        public async Task<Appointment?> GetByIdAsync(int id)
+        // ========== Cancelled history ==========
+        public async Task<PagedResult<Appointment>> GetCancelledAppointmentsPagedAsync(
+            string? search, int page, int pageSize)
         {
-            return await BaseQuery().FirstOrDefaultAsync(a => a.appointment_id == id);
+            var query = BaseQuery().Where(a => a.status == "Đã Hủy");
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+                query = query.Where(a =>
+                    (a.customer != null && EF.Functions.Collate(a.customer.full_name, "Vietnamese_CI_AI").Contains(search)) ||
+                    (a.pet != null && EF.Functions.Collate(a.pet.name, "Vietnamese_CI_AI").Contains(search)) ||
+                    (a.doctor != null && EF.Functions.Collate(a.doctor.full_name, "Vietnamese_CI_AI").Contains(search)) ||
+                    EF.Functions.Collate(a.notes ?? "", "Vietnamese_CI_AI").Contains(search));
+            }
+
+            query = query.OrderByDescending(a => a.appointment_date);
+            return await query.ToPagedResultAsync(page, pageSize);
         }
 
-        // ========== Manager: Approve ==========
+        // ========== Get chi tiet 1 lich ==========
+        public async Task<Appointment?> GetByIdAsync(int id)
+        {
+            return await BaseQuery()
+                .Include(a => a.MedicalRecord)
+                    .ThenInclude(mr => mr.Prescriptions)
+                        .ThenInclude(p => p.medicine)
+                .FirstOrDefaultAsync(a => a.appointment_id == id);
+        }
+
         public async Task<bool> ApproveAsync(int id)
         {
             var appt = await _context.Appointments.FindAsync(id);
@@ -92,19 +114,27 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return true;
         }
 
-        // ========== Manager: Reject ==========
         public async Task<bool> RejectAsync(int id, string? reason)
         {
             var appt = await _context.Appointments.FindAsync(id);
             if (appt == null) return false;
             appt.status = "Cancelled";
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        // ========== Staff: Cancel appointment ==========
+        public async Task<bool> CancelAsync(int id, string? reason)
+        {
+            var appt = await _context.Appointments.FindAsync(id);
+            if (appt == null) return false;
+            appt.status = "Đã Hủy";
             if (!string.IsNullOrWhiteSpace(reason))
-                appt.notes = reason;
+                appt.notes = (appt.notes ?? "") + "\n[Staff hủy]: " + reason;
             await _context.SaveChangesAsync();
             return true;
         }
 
-        // ========== Manager + Staff: Assign Doctor ==========
+        // ========== Staff: Assign Doctor ==========
         public async Task<bool> AssignDoctorAsync(int appointmentId, int doctorId)
         {
             var appt = await _context.Appointments.FindAsync(appointmentId);
@@ -116,7 +146,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
         public async Task<List<User>> GetDoctorsAsync()
         {
-            // Lấy role Doctor
             var doctorRole = await _context.Roles.FirstOrDefaultAsync(r => r.role_name == "Doctor");
             if (doctorRole == null) return new List<User>();
 
@@ -127,17 +156,26 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .ToListAsync();
         }
 
-        // ========== Staff: Update status ==========
         public async Task<bool> UpdateStatusAsync(int id, string newStatus)
         {
             var appt = await _context.Appointments.FindAsync(id);
             if (appt == null) return false;
             appt.status = newStatus;
+            
+            // Sync related invoice if newly paid
+            if (newStatus == "Đã thanh toán")
+            {
+                var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.appointment_id == id);
+                if (invoice != null)
+                {
+                    invoice.payment_status = "Paid";
+                }
+            }
+
             await _context.SaveChangesAsync();
             return true;
         }
 
-        // ========== Staff: View Invoice ==========
         public async Task<Invoice?> GetInvoiceByAppointmentIdAsync(int appointmentId)
         {
             return await _context.Invoices
@@ -149,6 +187,10 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     .ThenInclude(a => a.customer)
                 .Include(i => i.appointment)
                     .ThenInclude(a => a.pet)
+                .Include(i => i.appointment)
+                    .ThenInclude(a => a.MedicalRecord)
+                        .ThenInclude(mr => mr.Prescriptions)
+                            .ThenInclude(p => p.medicine)
                 .FirstOrDefaultAsync(i => i.appointment_id == appointmentId);
         }
 
@@ -161,11 +203,9 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (appt == null) return false;
 
-            // Kiểm tra đã có invoice chưa
             var exists = await _context.Invoices.AnyAsync(i => i.appointment_id == appointmentId);
-            if (exists) return true; // đã có rồi
+            if (exists) return true;
 
-            // Tính tổng tiền
             var total = appt.AppointmentDetails.Sum(ad => ad.actual_price ?? ad.service?.base_price ?? 0);
 
             var invoice = new Invoice

@@ -4,6 +4,7 @@ using Group3_SWP391_PetMedical.ViewModels.Account;
 using Group3_SWP391_PetMedical.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Group3_SWP391_PetMedical.Repository.Interfaces;
 
 namespace Group3_SWP391_PetMedical.Controllers
 {
@@ -12,15 +13,17 @@ namespace Group3_SWP391_PetMedical.Controllers
     {
         private readonly PetClinicContext _context;
         private readonly ILogger<AdminController> _logger;
+        private readonly IFeedbackRepository _feedbackRepo;
 
         // Lưu tạm cấu hình phân quyền theo màn hình trong bộ nhớ ứng dụng.
         // Nếu cần lưu DB thực sự có thể thay bằng bảng riêng trong database.
         private static readonly Dictionary<int, List<ScreenPermissionItem>> _roleScreenPermissions = new();
 
-        public AdminController(PetClinicContext context, ILogger<AdminController> logger)
+        public AdminController(PetClinicContext context, ILogger<AdminController> logger, IFeedbackRepository feedbackRepo)
         {
             _context = context;
             _logger = logger;
+            _feedbackRepo = feedbackRepo;
         }
 
         public async Task<IActionResult> Index(string? searchTerm, string? roleFilter, string? statusFilter, int page = 1, int pageSize = 10)
@@ -113,9 +116,35 @@ namespace Group3_SWP391_PetMedical.Controllers
                     .Select(r => new RoleOption { RoleId = r.role_id, RoleName = r.role_name })
                     .ToListAsync();
 
-                if (await _context.Users.AnyAsync(u => u.email == model.Email))
+                if (!ModelState.IsValid)
+                    return View(model);
+
+                var username = model.Username?.Trim();
+                var email = model.Email?.Trim();
+                var fullName = model.FullName?.Trim();
+                var phone = string.IsNullOrWhiteSpace(model.Phone) ? null : model.Phone.Trim();
+
+                if (string.IsNullOrWhiteSpace(username))
                 {
-                    ModelState.AddModelError("Email", "Email này đã được sử dụng.");
+                    ModelState.AddModelError(nameof(model.Username), "Vui lòng nhập tên đăng nhập.");
+                    return View(model);
+                }
+
+                if (string.IsNullOrWhiteSpace(email))
+                {
+                    ModelState.AddModelError(nameof(model.Email), "Vui lòng nhập email.");
+                    return View(model);
+                }
+
+                if (await _context.Users.AnyAsync(u => u.username == username))
+                {
+                    ModelState.AddModelError(nameof(model.Username), "Tên đăng nhập này đã được sử dụng.");
+                    return View(model);
+                }
+
+                if (await _context.Users.AnyAsync(u => u.email == email))
+                {
+                    ModelState.AddModelError(nameof(model.Email), "Email này đã được sử dụng.");
                     return View(model);
                 }
 
@@ -123,19 +152,17 @@ namespace Group3_SWP391_PetMedical.Controllers
                     .FirstOrDefaultAsync(r => r.role_id == model.RoleId && (r.role_name == "Staff" || r.role_name == "Doctor"));
                 if (role == null)
                 {
-                    ModelState.AddModelError("RoleId", "Vai trò không hợp lệ.");
+                    ModelState.AddModelError(nameof(model.RoleId), "Vai trò không hợp lệ.");
                     return View(model);
                 }
 
-                if (!ModelState.IsValid)
-                    return View(model);
-
                 var user = new User
                 {
-                    email = model.Email.Trim(),
+                    username = username,
+                    email = email,
                     password = model.Password,
-                    full_name = model.FullName.Trim(),
-                    phone = string.IsNullOrWhiteSpace(model.Phone) ? null : model.Phone.Trim(),
+                    full_name = string.IsNullOrWhiteSpace(fullName) ? username : fullName!,
+                    phone = phone,
                     role_id = model.RoleId,
                     status = "Active",
                     created_at = DateTime.Now
@@ -415,6 +442,18 @@ namespace Group3_SWP391_PetMedical.Controllers
                 _logger.LogError(ex, "ToggleLock error for user {UserId}", id);
                 return Json(new { success = false, message = "Có lỗi xảy ra." });
             }
+        }
+
+        // ======================= FEEDBACK =======================
+        public async Task<IActionResult> FeedbackList(string? search, int? starFilter, int page = 1, int pageSize = 6)
+        {
+            var result = await _feedbackRepo.GetPagedAsync(search, starFilter, page, pageSize);
+            ViewBag.CurrentPage = result.Page;
+            ViewBag.TotalPages = result.TotalPages;
+            ViewBag.TotalItems = result.TotalItems;
+            ViewBag.Search = search;
+            ViewBag.StarFilter = starFilter;
+            return View(result.Items.ToList());
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
@@ -95,8 +95,16 @@ namespace Group3_SWP391_PetMedical.Controllers
         }
 
         //  GET: /CusAppointment/Book
+        //  Dùng cho:
+        //  - Lần đầu mở form
+        //  - Bấm nút "Xem lịch bác sĩ" (submit GET với các field của Form)
         [HttpGet]
-        public async Task<IActionResult> Book()
+        public async Task<IActionResult> Book(
+            [FromQuery(Name = "Form.DoctorId")] int? doctorId,
+            [FromQuery(Name = "Form.AppointmentDate")] DateTime? appointmentDate,
+            [FromQuery(Name = "Form.PetId")] int? petId,
+            [FromQuery(Name = "Form.ServiceIds")] List<int>? serviceIds,
+            [FromQuery(Name = "Form.Notes")] string? notes)
         {
             int customerId = GetCurrentUserId();
 
@@ -104,31 +112,50 @@ namespace Group3_SWP391_PetMedical.Controllers
             var services = await _serviceService.GetAllAsync();
             var doctors = await _cusAppointmentService.GetDoctorsAsync();
 
-            var vm = new CusCreateAppointmentVM
+            var vm = new CusCreateAppointmentVM();
+
+            if (petId.HasValue)
             {
-                PetOptions = pets.Select(p => new SelectListItem
-                {
-                    Value = p.PetId.ToString(),
-                    Text = p.PetName
-                }).ToList(),
-                ServiceOptions = services.Select(s => new SelectListItem
-                {
-                    Value = s.service_id.ToString(),
-                    Text = s.service_name
-                }).ToList(),
-                DoctorOptions = doctors.Select(d => new SelectListItem
-                {
-                    Value = d.DoctorId.ToString(),
-                    Text = d.DoctorName
-                }).ToList()
-            };
+                vm.Form.PetId = petId.Value;
+            }
+            vm.Form.DoctorId = doctorId;
+            vm.Form.AppointmentDate = appointmentDate ?? default;
+            vm.Form.Notes = notes;
+            vm.Form.ServiceIds = serviceIds ?? new List<int>();
+
+            vm.PetOptions = pets.Select(p => new SelectListItem
+            {
+                Value = p.PetId.ToString(),
+                Text = p.PetName,
+                Selected = (p.PetId == vm.Form.PetId)
+            }).ToList();
+
+            vm.ServiceOptions = services.Select(s => new SelectListItem
+            {
+                Value = s.service_id.ToString(),
+                Text = s.service_name,
+                Selected = vm.Form.ServiceIds.Contains(s.service_id)
+            }).ToList();
+
+            vm.DoctorOptions = doctors.Select(d => new SelectListItem
+            {
+                Value = d.DoctorId.ToString(),
+                Text = d.DoctorName,
+                Selected = vm.Form.DoctorId.HasValue && vm.Form.DoctorId.Value == d.DoctorId
+            }).ToList();
 
             vm.DoctorOptions.Insert(0, new SelectListItem
             {
                 Value = "",
-                Text = "Chưa phân công",
-                Selected = true
+                Text = "Bác sĩ ngẫu nhiên",
+                Selected = !vm.Form.DoctorId.HasValue
             });
+
+            if (vm.Form.DoctorId.HasValue && appointmentDate.HasValue)
+            {
+                var day = appointmentDate.Value.Date;
+                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day, day);
+            }
 
             return View("~/Views/Appointment/CusBookAppointment.cshtml", vm);
         }

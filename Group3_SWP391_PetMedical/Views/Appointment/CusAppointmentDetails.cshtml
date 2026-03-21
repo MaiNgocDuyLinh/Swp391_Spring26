@@ -1,10 +1,37 @@
-﻿@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusAppointmentDetailVM
+﻿@using Group3_SWP391_PetMedical.Services.Interfaces
+@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusAppointmentDetailVM
+@inject IServiceService ServiceService
 
 @{
     var isPopup = Context.Request.Query["popup"] == "1";
     if (isPopup) { Layout = null; }
 
     ViewData["Title"] = "Chi tiết lịch hẹn";
+
+    // lấy đúng base_price theo tên dịch vụ (không sửa logic controller)
+    var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
+
+    decimal _totalBasePrice = 0m;
+
+    // map "tên dịch vụ" -> base_price (so khớp không phân biệt hoa thường + trim)
+    Func<string?, decimal> _getBasePriceByName = (name) =>
+    {
+        if (string.IsNullOrWhiteSpace(name)) return 0m;
+        var n = name.Trim();
+
+        var svc = _allSvcs.FirstOrDefault(x =>
+            string.Equals(x.service_name?.Trim(), n, StringComparison.OrdinalIgnoreCase));
+
+        return svc != null ? (decimal)svc.base_price : 0m;
+    };
+
+    if (Model.Services != null && Model.Services.Any())
+    {
+        foreach (var s in Model.Services)
+        {
+            _totalBasePrice += _getBasePriceByName(s);
+        }
+    }
 }
 
 @if (isPopup)
@@ -94,12 +121,9 @@
         }
 
         @@media (max-width: 900px) {
-            .pc-grid
-
-        {
-            grid-template-columns: 1fr;
-        }
-
+            .pc-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .pc-item {
@@ -260,7 +284,8 @@
 
             <div class="pc-item" style="grid-column: 1 / -1;">
                 <div class="pc-label">Tổng tiền</div>
-                <div class="pc-value">@((Model.TotalAmount ?? 0).ToString("N0"))</div>
+                <!-- ✅ NEW: dùng tổng base_price -->
+                <div class="pc-value">@(_totalBasePrice.ToString("N0"))</div>
             </div>
         </div>
 
@@ -273,7 +298,13 @@
                     <ul class="pc-list">
                         @foreach (var s in Model.Services)
                         {
-                            <li>@s</li>
+                            var p = _getBasePriceByName(s);
+                            <li>
+                                @s
+                                <span style="float:right; font-weight:900;">
+                                    @p.ToString("N0")
+                                </span>
+                            </li>
                         }
                     </ul>
                 }
@@ -300,10 +331,12 @@
             </a>
 
             <a class="pc-btn pc-btn--primary"
-               href="@Url.Action("Edit", "CusAppointment", new { id = Model.AppointmentId })">
+               asp-controller="CusAppointment"
+               asp-action="Edit"
+               asp-route-id="@Model.AppointmentId"
+               target="_top">
                 Chỉnh sửa lịch hẹn
             </a>
         </div>
     </div>
 </div>
-

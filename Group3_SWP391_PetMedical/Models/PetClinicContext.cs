@@ -22,7 +22,7 @@ namespace Group3_SWP391_PetMedical.Models;
 
     public virtual DbSet<Appointment> Appointments { get; set; }
     public virtual DbSet<AppointmentDetail> AppointmentDetails { get; set; }
-    public virtual DbSet<Feedback> Feedbacks { get; set; }
+    public virtual DbSet<Feedback> Feedback { get; set; }
     public virtual DbSet<Invoice> Invoices { get; set; }
     public virtual DbSet<MedicalRecord> MedicalRecords { get; set; }
     public virtual DbSet<Medication> Medications { get; set; }
@@ -30,6 +30,7 @@ namespace Group3_SWP391_PetMedical.Models;
     public virtual DbSet<Prescription> Prescriptions { get; set; }
     public virtual DbSet<Role> Roles { get; set; }
     public virtual DbSet<Schedule> Schedules { get; set; }
+    public virtual DbSet<ScheduleChangeRequest> ScheduleChangeRequests { get; set; }
     public virtual DbSet<Service> Services { get; set; }
     public virtual DbSet<User> Users { get; set; }
 
@@ -49,8 +50,10 @@ namespace Group3_SWP391_PetMedical.Models;
         var httpContext = _httpContextAccessor?.HttpContext;
         var currentUser = httpContext?.User;
 
-        var userIdClaim = currentUser?.FindFirst("user_id")?.Value;
-        var userEmail = currentUser?.Identity?.Name;
+        var userIdClaim = currentUser?.FindFirstValue(ClaimTypes.NameIdentifier)
+                         ?? currentUser?.FindFirstValue("user_id");
+        var userEmail = currentUser?.FindFirstValue(ClaimTypes.Email)
+                        ?? currentUser?.Identity?.Name;
         var ipAddress = httpContext?.Connection?.RemoteIpAddress?.ToString();
 
         var auditLogs = new List<AuditLog>();
@@ -151,6 +154,7 @@ namespace Group3_SWP391_PetMedical.Models;
         modelBuilder.Entity<Prescription>().HasKey(p => p.prescription_id);
         modelBuilder.Entity<Role>().HasKey(r => r.role_id);
         modelBuilder.Entity<Schedule>().HasKey(s => s.schedule_id);
+        modelBuilder.Entity<ScheduleChangeRequest>().HasKey(r => r.request_id);
         modelBuilder.Entity<Service>().HasKey(s => s.service_id);
         modelBuilder.Entity<User>().HasKey(u => u.user_id);
         modelBuilder.Entity<AuditLog>().HasKey(a => a.AuditLogId);
@@ -280,6 +284,24 @@ namespace Group3_SWP391_PetMedical.Models;
                   .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
+        // ScheduleChangeRequest ↔ Schedule, User (doctor), User (decided_by)
+        modelBuilder.Entity<ScheduleChangeRequest>(entity =>
+        {
+            entity.HasOne(r => r.schedule)
+                  .WithMany()
+                  .HasForeignKey(r => r.schedule_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+            entity.HasOne(r => r.doctor)
+                  .WithMany()
+                  .HasForeignKey(r => r.doctor_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+            entity.HasOne(r => r.decidedByUser)
+                  .WithMany()
+                  .HasForeignKey(r => r.decided_by)
+                  .IsRequired(false)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
         // AppointmentDetail ↔ Appointment / Service
         modelBuilder.Entity<AppointmentDetail>(entity =>
         {
@@ -291,6 +313,20 @@ namespace Group3_SWP391_PetMedical.Models;
             entity.HasOne(ad => ad.service)
                   .WithMany(s => s.AppointmentDetails)
                   .HasForeignKey(ad => ad.service_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        // Feedback ↔ User / Appointment
+        modelBuilder.Entity<Feedback>(entity =>
+        {
+            entity.HasOne(f => f.customer)
+                  .WithMany(u => u.Feedbacks)
+                  .HasForeignKey(f => f.customer_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(f => f.appointment)
+                  .WithMany(a => a.Feedbacks)
+                  .HasForeignKey(f => f.appointment_id)
                   .OnDelete(DeleteBehavior.ClientSetNull);
         });
 

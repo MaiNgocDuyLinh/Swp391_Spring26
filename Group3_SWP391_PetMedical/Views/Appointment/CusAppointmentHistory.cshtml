@@ -1,5 +1,7 @@
 ﻿@using Group3_SWP391_PetMedical.Models.Common
+@using Group3_SWP391_PetMedical.Services.Interfaces
 @model Group3_SWP391_PetMedical.ViewModels.Appointment.CusAppointmentHistoryListVM
+@inject IServiceService ServiceService
 
 @{
     ViewData["Title"] = "Lịch sử khám bệnh";
@@ -14,6 +16,9 @@
 
     var fromVal = Model.Filter.FromDate?.ToString("yyyy-MM-dd") ?? "";
     var toVal = Model.Filter.ToDate?.ToString("yyyy-MM-dd") ?? "";
+
+    //  lấy đúng base_price
+    var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
 }
 
 @section Styles {
@@ -30,7 +35,7 @@
         /* wrapper */
         .pc-wrap {
             /* background: linear-gradient(180deg, var(--pc-pink), #fff); */
-            background : #f3d7d5;
+            background: #f3d7d5;
             border: 1px solid var(--pc-border);
             border-radius: 18px;
             padding: 18px;
@@ -302,6 +307,28 @@
 
                     @foreach (var item in Model.Page.Data.Items)
                     {
+                        // ✅ NEW: tính tổng tiền theo base_price từ ServiceNames (không dùng item.TotalAmount)
+                        decimal totalFromBasePrice = 0m;
+
+                        if (!string.IsNullOrWhiteSpace(item.ServiceNames))
+                        {
+                            var names = item.ServiceNames
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(x => x.Trim())
+                            .ToList();
+
+                            foreach (var n in names)
+                            {
+                                var svc = _allSvcs.FirstOrDefault(x =>
+                                string.Equals(x.service_name?.Trim(), n, StringComparison.OrdinalIgnoreCase));
+
+                                if (svc != null)
+                                {
+                                    totalFromBasePrice += (decimal)svc.base_price;
+                                }
+                            }
+                        }
+
                         <tbody class="pc-record">
                             <tr>
                                 <td>
@@ -326,7 +353,7 @@
                                 </td>
 
                                 <td class="text-end pc-money">
-                                    @((item.TotalAmount ?? 0).ToString("N0"))
+                                    @totalFromBasePrice.ToString("N0")
                                 </td>
                             </tr>
                         </tbody>

@@ -29,6 +29,9 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<PagedResult<User>> GetCustomersPagedAsync(string? search, int page, int pageSize)
             => _userRepo.GetCustomersPagedAsync(search, page, pageSize);
 
+        public Task<User?> GetCustomerDetailAsync(int customerId)
+            => _userRepo.GetCustomerDetailAsync(customerId);
+
         // ========== Appointments ==========
         public Task<PagedResult<Appointment>> GetAppointmentsByDatePagedAsync(DateTime date, string? search, int page, int pageSize)
             => _appointmentRepo.GetAppointmentsByDatePagedAsync(date, search, page, pageSize);
@@ -36,14 +39,14 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<PagedResult<Appointment>> GetAllAppointmentsPagedAsync(string? search, string? statusFilter, int page, int pageSize)
             => _appointmentRepo.GetAllAppointmentsPagedAsync(search, statusFilter, page, pageSize);
 
+        public Task<PagedResult<Appointment>> GetCancelledAppointmentsPagedAsync(string? search, int page, int pageSize)
+            => _appointmentRepo.GetCancelledAppointmentsPagedAsync(search, page, pageSize);
+
         public Task<Appointment?> GetAppointmentByIdAsync(int id)
             => _appointmentRepo.GetByIdAsync(id);
 
-        public Task<bool> ApproveAppointmentAsync(int id)
-            => _appointmentRepo.ApproveAsync(id);
-
-        public Task<bool> RejectAppointmentAsync(int id, string? reason)
-            => _appointmentRepo.RejectAsync(id, reason);
+        public Task<bool> CancelAppointmentAsync(int id, string? reason)
+            => _appointmentRepo.CancelAsync(id, reason);
 
         public Task<bool> AssignDoctorAsync(int appointmentId, int doctorId)
             => _appointmentRepo.AssignDoctorAsync(appointmentId, doctorId);

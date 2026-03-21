@@ -9,11 +9,13 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
     {
         private readonly IServiceRepository _serviceRepo;
         private readonly IAppointmentRepository _appointmentRepo;
+        private readonly IFeedbackRepository _feedbackRepo;
 
-        public ManagerService(IServiceRepository serviceRepo, IAppointmentRepository appointmentRepo)
+        public ManagerService(IServiceRepository serviceRepo, IAppointmentRepository appointmentRepo, IFeedbackRepository feedbackRepo)
         {
             _serviceRepo = serviceRepo;
             _appointmentRepo = appointmentRepo;
+            _feedbackRepo = feedbackRepo;
         }
 
         // ========== Services ==========
@@ -26,23 +28,36 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<bool> UpdateServiceAsync(int id, string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService, bool status)
             => _serviceRepo.UpdateAsync(id, serviceName, basePrice, description, duration, isHomeService, status);
 
+        public Task<bool> CreateServiceAsync(string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService)
+            => _serviceRepo.CreateAsync(serviceName, basePrice, description, duration, isHomeService);
+
+        public Task<bool> DeleteServiceAsync(int id)
+            => _serviceRepo.DeleteAsync(id);
+
         // ========== Appointments ==========
         public Task<PagedResult<Appointment>> GetAllAppointmentsPagedAsync(string? search, string? statusFilter, int page, int pageSize)
             => _appointmentRepo.GetAllAppointmentsPagedAsync(search, statusFilter, page, pageSize);
 
+        public Task<PagedResult<Appointment>> GetCancelledAppointmentsPagedAsync(string? search, int page, int pageSize)
+            => _appointmentRepo.GetCancelledAppointmentsPagedAsync(search, page, pageSize);
+
         public Task<Appointment?> GetAppointmentByIdAsync(int id)
             => _appointmentRepo.GetByIdAsync(id);
 
-        public Task<bool> ApproveAppointmentAsync(int id)
-            => _appointmentRepo.ApproveAsync(id);
-
-        public Task<bool> RejectAppointmentAsync(int id, string? reason)
-            => _appointmentRepo.RejectAsync(id, reason);
+        public Task<bool> CancelAppointmentAsync(int id, string? reason)
+            => _appointmentRepo.CancelAsync(id, reason);
 
         public Task<bool> AssignDoctorAsync(int appointmentId, int doctorId)
             => _appointmentRepo.AssignDoctorAsync(appointmentId, doctorId);
 
         public Task<List<User>> GetDoctorsAsync()
             => _appointmentRepo.GetDoctorsAsync();
+
+        // ========== Feedbacks ==========
+        public Task<PagedResult<Feedback>> GetFeedbacksPagedAsync(string? search, int? starFilter, int page, int pageSize)
+            => _feedbackRepo.GetPagedAsync(search, starFilter, page, pageSize);
+
+        public Task<Feedback?> GetFeedbackByIdAsync(int id)
+            => _feedbackRepo.GetByIdAsync(id);
     }
 }

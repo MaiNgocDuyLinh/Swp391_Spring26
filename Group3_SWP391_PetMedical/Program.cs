@@ -26,6 +26,7 @@ namespace Group3_SWP391_PetMedical
             builder.Services.AddScoped<IMedicinService, MedicinService>();
             builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
             builder.Services.AddScoped<ICartItemService, CartItemService>();
+            builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
             //list pet
             builder.Services.AddScoped<IPetRepository, PetRepository>();
@@ -56,16 +57,19 @@ namespace Group3_SWP391_PetMedical
             builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IStaffService,
                                        Group3_SWP391_PetMedical.Services.Implementations.StaffService>();
             // Manager Module DI (uses shared IServiceRepository)
+            builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IManagerModuleService,
+                                       Group3_SWP391_PetMedical.Services.Implementations.ManagerServiceHung>();
+            // ManagerController DI
             builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IManagerService,
                                        Group3_SWP391_PetMedical.Services.Implementations.ManagerService>();
 
             builder.Services.AddAuthentication("MyCookieAuth")
-            .AddCookie("MyCookieAuth", options =>
-            {
-            options.Cookie.Name = "MyLoginCookie";
-            options.LoginPath = "/Login/Login"; // ÄÆ°á»ng dáº«n tráº£ vá» náº¿u chÆ°a Ä‘Äƒng nháº­p
-            options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // 30p háº¿t háº¡n
-            });
+                .AddCookie("MyCookieAuth", options =>
+                {
+                    options.Cookie.Name = "MyLoginCookie";
+                    options.LoginPath = "/Login/Login"; // Đường dẫn trả về nếu chưa đăng nhập (trang login cũ)
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // 30p hết hạn
+                });
 
             builder.Services.AddControllersWithViews();
 

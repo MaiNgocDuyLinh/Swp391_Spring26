@@ -37,7 +37,18 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(result.Items.ToList());
         }
 
-        // ========== APPOINTMENTS: Lịch theo ngày ==========
+        public async Task<IActionResult> CustomerDetail(int id)
+        {
+            var customer = await _staffService.GetCustomerDetailAsync(id);
+            if (customer == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy khách hàng.";
+                return RedirectToAction(nameof(ListCustomers));
+            }
+            return View(customer);
+        }
+
+        // ========== APPOINTMENTS: Daily ==========
         public async Task<IActionResult> AppointmentList(DateTime? date, string? search, int page = 1)
         {
             var selectedDate = date ?? DateTime.Today;
@@ -51,7 +62,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(result.Items.ToList());
         }
 
-        // ========== APPOINTMENTS: Xem tất cả + filter ==========
+        // ========== APPOINTMENTS: All + filter ==========
         public async Task<IActionResult> AllAppointments(string? search, string? statusFilter, int page = 1)
         {
             var result = await _staffService.GetAllAppointmentsPagedAsync(search, statusFilter, page, PageSize);
@@ -63,7 +74,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(result.Items.ToList());
         }
 
-        // ========== APPOINTMENTS: Chi tiết ==========
+        // ========== APPOINTMENTS: Detail ==========
         public async Task<IActionResult> AppointmentDetail(int id)
         {
             var appt = await _staffService.GetAppointmentByIdAsync(id);
@@ -78,22 +89,12 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(appt);
         }
 
-        // ========== APPOINTMENTS: Approve ==========
+        // ========== APPOINTMENTS: Cancel ==========
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApproveAppointment(int id)
+        public async Task<IActionResult> CancelAppointment(int id, string? reason)
         {
-            await _staffService.ApproveAppointmentAsync(id);
-            TempData["SuccessMessage"] = "Đã xác nhận lịch hẹn!";
-            return RedirectToAction("AppointmentDetail", new { id });
-        }
-
-        // ========== APPOINTMENTS: Reject ==========
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RejectAppointment(int id, string? reason)
-        {
-            await _staffService.RejectAppointmentAsync(id, reason);
+            await _staffService.CancelAppointmentAsync(id, reason);
             TempData["SuccessMessage"] = "Đã hủy lịch hẹn!";
             return RedirectToAction("AppointmentDetail", new { id });
         }
@@ -114,8 +115,19 @@ namespace Group3_SWP391_PetMedical.Controllers
         public async Task<IActionResult> UpdateStatus(int id, string newStatus)
         {
             await _staffService.UpdateAppointmentStatusAsync(id, newStatus);
-            TempData["SuccessMessage"] = $"Đã cập nhật trạng thái thành '{newStatus}'!";
+            TempData["SuccessMessage"] = "Đã cập nhật trạng thái!";
             return RedirectToAction("AppointmentDetail", new { id });
+        }
+
+        // ========== CANCELLED HISTORY ==========
+        public async Task<IActionResult> CancelledAppointments(string? search, int page = 1)
+        {
+            var result = await _staffService.GetCancelledAppointmentsPagedAsync(search, page, PageSize);
+            ViewBag.CurrentPage = result.Page;
+            ViewBag.TotalPages = result.TotalPages;
+            ViewBag.TotalItems = result.TotalItems;
+            ViewBag.Search = search;
+            return View(result.Items.ToList());
         }
 
         // ========== INVOICE ==========

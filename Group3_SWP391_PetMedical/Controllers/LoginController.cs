@@ -32,12 +32,11 @@ namespace Group3_SWP391_PetMedical.Controllers
                 ViewBag.Error = errorMessage ?? "Sai tài khoản hoặc mật khẩu!";
                 return View();
             }
-
             var roleName = user.role?.role_name ?? "User";
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.full_name),
-                new Claim(ClaimTypes.Email, user.email),
+                new Claim(ClaimTypes.Name, user.full_name ?? ""),
+                new Claim(ClaimTypes.Email, user.email ?? ""),
                 new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
                 new Claim(ClaimTypes.Role, roleName)
             };

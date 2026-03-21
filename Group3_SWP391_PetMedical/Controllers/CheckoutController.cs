@@ -124,10 +124,13 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             if (!cartItems.Any()) return RedirectToAction("Index", "Cart");
 
+            // Bắt đầu giao dịch Database
             using var tx = await _context.Database.BeginTransactionAsync();
             try
             {
                 var total = cartItems.Sum(ci => ci.quantity * ci.medicine.unit_price);
+
+                // 1. Tạo đơn hàng RetailOrder
                 var order = new RetailOrder
                 {
                     user_id = userId.Value,
@@ -141,6 +144,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                 _context.RetailOrders.Add(order);
                 await _context.SaveChangesAsync();
 
+                // 2. Tạo chi tiết đơn hàng
                 foreach (var ci in cartItems)
                 {
                     _context.OrderDetails.Add(new OrderDetail
@@ -151,29 +155,34 @@ namespace Group3_SWP391_PetMedical.Controllers
                     });
                 }
 
+                // 3. Xóa các mục đã mua khỏi giỏ hàng
                 _context.CartItemsMedicin.RemoveRange(cartItems);
                 await _context.SaveChangesAsync();
-                await tx.CommitAsync();
 
-
-                // GỌI PAYOS
+                // 4. Gọi API PayOS để lấy link thanh toán
                 var request = new CreatePaymentLinkRequest
                 {
                     OrderCode = order.id,
                     Amount = (int)total,
                     Description = $"PET{order.id}",
                     CancelUrl = $"{_baseUrl}/api/payment/cancel",
-                    // SỬA TẠI ĐÂY: Thêm /Index để Route rõ ràng
                     ReturnUrl = $"{_baseUrl}/Home/Index?payment=success"
                 };
 
                 var result = await _payOSClient.PaymentRequests.CreateAsync(request);
+
+                // 5. CHỈ COMMIT TẠI ĐÂY (Khi cả DB và PayOS đều ok)
+                await tx.CommitAsync();
+
+                // Điều hướng khách sang trang thanh toán của ngân hàng
                 return Redirect(result.CheckoutUrl);
             }
             catch (Exception ex)
             {
+                // Nếu có bất kỳ lỗi nào ở trên, Rollback sẽ thu hồi lại dữ liệu trong DB
+                // Vì lệnh Commit chưa được thực hiện, nên sẽ không bị lỗi Zombie
                 await tx.RollbackAsync();
-                return Content("Lỗi: " + ex.Message);
+                return Content("Lỗi thanh toán: " + ex.Message);
             }
         }
 

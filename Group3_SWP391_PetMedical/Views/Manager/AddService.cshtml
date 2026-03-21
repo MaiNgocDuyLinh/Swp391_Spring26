@@ -1,0 +1,87 @@
+@{
+    ViewData["Title"] = "Thêm dịch vụ mới";
+}
+
+@section Styles {
+    <style>
+        :root { --pc-red:#ff3b3b; --pc-red-dark:#e83434; --pc-text:#2b2b2b; --pc-muted:#7a7a7a; --pc-border:rgba(0,0,0,0.06); }
+        .pc-wrap { background:#f3d7d5; border:1px solid var(--pc-border); border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(0,0,0,0.06); }
+        .pc-title { font-weight:800; margin:0; } .pc-sub { color:var(--pc-muted); margin:0; }
+        .pc-card { background:#fff; border:1px solid var(--pc-border); border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+        .pc-card-head { padding:14px 18px; background:#fff7f7; border-bottom:1px solid var(--pc-border); border-radius:16px 16px 0 0; font-weight:800; font-size:0.95rem; }
+        .pc-card-head i { margin-right:8px; color:var(--pc-red); }
+        .pc-card-body { padding:24px; }
+        .pc-label { font-weight:700; font-size:0.9rem; margin-bottom:6px; }
+        .pc-input { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; height:42px !important; padding:0 12px !important; }
+        .pc-textarea { border-radius:12px !important; border:1px solid rgba(0,0,0,0.10) !important; padding:12px !important; }
+        .pc-btn { border-radius:999px; padding:0 18px; height:42px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; text-decoration:none; cursor:pointer; font-size:0.9rem; }
+        .pc-btn--primary { background:var(--pc-red); color:#fff; box-shadow:0 10px 20px rgba(255,59,59,0.25); }
+        .pc-btn--primary:hover { background:var(--pc-red-dark); color:#fff; }
+        .pc-btn--ghost { background:#fff; border:1px solid rgba(0,0,0,0.10); color:var(--pc-text) !important; }
+    </style>
+}
+
+<section class="container py-4">
+    <div class="pc-wrap" style="margin-top:150px; max-width:700px; margin-left:auto; margin-right:auto;">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="pc-title">Thêm dịch vụ mới</h3>
+                <p class="pc-sub">Tạo dịch vụ mới cho phòng khám</p>
+            </div>
+            <a class="pc-btn pc-btn--ghost" href="@Url.Action("ListServices", "Manager")">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+
+        <div class="pc-card">
+            <div class="pc-card-head"><i class="fas fa-plus-circle"></i>Thông tin dịch vụ</div>
+            <div class="pc-card-body">
+                <form asp-action="AddService" asp-controller="Manager" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label class="pc-label">Tên dịch vụ <span style="color:var(--pc-red);">*</span></label>
+                        <input type="text" class="form-control pc-input" name="service_name" required
+                               placeholder="Nhập tên dịch vụ..." />
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="pc-label">Giá (VNĐ) <span style="color:var(--pc-red);">*</span></label>
+                            <input type="number" class="form-control pc-input" name="base_price" required min="0" step="1000"
+                                   placeholder="0" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="pc-label">Thời gian (phút)</label>
+                            <input type="number" class="form-control pc-input" name="duration" min="1"
+                                   placeholder="30" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="pc-label">Mô tả</label>
+                        <textarea class="form-control pc-textarea" name="description" rows="3"
+                                  placeholder="Mô tả dịch vụ..." style="height:auto !important;"></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="is_home_service" value="true" id="homeService">
+                            <label class="form-check-label" for="homeService" style="font-weight:600;">
+                                <i class="fas fa-home" style="color:var(--pc-red);"></i> Dịch vụ tại nhà
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="pc-btn pc-btn--primary">
+                            <i class="fas fa-plus"></i> Thêm dịch vụ
+                        </button>
+                        <a href="@Url.Action("ListServices", "Manager")" class="pc-btn pc-btn--ghost">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

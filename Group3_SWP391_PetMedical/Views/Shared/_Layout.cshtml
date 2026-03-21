@@ -88,56 +88,67 @@
 											}
 											<li><a href="@Url.Action("Service", "Service")">Dịch vụ </a></li>
 
-											@* Menu Admin trên navbar (tuỳ bạn muốn giữ hay bỏ) *@
-											@if (User.Identity?.IsAuthenticated == true &&
-																			(User.IsInRole("Admin") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Admin")))
-											{
-												<li>
-													<a href="@Url.Action("Index", "Admin")">Admin</a>
-													<ul class="submenu">
-														<li><a href="@Url.Action("Index", "Admin")">Quản lý Tài khoản</a></li>
-														<li><a href="@Url.Action("Create", "Admin")">Tạo Tài khoản</a></li>
-													</ul>
-												</li>
-											}
+                                            @* Menu Admin trên navbar *@
+                                            @if (User.Identity?.IsAuthenticated == true &&
+                                            (User.IsInRole("Admin") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Admin")))
+                                            {
+                                                <li>
+                                                    <a href="@Url.Action("Index", "Admin")">Admin</a>
+                                                    <ul class="submenu">
+                                                        <li><a href="@Url.Action("Index", "Admin")">Quản lý Tài khoản</a></li>
+                                                        <li><a href="@Url.Action("Create", "Admin")">Tạo Tài khoản</a></li>
+                                                        <li><a href="@Url.Action("RolePermissions", "Admin")">Phân quyền theo màn hình</a></li>
+                                                        <li><a href="@Url.Action("Index", "AuditLogs")">Nhật ký hệ thống</a></li>
+                                                        <li><a href="@Url.Action("FeedbackList", "Admin")">Đánh giá của khách hàng</a></li>
+                                                    </ul>
+                                                </li>
+                                            }
 
-											@* Menu Staff trên navbar *@
-											@if (User.Identity?.IsAuthenticated == true && User.IsInRole("Staff"))
-											{
-												<li>
-													<a href="#">Staff</a>
-													<ul class="submenu">
-														<li><a href="@Url.Action("MedicinList", "Medicin")">Quản lý thuốc</a></li>
-														<li><a href="@Url.Action("ListServices", "Staff")">Danh sách dịch vụ</a></li>
-														<li><a href="@Url.Action("ListCustomers", "Staff")">Danh sách khách hàng</a></li>
-														<li><a href="@Url.Action("AppointmentList", "Staff")">Lịch khám theo ngày</a></li>
-														<li><a href="@Url.Action("AllAppointments", "Staff")">Tất cả lịch hẹn</a></li>
-													</ul>
-												</li>
-											}
-											@* --- PHẦN MENU DOCTOR (MỚI THÊM) --- *@
-											@if (User.Identity?.IsAuthenticated == true &&
-																			(User.IsInRole("Doctor") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Doctor")))
-											{
-												<li>
-													<a href="@Url.Action("Index", "Doctor")">Bác Sĩ</a>
-													<ul class="submenu">
-														<li><a href="@Url.Action("Index", "Doctor")">Lịch Khám Hôm Nay</a></li>
-														<li><a href="@Url.Action("MySchedule", "Doctor")">Lịch Trực Tuần</a></li>
-													</ul>
-												</li>
-											}
-											@* Menu Manager trên navbar *@
-											@if (User.Identity?.IsAuthenticated == true && User.IsInRole("Manager"))
-											{
-												<li>
-													<a href="#">Manager</a>
-													<ul class="submenu">
-														<li><a href="@Url.Action("ListServices", "Manager")">Quản lý dịch vụ</a></li>
-														<li><a href="@Url.Action("AppointmentList", "Manager")">Quản lý lịch hẹn</a></li>
-													</ul>
-												</li>
-											}
+                                            @* Menu Staff trên navbar *@
+                                            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Staff"))
+                                            {
+                                                <li>
+                                                    <a href="#">Staff</a>
+                                                    <ul class="submenu">
+                                                        <li><a href="@Url.Action("ListServices", "Staff")">Danh sách dịch vụ</a></li>
+                                                        <li><a href="@Url.Action("ListCustomers", "Staff")">Danh sách khách hàng</a></li>
+                                                        <li><a href="@Url.Action("AppointmentList", "Staff")">Lịch khám theo ngày</a></li>
+                                                        <li><a href="@Url.Action("AllAppointments", "Staff")">Tất cả lịch hẹn</a></li>
+                                                        <li><a href="@Url.Action("Index", "Reports")">Export dữ liệu</a></li>
+                                                         <li><a href="@Url.Action("CancelledAppointments", "Staff")">Đơn đã hủy</a></li>
+                                                    </ul>
+                                                </li>
+                                            }
+                                            @* --- PHẦN MENU DOCTOR (MỚI THÊM) --- *@
+        @if (User.Identity?.IsAuthenticated == true &&
+             (User.IsInRole("Doctor") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Doctor")))
+        {
+            <li>
+                <a href="@Url.Action("Index", "Doctor")">Bác Sĩ</a>
+                <ul class="submenu">
+                    <li><a href="@Url.Action("Index", "Doctor")">Lịch Khám Hôm Nay</a></li>
+                    <li><a href="@Url.Action("MySchedule", "Doctor")">Lịch Trực Tuần</a></li>
+                </ul>
+            </li>
+        }
+                                           
+                                            
+
+                                            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Manager"))
+                                            {
+                                                <li>
+                                                    <a href="#">Manager</a>
+                                                    <ul class="submenu">
+                                                        <li><a href="@Url.Action("ListScheduleChangeRequests", "ManagerModule")">Yêu cầu đổi lịch (duyệt/từ chối)</a></li>
+                                                        <li><a href="@Url.Action("Overview", "ManagerModule")">Thống kê tổng quan</a></li>
+                                                        <li><a href="@Url.Action("Index", "Reports")">Export dữ liệu</a></li>
+                                                        <li><a href="@Url.Action("ListServices", "Manager")">Quản lý dịch vụ</a></li>
+                                                        <li><a href="@Url.Action("AppointmentList", "Manager")">Quản lý lịch hẹn</a></li>
+                                                        <li><a href="@Url.Action("CancelledAppointments", "Manager")">Đơn đã hủy</a></li>
+                                                        <li><a href="@Url.Action("FeedbackList", "Manager")">Đánh giá của khách hàng</a></li>
+                                                    </ul>
+                                                </li>
+                                            }
 
 											<li>
 												<a href="blog.html">Blog</a>
@@ -198,6 +209,40 @@
 												}
 
 
+                                                    
+                                                @if (User.IsInRole("Admin") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Admin"))
+                                                {
+                                                    <div class="dropdown-divider"></div>
+                                                    <a class="dropdown-item" href="@Url.Action("Index", "Admin")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-cog"></i> Quản lý Tài khoản
+                                                    </a>
+                                                    <a class="dropdown-item" href="@Url.Action("Create", "Admin")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-user-plus"></i> Tạo Tài khoản
+                                                    </a>
+                                                    <a class="dropdown-item" href="@Url.Action("RolePermissions", "Admin")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-shield-alt"></i> Phân quyền màn hình
+                                                    </a>
+                                                    <a class="dropdown-item" href="@Url.Action("Index", "AuditLogs")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-history"></i> Nhật ký hệ thống
+                                                        </a>
+                                                    <a class="dropdown-item" href="@Url.Action("FeedbackList", "Admin")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-star"></i> Đánh giá khách hàng
+                                                    </a>
+                                                }
+
+                                                @if (User.IsInRole("Manager") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Manager"))
+                                                {
+                                                    <div class="dropdown-divider"></div>
+                                                    <a class="dropdown-item" href="@Url.Action("ListServices", "Manager")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-briefcase-medical"></i> Quản lý dịch vụ
+                                                    </a>
+                                                    <a class="dropdown-item" href="@Url.Action("AppointmentList", "Manager")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-calendar-alt"></i> Quản lý lịch hẹn
+                                                    </a>
+                                                    <a class="dropdown-item" href="@Url.Action("FeedbackList", "Manager")" style="padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-star"></i> Đánh giá khách hàng
+                                                    </a>
+                                                }
 
 												@if (User.IsInRole("Admin") || User.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role && c.Value == "Admin"))
 												{

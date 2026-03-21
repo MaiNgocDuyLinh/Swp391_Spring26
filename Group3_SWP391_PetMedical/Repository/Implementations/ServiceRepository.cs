@@ -1,4 +1,4 @@
-﻿using Group3_SWP391_PetMedical.Models;
+using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Models.Common;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -27,10 +27,10 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                search = search.Trim().ToLower();
+                search = search.Trim();
                 query = query.Where(s =>
-                    s.service_name.ToLower().Contains(search) ||
-                    (s.description ?? "").ToLower().Contains(search));
+                    EF.Functions.Collate(s.service_name, "Vietnamese_CI_AI").Contains(search) ||
+                    EF.Functions.Collate(s.description ?? "", "Vietnamese_CI_AI").Contains(search));
             }
 
             var total = await query.CountAsync();
@@ -68,6 +68,38 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             service.is_home_service = isHomeService;
             service.status = status;
 
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Thêm dịch vụ mới
+        public async Task<bool> CreateAsync(string serviceName, decimal basePrice, string? description, int? duration, bool isHomeService)
+        {
+            var service = new Service
+            {
+                service_name = serviceName,
+                base_price = basePrice,
+                description = description,
+                duration = duration,
+                is_home_service = isHomeService,
+                status = true
+            };
+            _context.Services.Add(service);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Xóa dịch vụ
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var service = await _context.Services.FirstOrDefaultAsync(s => s.service_id == id);
+            if (service == null) return false;
+
+            // Check if service is linked to any appointment
+            var hasAppointments = await _context.AppointmentDetails.AnyAsync(ad => ad.service_id == id);
+            if (hasAppointments) return false;
+
+            _context.Services.Remove(service);
             await _context.SaveChangesAsync();
             return true;
         }
