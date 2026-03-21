@@ -50,63 +50,6 @@
 
 <section class="container py-4" id="servicesArea">
     <div class="pc-wrap" style="margin-top:150px;">
-<div class="row mb-4">
-    <div class="col-md-8">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <form method="get" asp-action="AppointmentList" asp-controller="Staff" class="form-row align-items-center">
-                    <div class="col-auto">
-                        <label for="date" class="font-weight-bold">
-                            <i class="fas fa-calendar-alt"></i> Ngày:
-                        </label>
-                    </div>
-                    <div class="col-auto">
-                        <input type="date" class="form-control" id="date" name="date"
-                               value="@selectedDate.ToString("yyyy-MM-dd")" />
-                    </div>
-                    <div class="col-md-4">
-                        <input type="text" class="form-control" name="search" value="@search"
-                               placeholder="Tìm khách hàng, thú cưng, bác sĩ..." />
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-search"></i> Tìm
-                        </button>
-                    </div>
-                    @if (!string.IsNullOrEmpty(search))
-                    {
-                        <div class="col-auto">
-                            <a href="@Url.Action("AppointmentList", "Staff", new { date = selectedDate.ToString("yyyy-MM-dd") })" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Xóa lọc
-                            </a>
-                        </div>
-                    }
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Export buttons -->
-    <div class="col-md-4 mt-3 mt-md-0">
-        <div class="card shadow-sm h-100">
-            <div class="card-body d-flex flex-column justify-content-center">
-                <h6 class="font-weight-bold mb-3">
-                    <i class="fas fa-file-export"></i> Export dữ liệu
-                </h6>
-                <div class="d-flex flex-wrap gap-2">
-                    <a class="btn btn-outline-primary mb-2 mr-2"
-                       href="@Url.Action("ExportInvoices", "Reports", new { fromDate = selectedDate.ToString("yyyy-MM-dd"), toDate = selectedDate.ToString("yyyy-MM-dd") })">
-                        <i class="fas fa-file-invoice"></i> Export Hóa đơn (CSV)
-                    </a>
-                    <a class="btn btn-outline-info mb-2"
-                       href="@Url.Action("ExportPrescriptions", "Reports", new { fromDate = selectedDate.ToString("yyyy-MM-dd"), toDate = selectedDate.ToString("yyyy-MM-dd") })">
-                        <i class="fas fa-prescription"></i> Export Đơn thuốc (CSV)
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
         <h3 class="pc-title">Lịch khám theo ngày</h3>
         <p class="pc-sub">Quản lý lịch hẹn khám bệnh theo ngày</p>
