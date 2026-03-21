@@ -149,5 +149,79 @@ namespace Group3_SWP391_PetMedical.Controllers
             ViewBag.StarFilter = starFilter;
             return View(result.Items.ToList());
         }
+
+        // ======================= SERVICE DISCOUNTS =======================
+        public async Task<IActionResult> DiscountList(string? search, int page = 1)
+        {
+            var result = await _managerService.GetServicesWithDiscountPagedAsync(search, page, PageSize);
+            ViewBag.CurrentPage = result.Page;
+            ViewBag.TotalPages = result.TotalPages;
+            ViewBag.TotalItems = result.TotalItems;
+            ViewBag.Search = search;
+            return View(result.Items.ToList());
+        }
+
+        public async Task<IActionResult> ManageDiscount(int serviceId)
+        {
+            var service = await _managerService.GetServiceByIdAsync(serviceId);
+            if (service == null) return NotFound();
+
+            var activeDiscount = await _managerService.GetActiveDiscountByServiceIdAsync(serviceId);
+            ViewBag.ActiveDiscount = activeDiscount;
+            return View(service);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplyDiscount(int serviceId, int discountPercent, DateTime startDate, DateTime endDate)
+        {
+            if (discountPercent < 1 || discountPercent > 100)
+            {
+                TempData["ErrorMessage"] = "Phần trăm giảm giá phải từ 1 đến 100.";
+                return RedirectToAction("ManageDiscount", new { serviceId });
+            }
+            if (endDate <= startDate)
+            {
+                TempData["ErrorMessage"] = "Ngày kết thúc phải sau ngày bắt đầu.";
+                return RedirectToAction("ManageDiscount", new { serviceId });
+            }
+
+            var success = await _managerService.ApplyDiscountAsync(serviceId, discountPercent, startDate, endDate);
+            if (!success)
+            {
+                TempData["ErrorMessage"] = "Không thể áp dụng giảm giá. Vui lòng thử lại.";
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Đã áp dụng giảm giá thành công!";
+            }
+            return RedirectToAction("DiscountList");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveDiscount(int discountId)
+        {
+            var success = await _managerService.RemoveDiscountAsync(discountId);
+            if (!success)
+            {
+                TempData["ErrorMessage"] = "Không thể hủy giảm giá.";
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Đã hủy giảm giá thành công!";
+            }
+            return RedirectToAction("DiscountList");
+        }
+
+        public async Task<IActionResult> DiscountHistory(string? search, int page = 1)
+        {
+            var result = await _managerService.GetDiscountHistoryPagedAsync(search, page, PageSize);
+            ViewBag.CurrentPage = result.Page;
+            ViewBag.TotalPages = result.TotalPages;
+            ViewBag.TotalItems = result.TotalItems;
+            ViewBag.Search = search;
+            return View(result.Items.ToList());
+        }
     }
 }

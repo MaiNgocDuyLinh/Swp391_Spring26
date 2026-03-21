@@ -23,5 +23,12 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         // ========== Feedbacks ==========
         Task<PagedResult<Feedback>> GetFeedbacksPagedAsync(string? search, int? starFilter, int page, int pageSize);
         Task<Feedback?> GetFeedbackByIdAsync(int id);
+
+        // ========== Service Discounts ==========
+        Task<PagedResult<Service>> GetServicesWithDiscountPagedAsync(string? search, int page, int pageSize);
+        Task<ServiceDiscount?> GetActiveDiscountByServiceIdAsync(int serviceId);
+        Task<bool> ApplyDiscountAsync(int serviceId, int discountPercent, DateTime startDate, DateTime endDate);
+        Task<bool> RemoveDiscountAsync(int discountId);
+        Task<PagedResult<ServiceDiscount>> GetDiscountHistoryPagedAsync(string? search, int page, int pageSize);
     }
 }

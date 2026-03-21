@@ -60,6 +60,8 @@ namespace Group3_SWP391_PetMedical
             // ManagerController DI
             builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IManagerService,
                                        Group3_SWP391_PetMedical.Services.Implementations.ManagerService>();
+            // Service Discount
+            builder.Services.AddScoped<IServiceDiscountRepository, ServiceDiscountRepository>();
 
             builder.Services.AddAuthentication("MyCookieAuth")
                 .AddCookie("MyCookieAuth", options =>

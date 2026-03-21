@@ -1,6 +1,6 @@
 @model List<Group3_SWP391_PetMedical.Models.Service>
 @{
-    ViewData["Title"] = "Quản lý Dịch vụ";
+    ViewData["Title"] = "Giảm giá Dịch vụ";
     int currentPage = ViewBag.CurrentPage;
     int totalPages = ViewBag.TotalPages;
     int totalItems = ViewBag.TotalItems;
@@ -34,6 +34,10 @@
         .pc-pager .page-item .page-link:hover { border-color:rgba(255,59,59,0.35); color:var(--pc-red-dark); }
         .pc-pager .page-item.active .page-link { background:var(--pc-red) !important; border-color:var(--pc-red) !important; color:#fff !important; box-shadow:0 12px 24px rgba(255,59,59,0.25); }
         .pc-pager .page-item.disabled .page-link { opacity:0.45; pointer-events:none; box-shadow:none; }
+
+        .sale-tag { background:#dc2626; color:#fff; padding:3px 10px; border-radius:999px; font-weight:800; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px; }
+        .price-old { text-decoration: line-through; color: var(--pc-muted); font-weight:500; font-size:0.85rem; }
+        .price-new { color: var(--pc-red); font-weight:900; }
     </style>
 }
 
@@ -42,12 +46,9 @@
 
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h3 class="pc-title">Quản lý Dịch vụ</h3>
-                <p class="pc-sub">Xem và quản lý danh sách dịch vụ tại phòng khám</p>
+                <h3 class="pc-title">Giảm giá Dịch vụ</h3>
+                <p class="pc-sub">Quản lý khuyến mãi cho từng dịch vụ tại phòng khám</p>
             </div>
-            <a class="pc-btn pc-btn--primary" href="@Url.Action("AddService", "Manager")">
-                <i class="fas fa-plus"></i> Thêm dịch vụ
-            </a>
         </div>
 
         @if (TempData["SuccessMessage"] != null)
@@ -64,15 +65,15 @@
         }
 
         <div class="pc-filter">
-            <form method="get" asp-controller="Manager" asp-action="ListServices" class="row g-3">
+            <form method="get" asp-controller="Manager" asp-action="DiscountList" class="row g-3">
                 <div class="col-lg-6 col-md-8">
                     <div class="pc-label">Từ khóa</div>
                     <input class="form-control pc-input" name="search" value="@search"
-                           placeholder="Tên dịch vụ hoặc mô tả..." />
+                           placeholder="Tên dịch vụ..." />
                 </div>
                 <div class="col-12 mt-2">
                     <div class="d-flex justify-content-between align-items-center">
-                        <a class="pc-btn pc-btn--ghost" href="@Url.Action("ListServices", "Manager")#servicesArea">
+                        <a class="pc-btn pc-btn--ghost" href="@Url.Action("DiscountList", "Manager")#servicesArea">
                             <i class="fas fa-undo-alt"></i> Làm mới
                         </a>
                         <button type="submit" class="pc-btn pc-btn--primary">
@@ -95,61 +96,97 @@
                         <tr>
                             <th style="width:60px;">#</th>
                             <th>Tên dịch vụ</th>
-                            <th>Mô tả</th>
-                            <th class="text-end" style="width:140px;">Giá (VNĐ)</th>
-                            <th style="width:100px;">Thời gian</th>
-                            <th style="width:80px;">Tại nhà</th>
-                            <th style="width:100px;">Trạng thái</th>
+                            <th class="text-end" style="width:140px;">Giá gốc (VNĐ)</th>
+                            <th class="text-center" style="width:100px;">Giảm giá</th>
+                            <th class="text-end" style="width:150px;">Giá sau giảm</th>
+                            <th style="width:200px;">Thời hạn</th>
+                            <th style="width:120px;">Trạng thái</th>
                             <th style="width:80px;" class="text-end">Thao tác</th>
                         </tr>
                     </thead>
                     @{int idx = (currentPage - 1) * 5 + 1;}
                     @foreach (var s in Model)
                     {
+                        var activeDiscount = s.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true);
+                        bool isOnSale = activeDiscount != null && activeDiscount.start_date <= DateTime.Now && activeDiscount.end_date >= DateTime.Now;
+                        decimal discountedPrice = isOnSale ? s.base_price * (1 - (decimal)activeDiscount!.discount_percent / 100) : s.base_price;
+
                         <tbody class="pc-record">
                             <tr>
                                 <td>@idx</td>
                                 <td><strong>@s.service_name</strong></td>
-                                <td><small class="text-muted">@(s.description ?? "-")</small></td>
                                 <td class="text-end">
-                                    @{
-                                        var disc = s.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= DateTime.Now && sd.end_date >= DateTime.Now);
-                                    }
-                                    @if (disc != null)
+                                    @if (isOnSale)
                                     {
-                                        <div>
-                                            <small style="text-decoration:line-through; color:var(--pc-muted);">@s.base_price.ToString("N0")</small>
-                                            <span class="pc-money" style="color:var(--pc-red);">@((s.base_price * (1 - (decimal)disc.discount_percent / 100)).ToString("N0"))</span>
-                                            <span style="background:#dc2626; color:#fff; padding:1px 6px; border-radius:999px; font-size:0.7rem; font-weight:800; margin-left:4px;">-@disc.discount_percent%</span>
-                                        </div>
+                                        <span class="price-old">@s.base_price.ToString("N0")</span>
                                     }
                                     else
                                     {
                                         <span class="pc-money">@s.base_price.ToString("N0")</span>
                                     }
                                 </td>
-                                <td>@(s.duration?.ToString() ?? "N/A") phút</td>
-                                <td>@(s.is_home_service == true ? "Có" : "Không")</td>
+                                <td class="text-center">
+                                    @if (isOnSale)
+                                    {
+                                        <span class="sale-tag"><i class="fas fa-bolt"></i> -@activeDiscount!.discount_percent%</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    @if (isOnSale)
+                                    {
+                                        <span class="price-new">@discountedPrice.ToString("N0")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="pc-money">@s.base_price.ToString("N0")</span>
+                                    }
+                                </td>
                                 <td>
-                                    <span class="pc-badge">
-                                        <i class="fas @(s.status == true ? "fa-check-circle" : "fa-times-circle")"></i>
-                                        @(s.status == true ? "Hoạt động" : "Ngừng")
-                                    </span>
+                                    @if (activeDiscount != null)
+                                    {
+                                        <small>@activeDiscount.start_date.ToString("dd/MM/yyyy") - @activeDiscount.end_date.ToString("dd/MM/yyyy")</small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (isOnSale)
+                                    {
+                                        <span class="pc-badge" style="background:#dcfce7; color:#15803d; border-color:#bbf7d0;">
+                                            <i class="fas fa-check-circle" style="color:#15803d;"></i> Đang giảm
+                                        </span>
+                                    }
+                                    else if (activeDiscount != null && activeDiscount.end_date < DateTime.Now)
+                                    {
+                                        <span class="pc-badge" style="background:#f3f4f6; color:#6b7280;">
+                                            <i class="fas fa-clock" style="color:#6b7280;"></i> Hết hạn
+                                        </span>
+                                    }
+                                    else if (activeDiscount != null && activeDiscount.start_date > DateTime.Now)
+                                    {
+                                        <span class="pc-badge" style="background:#fef3c7; color:#b45309;">
+                                            <i class="fas fa-hourglass-half" style="color:#b45309;"></i> Sắp tới
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="pc-badge">
+                                            <i class="fas fa-minus-circle"></i> Chưa giảm
+                                        </span>
+                                    }
                                 </td>
                                 <td class="text-end">
                                     <div class="pc-action-icons">
-                                        <a class="pc-ico" title="Chỉnh sửa"
-                                           href="@Url.Action("EditService", "Manager", new { id = s.service_id })">
-                                            <i class="fas fa-edit"></i>
+                                        <a class="pc-ico" title="Thiết lập giảm giá"
+                                           href="@Url.Action("ManageDiscount", "Manager", new { serviceId = s.service_id })">
+                                            <i class="fas fa-tag"></i>
                                         </a>
-                                        <button class="pc-ico" title="Xóa" style="color:#dc2626; border-color:rgba(220,38,38,0.2);"
-                                                type="button" data-delete-id="@s.service_id" data-delete-name="@s.service_name">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                        <form id="deleteForm-@s.service_id" asp-action="DeleteService" asp-controller="Manager" method="post" style="display:none;">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@s.service_id" />
-                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -162,16 +199,16 @@
             <div class="mt-3 d-flex justify-content-center">
                 <ul class="pagination pc-pager">
                     <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("ListServices", "Manager", new { search, page = currentPage - 1 })"><i class="fas fa-chevron-left"></i></a>
+                        <a class="page-link" href="@Url.Action("DiscountList", "Manager", new { search, page = currentPage - 1 })"><i class="fas fa-chevron-left"></i></a>
                     </li>
                     @for (int i = 1; i <= Math.Max(totalPages, 1); i++)
                     {
                         <li class="page-item @(i == currentPage ? "active" : "")">
-                            <a class="page-link" href="@Url.Action("ListServices", "Manager", new { search, page = i })">@i</a>
+                            <a class="page-link" href="@Url.Action("DiscountList", "Manager", new { search, page = i })">@i</a>
                         </li>
                     }
                     <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("ListServices", "Manager", new { search, page = currentPage + 1 })"><i class="fas fa-chevron-right"></i></a>
+                        <a class="page-link" href="@Url.Action("DiscountList", "Manager", new { search, page = currentPage + 1 })"><i class="fas fa-chevron-right"></i></a>
                     </li>
                 </ul>
             </div>
@@ -179,17 +216,12 @@
                 Tổng: <strong>@totalItems</strong> dịch vụ
             </div>
         }
+
+        <!-- Nút lịch sử ở góc dưới bên phải -->
+        <div class="d-flex justify-content-end mt-3">
+            <a href="@Url.Action("DiscountHistory", "Manager")" class="pc-btn pc-btn--ghost">
+                <i class="fas fa-history"></i> Lịch sử giảm giá
+            </a>
+        </div>
     </div>
 </section>
-
-<script>
-    document.querySelectorAll('[data-delete-id]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var id = this.getAttribute('data-delete-id');
-            var name = this.getAttribute('data-delete-name');
-            if (confirm('Xác nhận xóa dịch vụ "' + name + '"?')) {
-                document.getElementById('deleteForm-' + id).submit();
-            }
-        });
-    });
-</script>

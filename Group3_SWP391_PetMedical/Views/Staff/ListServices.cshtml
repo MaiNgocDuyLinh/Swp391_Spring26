@@ -85,7 +85,23 @@
                                 <td>@idx</td>
                                 <td><strong>@s.service_name</strong></td>
                                 <td><small class="text-muted">@(s.description ?? "-")</small></td>
-                                <td class="text-end pc-money">@s.base_price.ToString("N0") đ</td>
+                                <td class="text-end">
+                                    @{
+                                        var disc = s.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= DateTime.Now && sd.end_date >= DateTime.Now);
+                                    }
+                                    @if (disc != null)
+                                    {
+                                        <div>
+                                            <small style="text-decoration:line-through; color:var(--pc-muted);">@s.base_price.ToString("N0") đ</small>
+                                            <span class="pc-money" style="color:var(--pc-red);">@((s.base_price * (1 - (decimal)disc.discount_percent / 100)).ToString("N0")) đ</span>
+                                            <span style="background:#dc2626; color:#fff; padding:1px 6px; border-radius:999px; font-size:0.7rem; font-weight:800; margin-left:4px;">-@disc.discount_percent%</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="pc-money">@s.base_price.ToString("N0") đ</span>
+                                    }
+                                </td>
                                 <td>@(s.duration?.ToString() ?? "N/A") phút</td>
                                 <td>@(s.is_home_service == true ? "Có" : "Không")</td>
                                 <td>

@@ -10,12 +10,18 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         private readonly IServiceRepository _serviceRepo;
         private readonly IAppointmentRepository _appointmentRepo;
         private readonly IFeedbackRepository _feedbackRepo;
+        private readonly IServiceDiscountRepository _discountRepo;
 
-        public ManagerService(IServiceRepository serviceRepo, IAppointmentRepository appointmentRepo, IFeedbackRepository feedbackRepo)
+        public ManagerService(
+            IServiceRepository serviceRepo,
+            IAppointmentRepository appointmentRepo,
+            IFeedbackRepository feedbackRepo,
+            IServiceDiscountRepository discountRepo)
         {
             _serviceRepo = serviceRepo;
             _appointmentRepo = appointmentRepo;
             _feedbackRepo = feedbackRepo;
+            _discountRepo = discountRepo;
         }
 
         // ========== Services ==========
@@ -59,5 +65,21 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
 
         public Task<Feedback?> GetFeedbackByIdAsync(int id)
             => _feedbackRepo.GetByIdAsync(id);
+
+        // ========== Service Discounts ==========
+        public Task<PagedResult<Service>> GetServicesWithDiscountPagedAsync(string? search, int page, int pageSize)
+            => _discountRepo.GetServicesWithDiscountPagedAsync(search, page, pageSize);
+
+        public Task<ServiceDiscount?> GetActiveDiscountByServiceIdAsync(int serviceId)
+            => _discountRepo.GetActiveDiscountByServiceIdAsync(serviceId);
+
+        public Task<bool> ApplyDiscountAsync(int serviceId, int discountPercent, DateTime startDate, DateTime endDate)
+            => _discountRepo.ApplyDiscountAsync(serviceId, discountPercent, startDate, endDate);
+
+        public Task<bool> RemoveDiscountAsync(int discountId)
+            => _discountRepo.RemoveDiscountAsync(discountId);
+
+        public Task<PagedResult<ServiceDiscount>> GetDiscountHistoryPagedAsync(string? search, int page, int pageSize)
+            => _discountRepo.GetDiscountHistoryPagedAsync(search, page, pageSize);
     }
 }

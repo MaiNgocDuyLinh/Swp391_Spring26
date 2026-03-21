@@ -36,6 +36,7 @@ public partial class PetClinicContext : DbContext
 
     // ✅ NEW TABLE
     public virtual DbSet<AuditLog> AuditLogs { get; set; }
+    public virtual DbSet<ServiceDiscount> ServiceDiscounts { get; set; }
 
     // ================= AUTO AUDIT =================
 
@@ -151,6 +152,7 @@ public partial class PetClinicContext : DbContext
         modelBuilder.Entity<Schedule>().HasKey(s => s.schedule_id);
         modelBuilder.Entity<ScheduleChangeRequest>().HasKey(r => r.request_id);
         modelBuilder.Entity<Service>().HasKey(s => s.service_id);
+        modelBuilder.Entity<ServiceDiscount>().HasKey(sd => sd.discount_id);
         modelBuilder.Entity<User>().HasKey(u => u.user_id);
         modelBuilder.Entity<AuditLog>().HasKey(a => a.AuditLogId);
 
@@ -279,6 +281,16 @@ public partial class PetClinicContext : DbContext
             entity.HasOne(p => p.medicine)
                   .WithMany(m => m.Prescriptions)
                   .HasForeignKey(p => p.medicine_id)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        // ServiceDiscount ↔ Service
+        modelBuilder.Entity<ServiceDiscount>(entity =>
+        {
+            entity.ToTable("ServiceDiscount");
+            entity.HasOne(sd => sd.service)
+                  .WithMany(s => s.ServiceDiscounts)
+                  .HasForeignKey(sd => sd.service_id)
                   .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }
