@@ -13,25 +13,19 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
         private static readonly string[] PendingOrderStatuses =
         {
-            "Đặt hàng thành công",
             "Chờ xác nhận",
-            "Đang xử lý",
             "Đã xác nhận",
-            "Đang giao",
             "Sẵn sàng nhận hàng"
         };
 
         private static readonly string[] ReceivedOrderStatuses =
         {
-            "Đã nhận hàng",
-            "Đã giao",
             "Hoàn thành"
         };
 
         private static readonly string[] CancelledOrderStatuses =
         {
-            "Đã hủy",
-            "Hủy"
+            "Đã hủy"
         };
 
         public CusShoppingRepository(PetClinicContext context)
@@ -422,7 +416,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 TotalAmount = cartItems.Sum(x => x.CartItem.UnitPrice * x.CartItem.Quantity),
                 PaymentMethod = string.IsNullOrWhiteSpace(paymentMethod) ? "Thanh toán tại quầy" : paymentMethod,
                 PaymentStatus = "Chưa thanh toán",
-                OrderStatus = "Đặt hàng thành công",
+                OrderStatus = "Chờ xác nhận",
                 PickupMethod = "Nhận tại phòng khám",
                 PickupNote = pickupNote,
                 PickupDate = pickupDate?.Date,
@@ -525,8 +519,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     OrderId = x.OrderId,
                     OrderCode = x.OrderCode,
                     TotalAmount = x.TotalAmount,
-                    PaymentStatus = x.PaymentStatus,
-                    OrderStatus = x.OrderStatus,
+                    PaymentStatus = MapCustomerPaymentStatus(x.PaymentStatus),
+                    OrderStatus = MapCustomerOrderStatus(x.OrderStatus),
                     CreatedAt = x.CreatedAt
                 })
                 .ToListAsync();
@@ -552,24 +546,24 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
         public async Task<CusShoppingOrderDetailVM?> GetOrderDetailAsync(int customerId, int orderId)
         {
-            var order = await _context.ProductOrders
+            var orderEntity = await _context.ProductOrders
                 .AsNoTracking()
-                .Where(x => x.CustomerId == customerId && x.OrderId == orderId)
-                .Select(x => new CusShoppingOrderDetailVM
-                {
-                    OrderId = x.OrderId,
-                    OrderCode = x.OrderCode,
-                    PaymentMethod = x.PaymentMethod,
-                    PaymentStatus = x.PaymentStatus,
-                    OrderStatus = x.OrderStatus,
-                    PickupMethod = x.PickupMethod,
-                    PickupNote = x.PickupNote,
-                    PickupDate = x.PickupDate,
-                    CreatedAt = x.CreatedAt
-                })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(x => x.CustomerId == customerId && x.OrderId == orderId);
 
-            if (order == null) return null;
+            if (orderEntity == null) return null;
+
+            var order = new CusShoppingOrderDetailVM
+            {
+                OrderId = orderEntity.OrderId,
+                OrderCode = orderEntity.OrderCode,
+                PaymentMethod = orderEntity.PaymentMethod,
+                PaymentStatus = MapCustomerPaymentStatus(orderEntity.PaymentStatus),
+                OrderStatus = MapCustomerOrderStatus(orderEntity.OrderStatus),
+                PickupMethod = orderEntity.PickupMethod,
+                PickupNote = orderEntity.PickupNote,
+                PickupDate = orderEntity.PickupDate,
+                CreatedAt = orderEntity.CreatedAt
+            };
 
             order.Items = await _context.ProductOrderItems
                 .AsNoTracking()
@@ -586,10 +580,10 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 })
                 .ToListAsync();
 
-            order.CancelDeadline = order.PickupDate?.Date;
-            order.CanCancel = IsPendingStatus(order.OrderStatus)
-                              && order.PickupDate.HasValue
-                              && DateTime.Now < order.PickupDate.Value.Date;
+            order.CancelDeadline = orderEntity.PickupDate?.Date;
+            order.CanCancel = IsPendingStatus(orderEntity.OrderStatus)
+                              && orderEntity.PickupDate.HasValue
+                              && DateTime.Now < orderEntity.PickupDate.Value.Date;
 
             return order;
         }
@@ -712,6 +706,33 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         private static bool IsCancelledStatus(string? status)
         {
             return CancelledOrderStatuses.Contains(status ?? string.Empty);
+        }
+
+        private static string MapCustomerOrderStatus(string? status)
+        {
+            status = (status ?? string.Empty).Trim();
+
+            return status switch
+            {
+                "Chờ xác nhận" => "Đặt hàng thành công",
+                "Đã xác nhận" => "Đặt hàng thành công",
+                "Sẵn sàng nhận hàng" => "Đặt hàng thành công",
+                "Hoàn thành" => "Đã nhận hàng",
+                "Đã hủy" => "Đã hủy",
+                _ => status
+            };
+        }
+
+        private static string MapCustomerPaymentStatus(string? status)
+        {
+            status = (status ?? string.Empty).Trim();
+
+            return status switch
+            {
+                "Chưa thanh toán" => "Chưa thanh toán",
+                "Đã thanh toán" => "Đã thanh toán",
+                _ => status
+            };
         }
 
         private async Task<Cart> GetOrCreateCartAsync(int customerId)
