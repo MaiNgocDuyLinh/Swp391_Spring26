@@ -22,7 +22,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             if (userId == null) return Forbid();
 
             var vm = await _cartService.GetOrCreateActiveCartAsync(userId.Value);
-            return View("~/Views/Retail/CartMedicin.cshtml", vm);
+            return View("~/Views/Retail/Cart.cshtml", vm);
         }
 
         [HttpPost]
