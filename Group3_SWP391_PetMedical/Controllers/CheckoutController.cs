@@ -65,15 +65,15 @@ namespace Group3_SWP391_PetMedical.Controllers
             // Giữ lại TempData để nếu khách bấm F5 trang này thì vẫn còn dữ liệu
             TempData.Keep("SelectedMedicineIds");
 
-            var cart = await _context.Carts
-                .Include(c => c.CartItems).ThenInclude(ci => ci.medicine)
+            var cart = await _context.CartsMedicin
+                .Include(c => c.CartItemsMedicin).ThenInclude(ci => ci.medicine)
                 .FirstOrDefaultAsync(c => c.user_id == userId.Value && c.status == "ACTIVE");
 
-            if (cart == null || !cart.CartItems.Any())
+            if (cart == null || !cart.CartItemsMedicin.Any())
                 return RedirectToAction("Index", "Cart");
 
             var selectedSet = new HashSet<int>(medicineIds);
-            var items = cart.CartItems
+            var items = cart.CartItemsMedicin
                 .Where(ci => selectedSet.Contains(ci.medicine_id))
                 .Select(ci => new CheckoutItemVm
                 {
@@ -115,12 +115,12 @@ namespace Group3_SWP391_PetMedical.Controllers
             if (form.SelectedMedicineIds == null || form.SelectedMedicineIds.Length == 0)
                 return RedirectToAction("Index", "Cart");
 
-            var cart = await _context.Carts
-                .Include(c => c.CartItems).ThenInclude(ci => ci.medicine)
+            var cart = await _context.CartsMedicin
+                .Include(c => c.CartItemsMedicin).ThenInclude(ci => ci.medicine)
                 .FirstOrDefaultAsync(c => c.user_id == userId.Value && c.status == "ACTIVE");
 
             var selectedSet = new HashSet<int>(form.SelectedMedicineIds);
-            var cartItems = cart.CartItems.Where(ci => selectedSet.Contains(ci.medicine_id)).ToList();
+            var cartItems = cart.CartItemsMedicin.Where(ci => selectedSet.Contains(ci.medicine_id)).ToList();
 
             if (!cartItems.Any()) return RedirectToAction("Index", "Cart");
 
@@ -151,7 +151,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                     });
                 }
 
-                _context.CartItems.RemoveRange(cartItems);
+                _context.CartItemsMedicin.RemoveRange(cartItems);
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();
 

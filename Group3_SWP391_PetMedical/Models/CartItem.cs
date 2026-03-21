@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Group3_SWP391_PetMedical.Models;
 
-public partial class CartItem
+public partial class CartItemMedicin
 {
     public int cart_id { get; set; }
 
@@ -11,7 +11,7 @@ public partial class CartItem
 
     public int quantity { get; set; }
 
-    public virtual Cart cart { get; set; } = null!;
+    public virtual CartMedicin cart { get; set; } = null!;
 
     public virtual Medication medicine { get; set; } = null!;
 }

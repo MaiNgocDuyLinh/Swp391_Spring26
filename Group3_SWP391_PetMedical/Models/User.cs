@@ -41,7 +41,7 @@ public partial class User
 
     public virtual ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();
 
-    public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
+    public virtual ICollection<CartMedicin> CartsMedicin { get; set; } = new List<CartMedicin>();
 
     public virtual ICollection<RetailOrder> RetailOrders { get; set; } = new List<RetailOrder>();
 

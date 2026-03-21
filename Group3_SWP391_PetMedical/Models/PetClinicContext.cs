@@ -38,8 +38,8 @@ namespace Group3_SWP391_PetMedical.Models;
 
         public virtual DbSet<RetailOrder> RetailOrders { get; set; }
         public virtual DbSet<OrderDetail> OrderDetails { get; set; }
-        public virtual DbSet<Cart> Carts { get; set; }
-        public virtual DbSet<CartItem> CartItems { get; set; }
+        public virtual DbSet<CartMedicin> CartsMedicin { get; set; }
+        public virtual DbSet<CartItemMedicin> CartItemsMedicin { get; set; }
 
     // ================= AUTO AUDIT =================
 
@@ -184,25 +184,25 @@ namespace Group3_SWP391_PetMedical.Models;
                   .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
-        // Cart ↔ User / CartItems / Medication
-        modelBuilder.Entity<Cart>(entity =>
+        // Cart ↔ User / CartItemsMedicin / Medication
+        modelBuilder.Entity<CartMedicin>(entity =>
         {
             entity.HasKey(c => c.id);
-            entity.ToTable("Carts");
+            entity.ToTable("CartsMedicin");
 
             entity.HasOne(c => c.user)
-                  .WithMany(u => u.Carts)
+                  .WithMany(u => u.CartsMedicin)
                   .HasForeignKey(c => c.user_id)
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<CartItem>(entity =>
+        modelBuilder.Entity<CartItemMedicin>(entity =>
         {
             entity.HasKey(ci => new { ci.cart_id, ci.medicine_id });
-            entity.ToTable("CartItems");
+            entity.ToTable("CartItemsMedicin");
 
             entity.HasOne(ci => ci.cart)
-                  .WithMany(c => c.CartItems)
+                  .WithMany(c => c.CartItemsMedicin)
                   .HasForeignKey(ci => ci.cart_id)
                   .OnDelete(DeleteBehavior.Cascade);
 

@@ -16,25 +16,25 @@ public class CartRepository : ICartRepository
 
     public async Task<CartVm> GetOrCreateActiveCartAsync(int userId)
     {
-        var cart = await _context.Carts
-            .Include(c => c.CartItems)
+        var cart = await _context.CartsMedicin
+            .Include(c => c.CartItemsMedicin)
             .ThenInclude(ci => ci.medicine)
             .FirstOrDefaultAsync(c => c.user_id == userId && c.status == "ACTIVE");
 
         if (cart == null)
         {
-            cart = new Cart
+            cart = new CartMedicin
             {
                 user_id = userId,
                 status = "ACTIVE",
                 created_at = DateTime.UtcNow
             };
-            _context.Carts.Add(cart);
+            _context.CartsMedicin.Add(cart);
             await _context.SaveChangesAsync();
 
             // re-load with items
-            cart = await _context.Carts
-                .Include(c => c.CartItems)
+            cart = await _context.CartsMedicin
+                .Include(c => c.CartItemsMedicin)
                 .ThenInclude(ci => ci.medicine)
                 .FirstAsync(c => c.id == cart.id);
         }
@@ -46,34 +46,34 @@ public class CartRepository : ICartRepository
     {
         if (quantity <= 0) quantity = 1;
 
-        var cart = await _context.Carts
-            .Include(c => c.CartItems)
+        var cart = await _context.CartsMedicin
+            .Include(c => c.CartItemsMedicin)
             .FirstOrDefaultAsync(c => c.user_id == userId && c.status == "ACTIVE");
 
         if (cart == null)
         {
-            cart = new Cart
+            cart = new CartMedicin
             {
                 user_id = userId,
                 status = "ACTIVE",
                 created_at = DateTime.UtcNow
             };
-            _context.Carts.Add(cart);
+            _context.CartsMedicin.Add(cart);
             await _context.SaveChangesAsync();
         }
 
-        var item = await _context.CartItems
+        var item = await _context.CartItemsMedicin
             .FirstOrDefaultAsync(i => i.cart_id == cart.id && i.medicine_id == medicineId);
 
         if (item == null)
         {
-            item = new CartItem
+            item = new CartItemMedicin
             {
                 cart_id = cart.id,
                 medicine_id = medicineId,
                 quantity = quantity
             };
-            _context.CartItems.Add(item);
+            _context.CartItemsMedicin.Add(item);
         }
         else
         {
@@ -86,14 +86,14 @@ public class CartRepository : ICartRepository
 
     public async Task<CartVm> UpdateQuantityAsync(int userId, int medicineId, int quantity)
     {
-        var cart = await _context.Carts
+        var cart = await _context.CartsMedicin
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.user_id == userId && c.status == "ACTIVE");
 
         if (cart == null)
             return await GetOrCreateActiveCartAsync(userId);
 
-        var item = await _context.CartItems
+        var item = await _context.CartItemsMedicin
             .FirstOrDefaultAsync(i => i.cart_id == cart.id && i.medicine_id == medicineId);
 
         if (item == null)
@@ -101,7 +101,7 @@ public class CartRepository : ICartRepository
 
         if (quantity <= 0)
         {
-            _context.CartItems.Remove(item);
+            _context.CartItemsMedicin.Remove(item);
         }
         else
         {
@@ -114,19 +114,19 @@ public class CartRepository : ICartRepository
 
     public async Task<CartVm> RemoveItemAsync(int userId, int medicineId)
     {
-        var cart = await _context.Carts
+        var cart = await _context.CartsMedicin
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.user_id == userId && c.status == "ACTIVE");
 
         if (cart == null)
             return await GetOrCreateActiveCartAsync(userId);
 
-        var item = await _context.CartItems
+        var item = await _context.CartItemsMedicin
             .FirstOrDefaultAsync(i => i.cart_id == cart.id && i.medicine_id == medicineId);
 
         if (item != null)
         {
-            _context.CartItems.Remove(item);
+            _context.CartItemsMedicin.Remove(item);
             await _context.SaveChangesAsync();
         }
 
@@ -135,22 +135,22 @@ public class CartRepository : ICartRepository
 
     private async Task<CartVm> LoadVm(int cartId)
     {
-        var cart = await _context.Carts
-            .Include(c => c.CartItems)
+        var cart = await _context.CartsMedicin
+            .Include(c => c.CartItemsMedicin)
             .ThenInclude(ci => ci.medicine)
             .FirstAsync(c => c.id == cartId);
 
         return Map(cart);
     }
 
-    private static CartVm Map(Cart cart)
+    private static CartVm Map(CartMedicin cart)
     {
         return new CartVm
         {
             cart_id = cart.id,
             user_id = cart.user_id,
             status = cart.status,
-            items = cart.CartItems
+            items = cart.CartItemsMedicin
                 .OrderBy(i => i.medicine.name)
                 .Select(i => new CartItemVm
                 {
