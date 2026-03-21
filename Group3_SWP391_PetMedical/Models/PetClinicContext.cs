@@ -37,6 +37,8 @@ namespace Group3_SWP391_PetMedical.Models;
     // ✅ NEW TABLE
     public virtual DbSet<AuditLog> AuditLogs { get; set; }
     public virtual DbSet<ServiceDiscount> ServiceDiscounts { get; set; }       
+
+
         public virtual DbSet<RetailOrder> RetailOrders { get; set; }
         public virtual DbSet<OrderDetail> OrderDetails { get; set; }
         public virtual DbSet<CartMedicin> CartsMedicin { get; set; }
