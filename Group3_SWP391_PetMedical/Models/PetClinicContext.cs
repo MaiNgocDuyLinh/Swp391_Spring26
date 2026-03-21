@@ -35,17 +35,12 @@ namespace Group3_SWP391_PetMedical.Models;
     public virtual DbSet<User> Users { get; set; }
 
     // ✅ NEW TABLE
-<<<<<<< HEAD
     public virtual DbSet<AuditLog> AuditLogs { get; set; }
-    public virtual DbSet<ServiceDiscount> ServiceDiscounts { get; set; }
-=======
-        public virtual DbSet<AuditLog> AuditLogs { get; set; }
-
+    public virtual DbSet<ServiceDiscount> ServiceDiscounts { get; set; }       
         public virtual DbSet<RetailOrder> RetailOrders { get; set; }
         public virtual DbSet<OrderDetail> OrderDetails { get; set; }
         public virtual DbSet<CartMedicin> CartsMedicin { get; set; }
         public virtual DbSet<CartItemMedicin> CartItemsMedicin { get; set; }
->>>>>>> 478149f46a54864f27d94fca2fcdd73aefeccc6e
 
     // ================= AUTO AUDIT =================
 
