@@ -1,4 +1,4 @@
-using Group3_SWP391_PetMedical.Services.Interfaces;
+﻿using Group3_SWP391_PetMedical.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -8,9 +8,9 @@ namespace Group3_SWP391_PetMedical.Controllers
     [Authorize(Roles = "Customer")]
     public class CartController : Controller
     {
-        private readonly ICartService _cartService;
+        private readonly ICartItemService _cartService;
 
-        public CartController(ICartService cartService)
+        public CartController(ICartItemService cartService)
         {
             _cartService = cartService;
         }
@@ -22,7 +22,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             if (userId == null) return Forbid();
 
             var vm = await _cartService.GetOrCreateActiveCartAsync(userId.Value);
-            return View("~/Views/Retail/Cart.cshtml", vm);
+            return View("~/Views/Retail/CartMedicin.cshtml", vm);
         }
 
         [HttpPost]

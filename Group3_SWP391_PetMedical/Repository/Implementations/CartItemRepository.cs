@@ -1,15 +1,15 @@
-using Group3_SWP391_PetMedical.Models;
+﻿using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Group3_SWP391_PetMedical.ViewModels.Retail;
 using Microsoft.EntityFrameworkCore;
 
 namespace Group3_SWP391_PetMedical.Repository.Implementations;
 
-public class CartRepository : ICartRepository
+public class CartItemRepository : ICartItemRepository
 {
     private readonly PetClinicContext _context;
 
-    public CartRepository(PetClinicContext context)
+    public CartItemRepository(PetClinicContext context)
     {
         _context = context;
     }

@@ -1,15 +1,15 @@
-using Group3_SWP391_PetMedical.Repository.Interfaces;
+﻿using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Group3_SWP391_PetMedical.Services.Interfaces;
 using Group3_SWP391_PetMedical.ViewModels.Retail;
 
 namespace Group3_SWP391_PetMedical.Services.Implementations;
 
-public class CartService : ICartService
+public class CartItemService : ICartItemService
 {
-    private readonly ICartRepository _repo;
+    private readonly ICartItemRepository _repo;
     private readonly IMedicinService _medicinService;
 
-    public CartService(ICartRepository repo, IMedicinService medicinService)
+    public CartItemService(ICartItemRepository repo, IMedicinService medicinService)
     {
         _repo = repo;
         _medicinService = medicinService;

@@ -1,8 +1,8 @@
-using Group3_SWP391_PetMedical.ViewModels.Retail;
+﻿using Group3_SWP391_PetMedical.ViewModels.Retail;
 
 namespace Group3_SWP391_PetMedical.Repository.Interfaces;
 
-public interface ICartRepository
+public interface ICartItemRepository
 {
     Task<CartVm> GetOrCreateActiveCartAsync(int userId);
     Task<CartVm> AddOrUpdateItemAsync(int userId, int medicineId, int quantity);

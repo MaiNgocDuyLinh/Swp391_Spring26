@@ -1,4 +1,4 @@
-using Group3_SWP391_PetMedical.Models;
+﻿using Group3_SWP391_PetMedical.Models;
 using Microsoft.EntityFrameworkCore;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Group3_SWP391_PetMedical.Repository.Implementations;
@@ -16,7 +16,7 @@ namespace Group3_SWP391_PetMedical
 
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<AuditService>();
-            // Đăng ký DbContext với SQL Server
+            // ÄÄƒng kÃ½ DbContext vá»›i SQL Server
             builder.Services.AddDbContext<PetClinicContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -24,8 +24,8 @@ namespace Group3_SWP391_PetMedical
             builder.Services.AddScoped<IServiceService, ServiceService>();
             builder.Services.AddScoped<IMedicinRepository, MedicinRepository>();
             builder.Services.AddScoped<IMedicinService, MedicinService>();
-            builder.Services.AddScoped<ICartRepository, CartRepository>();
-            builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+            builder.Services.AddScoped<ICartItemService, CartItemService>();
 
             //list pet
             builder.Services.AddScoped<IPetRepository, PetRepository>();
@@ -63,8 +63,8 @@ namespace Group3_SWP391_PetMedical
             .AddCookie("MyCookieAuth", options =>
             {
             options.Cookie.Name = "MyLoginCookie";
-            options.LoginPath = "/Login/Login"; // Đường dẫn trả về nếu chưa đăng nhập
-            options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // 30p hết hạn
+            options.LoginPath = "/Login/Login"; // ÄÆ°á»ng dáº«n tráº£ vá» náº¿u chÆ°a Ä‘Äƒng nháº­p
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // 30p háº¿t háº¡n
             });
 
             builder.Services.AddControllersWithViews();
@@ -84,7 +84,7 @@ namespace Group3_SWP391_PetMedical
 
             app.UseRouting();
 
-            // Phải đặt UseAuthentication() trước UseAuthorization() .
+            // Pháº£i Ä‘áº·t UseAuthentication() trÆ°á»›c UseAuthorization() .
             app.UseAuthentication();
             app.UseAuthorization();
 
