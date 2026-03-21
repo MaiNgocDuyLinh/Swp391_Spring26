@@ -96,6 +96,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         [HttpGet("success")]
         public IActionResult PaymentSuccess()
         {
+            return Redirect($"{_baseUrl}/Home/Index?payment=success");
             return Content(@"
                 <html>
                 <head><meta charset='utf-8'></head>

@@ -155,6 +155,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();
 
+
                 // GỌI PAYOS
                 var request = new CreatePaymentLinkRequest
                 {
@@ -162,7 +163,8 @@ namespace Group3_SWP391_PetMedical.Controllers
                     Amount = (int)total,
                     Description = $"PET{order.id}",
                     CancelUrl = $"{_baseUrl}/api/payment/cancel",
-                    ReturnUrl = $"{_baseUrl}/Home?payment=success" // Vút về trang chủ khi xong
+                    // SỬA TẠI ĐÂY: Thêm /Index để Route rõ ràng
+                    ReturnUrl = $"{_baseUrl}/Home/Index?payment=success"
                 };
 
                 var result = await _payOSClient.PaymentRequests.CreateAsync(request);
