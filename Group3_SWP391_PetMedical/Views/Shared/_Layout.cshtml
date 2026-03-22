@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="x-ua-compatible" content="ie=edge">
-	<title>Animal | Template </title>
+	<title>Pet Medical - Chăm sóc thú cưng tận tâm</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="manifest" href="~/site.webmanifest">
@@ -80,8 +80,8 @@
 								<div class="main-menu f-right d-none d-lg-block">
 									<nav>
 										<ul id="navigation">
-											<li><a href="@Url.Action("Index", "Home")">Home</a></li>
-											<li><a href="@Url.Action("About", "Home")">About</a></li>
+											<li><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+											<li><a href="@Url.Action("About", "Home")">Giới thiệu</a></li>
 											@if (User.Identity?.IsAuthenticated == true && User.IsInRole("Staff"))
 											{
 												<li><a href="@Url.Action("Service", "Service")">Bán thuốc</a></li>
@@ -115,7 +115,9 @@
                                                         <li><a href="@Url.Action("AppointmentList", "Staff")">Lịch khám theo ngày</a></li>
                                                         <li><a href="@Url.Action("AllAppointments", "Staff")">Tất cả lịch hẹn</a></li>
                                                         <li><a href="@Url.Action("Index", "Reports")">Export dữ liệu</a></li>
-                                                         <li><a href="@Url.Action("CancelledAppointments", "Staff")">Đơn đã hủy</a></li>
+                                                        <li><a href="@Url.Action("CancelledAppointments", "Staff")">Đơn đã hủy</a></li>
+                                                        <li><a href="@Url.Action("MedicinList", "Medicin")">Kho Thuốc</a></li>
+                                                        <li><a href="@Url.Action("StaffViewRetailList", "Retail")">Đơn Hàng</a></li>
                                                     </ul>
                                                 </li>
                                             }
@@ -151,15 +153,8 @@
                                                 </li>
                                             }
 
-											<li>
-												<a href="blog.html">Blog</a>
-												<ul class="submenu">
-													<li><a href="blog.html">Blog</a></li>
-													<li><a href="blog_details.html">Blog Details</a></li>
-													<li><a href="elements.html">Element</a></li>
-												</ul>
-											</li>
-											<li><a href="contact.html">Contact</a></li>
+
+											<li><a href="@Url.Action("Contact", "Login")">Liên hệ</a></li>
 
 											@if (User.Identity?.IsAuthenticated == true &&
 																			(User.IsInRole("Customer") ||
@@ -332,12 +327,12 @@
 					<div class="col-xl-2 col-lg-2 col-md-4 col-sm-5">
 						<div class="single-footer-caption mb-50">
 							<div class="footer-tittle">
-								<h4>Company</h4>
+								<h4>Công ty</h4>
 								<ul>
-									<li><a href="@Url.Action("Index", "Home")">Home</a></li>
-									<li><a href="@Url.Action("About", "Home")">About Us</a></li>
-									<li><a href="@Url.Action("Service", "Service")">Services</a></li>
-									<li><a href="@Url.Action("Contact", "Home")">Contact Us</a></li>
+									<li><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+									<li><a href="@Url.Action("About", "Home")">Về chúng tôi</a></li>
+									<li><a href="@Url.Action("Service", "Service")">Dịch vụ</a></li>
+									<li><a href="@Url.Action("Contact", "Login")">Liên hệ</a></li>
 								</ul>
 							</div>
 						</div>
@@ -345,9 +340,9 @@
 					<div class="col-xl-3 col-lg-3 col-md-4 col-sm-7">
 						<div class="single-footer-caption mb-50">
 							<div class="footer-tittle">
-								<h4>Services</h4>
+								<h4>Dịch vụ</h4>
 								<ul>
-									<li><a href="@Url.Action("Service", "Service")">Our Service</a></li>	
+									<li><a href="@Url.Action("Service", "Service")">Tất cả dịch vụ</a></li>	
 								</ul>
 							</div>
 						</div>
@@ -355,11 +350,11 @@
 					<div class="col-xl-3 col-lg-3 col-md-4 col-sm-5">
 <div class="single-footer-caption mb-50">
 							<div class="footer-tittle">
-								<h4>Get in Touch</h4>
+								<h4>Liên hệ</h4>
 								<ul>
 									<li>0762399063</li>
 									<li>linhmnd204@gmail.com</li>
-									<li>HaNoi, VietNam</li>
+									<li>Số 1A, Đường Pet Medical, HÀ NỘI</li>
 								</ul>
 							</div>
 						</div>
@@ -376,7 +371,7 @@
 							<div class="footer-copy-right text-center">
 								<p>
 									<script>document.write(new Date().getFullYear());</script>
-									This web is made by Group5 <i class="fa fa-heart" aria-hidden="true"></i>
+									Trang web được thực hiện bởi Team SWP391 <i class="fa fa-heart" aria-hidden="true" style="color: red;"></i>
 									
 								</p>
 							</div>

@@ -61,5 +61,10 @@ namespace Group3_SWP391_PetMedical.Controllers
             await HttpContext.SignOutAsync("MyCookieAuth");
             return RedirectToAction("Index", "Home");
         }
+
+        public IActionResult Contact()
+        {
+            return View();
+        }
     }
 }

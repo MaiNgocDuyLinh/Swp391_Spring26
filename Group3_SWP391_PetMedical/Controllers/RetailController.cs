@@ -1,19 +1,22 @@
 using Group3_SWP391_PetMedical.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Group3_SWP391_PetMedical.Controllers
 {
-    [Authorize(Roles = "Customer")]
     public class RetailController : Controller
     {
         private readonly IMedicinService _medicinService;
+        private readonly IRetailOrderService _retailOrderService;
 
-        public RetailController(IMedicinService medicinService)
+        public RetailController(IMedicinService medicinService, IRetailOrderService retailOrderService)
         {
             _medicinService = medicinService;
+            _retailOrderService = retailOrderService;
         }
 
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> RetailViewList(string? search, int page = 1, int pageSize = 12)
         {
             if (page <= 0) page = 1;
@@ -33,6 +36,61 @@ namespace Group3_SWP391_PetMedical.Controllers
             ViewBag.TotalItems = data.TotalItems;
 
             return View(data.Items);
+        }
+
+        [Authorize(Roles = "Customer")]
+        [HttpGet]
+        public async Task<IActionResult> RetailOrderedViewList()
+        {
+            var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("user_id");
+            if (!int.TryParse(userIdRaw, out int userId))
+            {
+                return Forbid();
+            }
+
+            var orders = await _retailOrderService.GetOrdersByUserIdAsync(userId);
+            
+            // Lọc ra những đơn hàng có status là 'PAID'
+            var paidOrders = orders.Where(o => (o.status ?? "").ToUpper() == "PAID").ToList();
+            
+            return View(paidOrders);
+        }
+
+        [Authorize(Roles = "Staff,Manager")]
+        [HttpGet]
+        public async Task<IActionResult> StaffViewRetailList(DateTime? date, string? search, string? status, int page = 1)
+        {
+            if (page < 1) page = 1;
+            int pageSize = 10;
+            var queryDate = date ?? DateTime.Today;
+
+            var allOrders = await _retailOrderService.GetAllOrdersAsync(queryDate, search, status);
+
+            int totalItems = allOrders.Count();
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+            
+            var pagedOrders = allOrders.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.SelectedDate = queryDate;
+            ViewBag.Search = search;
+            ViewBag.Status = status;
+
+            return View(pagedOrders);
+        }
+
+        [Authorize(Roles = "Staff,Manager")]
+        [HttpGet]
+        public async Task<IActionResult> StaffViewRetailDetail(int id)
+        {
+            var order = await _retailOrderService.GetOrderByIdAsync(id);
+            if (order == null)
+            {
+                return NotFound();
+            }
+            return View(order);
         }
     }
 }

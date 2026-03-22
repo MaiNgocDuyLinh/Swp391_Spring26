@@ -97,35 +97,36 @@ namespace Group3_SWP391_PetMedical.Controllers
         public IActionResult PaymentSuccess()
         {
             return Redirect($"{_baseUrl}/Home/Index?payment=success");
-            return Content(@"
-                <html>
-                <head><meta charset='utf-8'></head>
-                <body style='font-family: Arial; text-align: center; margin-top: 50px; background-color: #f4f4f9;'>
-                    <div style='background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: inline-block;'>
-                        <h1 style='color: #28a745;'>THANH TOÁN THÀNH CÔNG! 🎉</h1>
-                        <p style='font-size: 18px; color: #333;'>Cảm ơn bạn đã mua hàng tại hệ thống Pet Medical.</p>
-                        <br/>
-                        <a href='/' style='text-decoration: none; padding: 10px 20px; background-color: #007bff; color: white; border-radius: 5px;'>Quay lại trang chủ</a>
-                    </div>
-                </body>
-                </html>", "text/html");
+            //return Content(@"
+            //    <html>
+            //    <head><meta charset='utf-8'></head>
+            //    <body style='font-family: Arial; text-align: center; margin-top: 50px; background-color: #f4f4f9;'>
+            //        <div style='background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: inline-block;'>
+            //            <h1 style='color: #28a745;'>THANH TOÁN THÀNH CÔNG! 🎉</h1>
+            //            <p style='font-size: 18px; color: #333;'>Cảm ơn bạn đã mua hàng tại hệ thống Pet Medical.</p>
+            //            <br/>
+            //            <a href='/' style='text-decoration: none; padding: 10px 20px; background-color: #007bff; color: white; border-radius: 5px;'>Quay lại trang chủ</a>
+            //        </div>
+            //    </body>
+            //    </html>", "text/html");
         }
 
         [HttpGet("cancel")]
         public IActionResult PaymentCancel()
         {
-            return Content(@"
-                <html>
-                <head><meta charset='utf-8'></head>
-                <body style='font-family: Arial; text-align: center; margin-top: 50px; background-color: #f4f4f9;'>
-                    <div style='background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: inline-block;'>
-                        <h1 style='color: #dc3545;'>ĐÃ HỦY THANH TOÁN ❌</h1>
-                        <p style='font-size: 18px; color: #333;'>Bạn đã hủy giao dịch này.</p>
-                        <br/>
-                        <a href='/' style='text-decoration: none; padding: 10px 20px; background-color: #6c757d; color: white; border-radius: 5px;'>Quay lại trang chủ</a>
-                    </div>
-                </body>
-                </html>", "text/html");
+            return Redirect($"{_baseUrl}/Home/Index?payment=cancel");
+            //return Content(@"
+            //    <html>
+            //    <head><meta charset='utf-8'></head>
+            //    <body style='font-family: Arial; text-align: center; margin-top: 50px; background-color: #f4f4f9;'>
+            //        <div style='background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: inline-block;'>
+            //            <h1 style='color: #dc3545;'>ĐÃ HỦY THANH TOÁN ❌</h1>
+            //            <p style='font-size: 18px; color: #333;'>Bạn đã hủy giao dịch này.</p>
+            //            <br/>
+            //            <a href='/' style='text-decoration: none; padding: 10px 20px; background-color: #6c757d; color: white; border-radius: 5px;'>Quay lại trang chủ</a>
+            //        </div>
+            //    </body>
+            //    </html>", "text/html");
         }
 
         // ==============================================================================
