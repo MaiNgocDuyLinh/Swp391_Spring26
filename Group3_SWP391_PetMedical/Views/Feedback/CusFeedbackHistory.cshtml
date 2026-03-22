@@ -19,6 +19,14 @@
     var toVal = Model.Filter.ToDate?.ToString("yyyy-MM-dd") ?? "";
 
     var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
+
+    // Check discount against appointment date, not current time
+    Func<Group3_SWP391_PetMedical.Models.Service, DateTime, decimal> getEffectivePrice = (svc, refDate) =>
+    {
+        var disc = svc.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= refDate && sd.end_date >= refDate && (sd.created_at ?? DateTime.MinValue) <= refDate);
+        if (disc != null) return svc.base_price * (1 - (decimal)disc.discount_percent / 100);
+        return svc.base_price;
+    };
 }
 
 @functions {
@@ -547,6 +555,7 @@
                     @foreach (var item in Model.Page.Data.Items)
                     {
                         decimal totalFromServices = 0m;
+                        var _itemDate = item.CreatedAt;
                         if (!string.IsNullOrWhiteSpace(item.ServiceNames))
                         {
                             var names = item.ServiceNames
@@ -561,7 +570,7 @@
 
                                 if (svc != null)
                                 {
-                                    totalFromServices += (decimal)svc.base_price;
+                                    totalFromServices += getEffectivePrice(svc, _itemDate);
                                 }
                             }
                         }

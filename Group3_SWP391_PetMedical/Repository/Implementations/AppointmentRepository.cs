@@ -79,7 +79,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         public async Task<PagedResult<Appointment>> GetCancelledAppointmentsPagedAsync(
             string? search, int page, int pageSize)
         {
-            var query = BaseQuery().Where(a => a.status == "Đã Hủy");
+            var query = BaseQuery().Where(a => a.status != null && a.status.ToLower() == "đã hủy");
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -127,7 +127,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         {
             var appt = await _context.Appointments.FindAsync(id);
             if (appt == null) return false;
-            appt.status = "Đã Hủy";
+            appt.status = "Đã hủy";
             if (!string.IsNullOrWhiteSpace(reason))
                 appt.notes = (appt.notes ?? "") + "\n[Staff hủy]: " + reason;
             await _context.SaveChangesAsync();
@@ -199,6 +199,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             var appt = await _context.Appointments
                 .Include(a => a.AppointmentDetails)
                     .ThenInclude(ad => ad.service)
+                        .ThenInclude(s => s.ServiceDiscounts)
                 .FirstOrDefaultAsync(a => a.appointment_id == appointmentId);
 
             if (appt == null) return false;
@@ -206,7 +207,30 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             var exists = await _context.Invoices.AnyAsync(i => i.appointment_id == appointmentId);
             if (exists) return true;
 
-            var total = appt.AppointmentDetails.Sum(ad => ad.actual_price ?? ad.service?.base_price ?? 0);
+            // Use booking time (created_at) to check discount validity
+            var bookingTime = appt.created_at ?? appt.appointment_date;
+
+            decimal total = 0;
+            foreach (var ad in appt.AppointmentDetails)
+            {
+                if (ad.actual_price.HasValue)
+                {
+                    total += ad.actual_price.Value;
+                }
+                else
+                {
+                    var basePrice = ad.service?.base_price ?? 0;
+                    var disc = ad.service?.ServiceDiscounts?
+                        .FirstOrDefault(sd => sd.is_active == true
+                            && sd.start_date <= bookingTime
+                            && sd.end_date >= bookingTime
+                            && (sd.created_at ?? DateTime.MinValue) <= bookingTime);
+                    if (disc != null)
+                        total += basePrice * (1 - (decimal)disc.discount_percent / 100);
+                    else
+                        total += basePrice;
+                }
+            }
 
             var invoice = new Invoice
             {

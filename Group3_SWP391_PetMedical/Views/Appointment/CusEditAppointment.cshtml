@@ -11,7 +11,17 @@
 
     //  lấy bảng giá dịch vụ (không sửa controller/logic cũ)
     var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
-    var _priceMap = _allSvcs.ToDictionary(x => x.service_id, x => (decimal)x.base_price);
+
+    Func<Group3_SWP391_PetMedical.Models.Service, decimal> getEffectivePrice = (svc) =>
+    {
+        var disc = svc.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= DateTime.Now && sd.end_date >= DateTime.Now);
+        if (disc != null) return svc.base_price * (1 - (decimal)disc.discount_percent / 100);
+        return svc.base_price;
+    };
+
+    var _priceMap = _allSvcs.ToDictionary(x => x.service_id, x => getEffectivePrice(x));
+    var _originalPriceMap = _allSvcs.ToDictionary(x => x.service_id, x => (decimal)x.base_price);
+    var _discountMap = _allSvcs.ToDictionary(x => x.service_id, x => x.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= DateTime.Now && sd.end_date >= DateTime.Now));
 }
 
 @section Styles {
@@ -322,6 +332,8 @@
                                         var sid = 0;
                                         int.TryParse(opt.Value, out sid);
                                         var price = (sid > 0 && _priceMap.ContainsKey(sid)) ? _priceMap[sid] : 0m;
+                                        var origPrice = (sid > 0 && _originalPriceMap.ContainsKey(sid)) ? _originalPriceMap[sid] : 0m;
+                                        var discInfo = (sid > 0 && _discountMap.ContainsKey(sid)) ? _discountMap[sid] : null;
 
                                         <div class="form-check" style="margin-bottom:8px;">
                                             <div class="pc-svc-row">
@@ -332,10 +344,26 @@
                                                            value="@opt.Value"
                                                            data-price="@price"
                                                            @(opt.Selected ? "checked" : null) />
-                                                    <label class="form-check-label">@opt.Text</label>
+                                                    <label class="form-check-label">
+                                                        @opt.Text
+                                                        @if (discInfo != null)
+                                                        {
+                                                            <span style="background:#dc2626; color:#fff; padding:1px 6px; border-radius:999px; font-size:0.7rem; font-weight:800; margin-left:4px;">-@discInfo.discount_percent%</span>
+                                                        }
+                                                    </label>
                                                 </div>
 
-                                                <div class="pc-svc-price">@price.ToString("N0") VNĐ</div>
+                                                <div class="pc-svc-price">
+                                                    @if (discInfo != null)
+                                                    {
+                                                        <small style="text-decoration:line-through; color:rgba(0,0,0,.40); margin-right:4px;">@origPrice.ToString("N0")</small>
+                                                        <span style="color:#dc2626; font-weight:900;">@price.ToString("N0") VNĐ</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @price.ToString("N0") <text>VNĐ</text>
+                                                    }
+                                                </div>
                                             </div>
                                         </div>
                                     }
