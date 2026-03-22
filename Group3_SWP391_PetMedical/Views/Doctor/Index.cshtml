@@ -123,19 +123,19 @@
                                     <td>@item.customer?.full_name</td>
                                     <td>
                                         @{
-                                            var statusClass = item.status == "Arrived" ? "bg-arrived" : item.status == "In-Progress" ? "bg-progress" : "bg-completed";
-                                            var statusText = item.status == "Arrived" ? "Đã đến" : item.status == "In-Progress" ? "Đang khám" : "Hoàn thành";
+                                            var statusClass = item.status == "Đã đến" ? "bg-arrived" : item.status == "Đang khám" ? "bg-progress" : "bg-completed";
+                                            var statusText = item.status == "Đã đến" ? "Đã đến" : item.status == "Đang khám" ? "Đang khám" : "Hoàn thành";
                                         }
                                         <span class="status-badge @statusClass">@statusText</span>
                                     </td>
                                     <td class="text-center pr-4">
-                                        @if (item.status == "Arrived" || item.status == "In-Progress")
+                                        @if (item.status == "Đã đến" || item.status == "Đang khám")
                                         {
                                             <a asp-action="PerformExamination" asp-route-id="@item.appointment_id" class="btn btn-pet-pink shadow-sm">
-                                                @(item.status == "Arrived" ? "Tiếp nhận" : "Cập nhật")
+                                                @(item.status == "Đã đến" ? "Tiếp nhận" : "Cập nhật")
                                             </a>
                                         }
-                                        else if (item.status == "Completed")
+                                        else if (item.status == "Đã khám")
                                         {
                                             <a asp-action="ViewRecord" asp-route-id="@item.appointment_id" class="btn btn-pet-pink shadow-sm">
                                                 <i class="fas fa-eye mr-2"></i> Xem bệnh án

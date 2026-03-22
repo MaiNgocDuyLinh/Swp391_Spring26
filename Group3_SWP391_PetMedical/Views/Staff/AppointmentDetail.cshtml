@@ -254,7 +254,7 @@
                                     </div>
                                     <div class="pc-readonly-row">
                                         <span class="pc-readonly-label">Tình trạng:</span>
-                                        <span class="pc-readonly-val">@(Model.MedicalRecord.health_status ?? "N/A")</span>
+                                        <span class="pc-readonly-val">@(Model.MedicalRecord.health_status == "Checked" ? "Đã Khám" : Model.MedicalRecord.health_status ?? "N/A")</span>
                                     </div>
                                 </div>
                                 
