@@ -65,18 +65,27 @@
                     <input type="date" class="form-control pc-input" name="date" value="@selectedDate.ToString("yyyy-MM-dd")" />
                 </div>
                 <div class="col-lg-3 col-md-4">
-                    <div class="pc-label">Trạng thái</div>
-                    <select class="form-select pc-input" name="status">
+                    <div class="pc-label">Trạng thái TT</div>
+                    <select class="form-select pc-input" name="status" onchange="this.form.submit()">
                         <option value="">Tất cả</option>
                         <option value="PAID" selected="@(ViewBag.Status?.ToString() == "PAID" ? "selected" : null)">Đã thanh toán (PAID)</option>
                         <option value="PENDING" selected="@(ViewBag.Status?.ToString() == "PENDING" ? "selected" : null)">Chờ xử lý (PENDING)</option>
-                        <option value="UNPAID" selected="@(ViewBag.Status?.ToString() == "UNPAID" ? "selected" : null)">Chưa thanh toán (UNPAID)</option>
-                        <option value="CANCELLED" selected="@(ViewBag.Status?.ToString() == "CANCELLED" ? "selected" : null)">Đã hủy (CANCELLED)</option>
                     </select>
                 </div>
-                <div class="col-lg-6 col-md-4">
+                <div class="col-lg-3 col-md-4">
+                    <div class="pc-label">Trạng thái đơn hàng</div>
+                    <select class="form-select pc-input" name="statusOrder" onchange="this.form.submit()">
+                        <option value="">Tất cả</option>
+                        <option value="Đã tiếp nhận" selected="@(ViewBag.StatusOrder?.ToString() == "Đã tiếp nhận")">🔵 Đã tiếp nhận</option>
+                        <option value="Đã soạn hàng" selected="@(ViewBag.StatusOrder?.ToString() == "Đã soạn hàng")">📦 Đã soạn hàng</option>
+                        <option value="Đã giao thuốc" selected="@(ViewBag.StatusOrder?.ToString() == "Đã giao thuốc")">✅ Đã giao thuốc</option>
+                        <option value="Hủy/Hoàn trả" selected="@(ViewBag.StatusOrder?.ToString() == "Hủy/Hoàn trả")">❌ Hủy/Hoàn trả</option>
+                        <option value="Không nhận" selected="@(ViewBag.StatusOrder?.ToString() == "Không nhận")">⚠️ Không nhận</option>
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-4">
                     <div class="pc-label">Từ khóa</div>
-                    <input class="form-control pc-input" name="search" value="@search" placeholder="Tên khách hàng / Mã đơn..." />
+                    <input class="form-control pc-input" name="search" value="@ViewBag.Search" placeholder="Tên khách hàng / Mã đơn..." />
                 </div>
                 <div class="col-12 mt-2">
                     <div class="d-flex justify-content-between align-items-center">
@@ -101,6 +110,7 @@
                         <tr>
                             <th style="width:60px;">#</th>
                             <th style="width:100px;">Giờ đặt</th>
+                            <th style="width:120px;">Ngày lấy</th>
                             <th>Mã ĐH</th>
                             <th>Khách hàng</th>
                             <th class="text-center">Số loại thuốc</th>
@@ -117,8 +127,12 @@
                         var s = StatusStyle(o.status);
                         <tr>
                             <td>@idx</td>
-                            <td><strong>@(o.created_at?.ToString("HH:mm") ?? "-")</strong></td>
-                            <td>#@o.id</td>
+                             <td><strong>@(o.created_at?.ToString("HH:mm") ?? "-")</strong></td>
+                             <td>
+                                 <div class="fw-bold">@(o.pickup_date?.ToString("dd/MM/yyyy") ?? "-")</div>
+                                 <div class="text-muted small">(@(o.pickup_slot ?? "N/A"))</div>
+                             </td>
+                             <td>#@o.id</td>
                             <td>
                                 <strong>@(o.user?.full_name ?? "Khách lẻ")</strong>
                             </td>

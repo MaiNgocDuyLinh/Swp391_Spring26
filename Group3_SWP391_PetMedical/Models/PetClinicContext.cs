@@ -189,6 +189,9 @@ public partial class PetClinicContext : DbContext
 
                   entity.Property(ro => ro.status_order)
                     .HasMaxLength(50);
+
+                  entity.Property(ro => ro.pickup_date)
+                    .HasColumnType("date");
             });
 
             modelBuilder.Entity<OrderDetail>(entity =>

@@ -81,8 +81,9 @@
                                 </div>
                                 @if (!string.IsNullOrWhiteSpace(order.pickup_slot))
                                 {
-                                    <div class="col-md-4 mb-2 mb-md-0">
-                                        <strong><i class="far fa-clock"></i> Khung giờ lấy:</strong> @order.pickup_slot
+                                    <div class="col-md-5 mb-2 mb-md-0">
+                                        <strong><i class="far fa-clock"></i> Thời gian lấy:</strong> 
+                                        @(order.pickup_date?.ToString("dd/MM/yyyy") ?? "N/A") (@order.pickup_slot)
                                     </div>
                                 }
                                 @if (!string.IsNullOrWhiteSpace(order.note))
@@ -127,7 +128,7 @@
                             <div class="d-flex justify-content-end align-items-center mt-3 pt-2 gap-3">
                                 @if (order.status_order == "Đã tiếp nhận")
                                 {
-                                    <form asp-action="CancelOrder" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này và hoàn trả thuốc về kho?');">
+                                    <form asp-action="CancelOrder" method="post" onsubmit="return confirm('Nếu hủy đơn, thuốc sẽ hoàn về kho và bạn sẽ mất phí');">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@order.id" />
                                         <button type="submit" class="pc-btn pc-btn--ghost" style="color:#dc2626 !important; border-color:#fee2e2;">

@@ -18,7 +18,7 @@ public partial class RetailOrder
     public string? transaction_reference { get; set; }
 
     public string? pickup_slot { get; set; }
-
+    public DateTime? pickup_date { get; set; }
     public string? note { get; set; }
     public string? status_order { get; set; }
 

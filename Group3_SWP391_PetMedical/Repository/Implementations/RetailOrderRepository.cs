@@ -26,7 +26,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<RetailOrder>> GetAllOrdersAsync(DateTime? date, string? search, string? status)
+        public async Task<IEnumerable<RetailOrder>> GetAllOrdersAsync(DateTime? date, string? search, string? status, string? statusOrder)
         {
             var query = _context.RetailOrders
                 .Include(o => o.user)
@@ -36,7 +36,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             if (date.HasValue)
             {
-                query = query.Where(o => o.created_at.HasValue && o.created_at.Value.Date == date.Value.Date);
+                query = query.Where(o => o.pickup_date.HasValue && o.pickup_date.Value.Date == date.Value.Date);
             }
 
             if (!string.IsNullOrEmpty(status))
@@ -44,9 +44,15 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 query = query.Where(o => o.status == status);
             }
 
+            if (!string.IsNullOrEmpty(statusOrder))
+            {
+                query = query.Where(o => o.status_order == statusOrder);
+            }
+
             if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(o => (o.user != null && o.user.full_name != null && o.user.full_name.Contains(search))
+                                      || (o.id.ToString().Contains(search))
                                       || (o.note != null && o.note.Contains(search))
                                       || (o.status_order != null && o.status_order.Contains(search)));
             }

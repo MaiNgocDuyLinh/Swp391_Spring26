@@ -138,6 +138,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                     status = "PENDING",
                     created_at = DateTime.Now,
                     pickup_slot = form.PickupSlot,
+                    pickup_date = form.PickupDate,
                     note = form.Note
                 };
 
@@ -158,26 +159,49 @@ namespace Group3_SWP391_PetMedical.Controllers
 
                 // 3. Xóa các mục đã mua khỏi giỏ hàng
                 _context.CartItemsMedicin.RemoveRange(cartItems);
+                
+                // MỚI: Luôn trừ kho ngay để giữ chỗ (reserve), và đặt trạng thái "Đã tiếp nhận"
+                order.status_order = "Đã tiếp nhận";
+                foreach (var ci in cartItems)
+                {
+                    var med = await _context.Medications.FindAsync(ci.medicine_id);
+                    if (med != null)
+                    {
+                        med.stock_quantity = Math.Max(0, (med.stock_quantity ?? 0) - ci.quantity);
+                    }
+                }
+                
                 await _context.SaveChangesAsync();
 
-                // 4. Gọi API PayOS để lấy link thanh toán
-                var request = new CreatePaymentLinkRequest
+                // 4. Nếu là thanh toán Online thì gọi PayOS, ngược lại thì bỏ qua
+                if (form.PaymentMethod == "ONLINE")
                 {
-                    OrderCode = order.id,
-                    Amount = (int)total,
-                    Description = $"PET{order.id}",
-                    CancelUrl = $"{_baseUrl}/api/payment/cancel",
-                    //ReturnUrl = $"{_baseUrl}/Home/Index?payment=success"
-                    ReturnUrl = "http://localhost:5000/Home/Index?payment=success"
-                }; 
+                    var request = new CreatePaymentLinkRequest
+                    {
+                        OrderCode = order.id,
+                        Amount = (int)total,
+                        Description = $"PET{order.id}",
+                        CancelUrl = $"{_baseUrl}/api/payment/cancel",
+                        //ReturnUrl = $"{_baseUrl}/Home/Index?payment=success"
+                        ReturnUrl = "http://localhost:5000/Home/Index?payment=success"
+                    };
 
-                var result = await _payOSClient.PaymentRequests.CreateAsync(request);
+                    var result = await _payOSClient.PaymentRequests.CreateAsync(request);
 
-                // 5. CHỈ COMMIT TẠI ĐÂY (Khi cả DB và PayOS đều ok)
-                await tx.CommitAsync();
+                    // 5. CHỈ COMMIT TẠI ĐÂY (Khi cả DB và PayOS đều ok)
+                    await tx.CommitAsync();
 
-                // Điều hướng khách sang trang thanh toán của ngân hàng
-                return Redirect(result.CheckoutUrl);
+                    // Điều hướng khách sang trang thanh toán của ngân hàng
+                    return Redirect(result.CheckoutUrl);
+                }
+                else
+                {
+                    // Thanh toán tại quầy
+                    await tx.CommitAsync();
+                    
+                    TempData["SuccessMessage"] = "Đặt đơn thành công! Vui lòng đến cửa hàng để thanh toán và nhận thuốc.";
+                    return RedirectToAction("Index", "Home", new { payment = "success" });
+                }
             }
             catch (Exception ex)
             {

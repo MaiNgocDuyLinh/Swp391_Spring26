@@ -168,20 +168,11 @@ namespace Group3_SWP391_PetMedical.Controllers
                         if (order != null && order.status == "PENDING" && amount >= (int)order.total_amount)
                         {
                             order.status = "PAID";
-                            order.status_order = "Đã tiếp nhận";
+                            // order.status_order = "Đã tiếp nhận"; // Đã giữ chỗ từ lúc đặt đơn
                             order.transaction_reference = orderCode.ToString();
 
-                            foreach (var detail in order.OrderDetails)
-                            {
-                                if (detail.medicine != null)
-                                {
-                                    int currentStock = detail.medicine.stock_quantity ?? 0;
-                                    detail.medicine.stock_quantity = Math.Max(0, currentStock - detail.quantity);
-                                }
-                            }
-
                             await _db.SaveChangesAsync();
-                            Console.WriteLine($"[THÀNH CÔNG] Đã trừ kho cho đơn PET{orderId}");
+                            Console.WriteLine($"[THÀNH CÔNG] Đã cập nhật thanh toán cho đơn PET{orderId}");
                         }
                     }
                 }

@@ -19,7 +19,9 @@ namespace Group3_SWP391_PetMedical.ViewModels.Retail
         public decimal TotalAmount { get; set; }
 
         public string? PickupSlot { get; set; }
+        public DateTime? PickupDate { get; set; }
         public string? Note { get; set; }
+        public string PaymentMethod { get; set; } = "ONLINE";
 
         public List<string> StockErrors { get; set; } = new();
 
@@ -31,6 +33,7 @@ namespace Group3_SWP391_PetMedical.ViewModels.Retail
         public int OrderId { get; set; }
         public decimal TotalAmount { get; set; }
         public string? PickupSlot { get; set; }
+        public DateTime? PickupDate { get; set; }
         public string? Note { get; set; }
 
         public List<CheckoutItemVm> Items { get; set; } = new();
