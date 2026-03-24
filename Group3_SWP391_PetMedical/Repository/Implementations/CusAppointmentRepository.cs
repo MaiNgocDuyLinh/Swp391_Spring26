@@ -625,6 +625,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     Diagnosis = m.diagnosis,
                     HealthStatus = m.health_status,
                     TestResults = m.test_results,
+
                     ResultImages = m.result_images,
                     FollowUpDate = m.follow_up_date,
 
