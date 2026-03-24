@@ -11,5 +11,7 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         Task<Pet?> GetByIdAndOwnerAsync(int petId, int ownerId);
         Task UpdateAsync(Pet pet);
         Task DeleteAsync(Pet pet);
+
+        Task<bool> HasAppointmentsAsync(int petId);
     }
 }

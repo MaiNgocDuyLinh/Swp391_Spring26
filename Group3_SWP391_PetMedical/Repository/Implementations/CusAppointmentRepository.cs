@@ -548,7 +548,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return true;
         }
 
-        // Data cho popup Cancel (ngắn gọn: ngày giờ, thú cưng, dịch vụ)
         public async Task<CusCancelAppointmentVM?> GetCusCancelAppointmentAsync(int customerId, int appointmentId)
         {
             var q = _context.Appointments
@@ -626,6 +625,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     Diagnosis = m.diagnosis,
                     HealthStatus = m.health_status,
                     TestResults = m.test_results,
+
                     ResultImages = m.result_images,
                     FollowUpDate = m.follow_up_date,
 

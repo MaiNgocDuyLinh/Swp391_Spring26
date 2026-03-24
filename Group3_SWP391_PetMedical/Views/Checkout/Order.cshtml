@@ -1,20 +1,30 @@
-﻿@model Group3_SWP391_PetMedical.ViewModels.Retail.CheckoutOrderVm
+@model Group3_SWP391_PetMedical.ViewModels.Retail.CheckoutOrderVm
 @{
     ViewData["Title"] = "Thanh toán đơn thuốc";
 }
 
-<section class="container" style="margin-top:140px;">
-    <h3 class="mb-3">Thanh toán đơn thuốc #@Model.OrderId</h3>
+@section Styles {
+    <style>
+        :root { --pc-red:#ff3b3b; --pc-red-dark:#e83434; --pc-text:#2b2b2b; --pc-muted:#7a7a7a; --pc-border:rgba(0,0,0,0.06); }
+        .pc-wrap { background:#f3d7d5; border:1px solid var(--pc-border); border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(0,0,0,0.06); }
+        .pc-title { font-weight:800; margin:0; } .pc-sub { color:var(--pc-muted); margin:0; }
+        .pc-filter { background:#fff; border:1px solid var(--pc-border); border-radius:16px; padding:18px; margin:18px 0; box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+        .pc-table { border-radius:16px; overflow:hidden; background:#fff; border:1px solid var(--pc-border); box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+        .pc-table thead th { background:#fff7f7; font-weight:800; }
+        .pc-table td { vertical-align: middle; }
+    </style>
+}
 
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Chi tiết đơn hàng</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table align-middle">
+<section class="container py-4" id="checkoutOrderArea">
+    <div class="pc-wrap" style="margin-top:150px;">
+        <h3 class="pc-title mb-3">Thanh toán đơn thuốc #@Model.OrderId</h3>
+
+        <div class="row g-4 mt-1">
+            <div class="col-lg-8">
+                <div class="pc-filter" style="margin-top:0;">
+                    <h5 style="font-weight:800; margin-bottom:16px;">Chi tiết đơn hàng</h5>
+                    <div class="pc-table table-responsive">
+                        <table class="table align-middle m-0">
                             <thead>
                                 <tr>
                                     <th>Tên thuốc</th>
@@ -27,57 +37,54 @@
                                 @foreach (var item in Model.Items)
                                 {
                                     <tr>
-                                        <td>@item.medicine_name</td>
+                                        <td><div class="fw-bold">@item.medicine_name</div></td>
                                         <td class="text-end">@item.unit_price.ToString("N0") đ</td>
                                         <td class="text-center">@item.quantity</td>
-                                        <td class="text-end">@item.line_total.ToString("N0") đ</td>
+                                        <td class="text-end fw-semibold">@item.line_total.ToString("N0") đ</td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
                     </div>
-                    <div class="d-flex justify-content-between mt-2">
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
                         <span class="fw-semibold">Tổng:</span>
-                        <span class="fw-bold text-danger" style="font-size:1.2rem;">
+                        <span style="font-weight:800; font-size:1.35rem; color:var(--pc-red);">
                             @Model.TotalAmount.ToString("N0") đ
                         </span>
                     </div>
 
                     @if (!string.IsNullOrWhiteSpace(Model.PickupSlot))
                     {
-                        <div class="mt-2 text-muted">
-                            <strong>Khung giờ lấy:</strong> @Model.PickupSlot
+                        <div class="mt-3 text-muted">
+                            <strong><i class="far fa-clock"></i> Khung giờ lấy:</strong> @Model.PickupSlot
                         </div>
                     }
                     @if (!string.IsNullOrWhiteSpace(Model.Note))
                     {
                         <div class="mt-1 text-muted">
-                            <strong>Ghi chú:</strong> @Model.Note
+                            <strong><i class="far fa-sticky-note"></i> Ghi chú:</strong> @Model.Note
                         </div>
                     }
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-4">
-            <div class="card shadow-sm border-0 text-center">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Quét mã VietQR</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">
+            <div class="col-lg-4">
+                <div class="pc-filter text-center" style="margin-top:0;">
+                    <h5 style="font-weight:800; margin-bottom:16px;">Quét mã VietQR</h5>
+                    <p style="color:var(--pc-muted); font-size:0.95rem;">
                         Sử dụng ứng dụng ngân hàng để quét mã.
                         Nội dung chuyển khoản sẽ có dạng <strong>PET@Model.OrderId</strong>.
                     </p>
-                    <img src="@Model.QrImageUrl" alt="VietQR" class="img-fluid mb-3" />
-                    <div class="text-muted small">
+                    <div class="p-3 mb-3 d-inline-block" style="background:#fff; border-radius:12px; border:1px solid rgba(0,0,0,0.08);">
+                        <img src="@Model.QrImageUrl" alt="VietQR" class="img-fluid rounded" />
+                    </div>
+                    <div class="small" style="color:var(--pc-muted);">
                         Sau khi thanh toán thành công, hệ thống sẽ tự động cập nhật trạng thái đơn hàng.
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 </section>
 @section Scripts {
     <script>

@@ -28,7 +28,6 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<List<(int PetId, string PetName)>> GetCustomerPetsAsync(int customerId)
             => _repo.GetCustomerPetsAsync(customerId);
 
-        //validate đặt lịch (không sửa logic cũ, chỉ thêm trước khi gọi repo)
         public async Task<int> CreateAppointmentAsync(int customerId, CusCreateAppointmentCommand cmd)
         {
             if (cmd == null) throw new Exception("Dữ liệu đặt lịch không hợp lệ.");

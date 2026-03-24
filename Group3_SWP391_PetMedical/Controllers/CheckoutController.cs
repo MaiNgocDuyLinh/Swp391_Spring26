@@ -166,8 +166,9 @@ namespace Group3_SWP391_PetMedical.Controllers
                     Amount = (int)total,
                     Description = $"PET{order.id}",
                     CancelUrl = $"{_baseUrl}/api/payment/cancel",
-                    ReturnUrl = $"{_baseUrl}/Home/Index?payment=success"
-                };
+                    //ReturnUrl = $"{_baseUrl}/Home/Index?payment=success"
+                    ReturnUrl = "http://localhost:5000/Home/Index?payment=success"
+                }; 
 
                 var result = await _payOSClient.PaymentRequests.CreateAsync(request);
 
