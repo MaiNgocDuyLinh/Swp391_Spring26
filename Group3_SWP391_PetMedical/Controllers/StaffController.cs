@@ -115,8 +115,22 @@ namespace Group3_SWP391_PetMedical.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(int id, string newStatus)
         {
-            await _staffService.UpdateAppointmentStatusAsync(id, newStatus);
-            TempData["SuccessMessage"] = "Đã cập nhật trạng thái!";
+            var result = await _staffService.UpdateAppointmentStatusAsync(id, newStatus);
+
+            if (result.Success)
+            {
+                string msg = "Đã cập nhật trạng thái!";
+                if (result.IsEarlyArrival)
+                {
+                    msg += " Khách hàng đến sớm, lịch hẹn đã được chuyển về hôm nay!";
+                }
+                TempData["SuccessMessage"] = msg;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Cập nhật trạng thái thất bại!";
+            }
+
             return RedirectToAction("AppointmentDetail", new { id });
         }
 

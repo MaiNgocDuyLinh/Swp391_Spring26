@@ -20,7 +20,7 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         Task<bool> CancelAppointmentAsync(int id, string? reason);
         Task<bool> AssignDoctorAsync(int appointmentId, int doctorId);
         Task<List<User>> GetDoctorsAsync();
-        Task<bool> UpdateAppointmentStatusAsync(int id, string newStatus);
+        Task<(bool Success, bool IsEarlyArrival)> UpdateAppointmentStatusAsync(int id, string newStatus);
 
         // ========== Invoice ==========
         Task<Invoice?> GetInvoiceByAppointmentIdAsync(int appointmentId);

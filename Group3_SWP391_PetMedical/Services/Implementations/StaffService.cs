@@ -54,8 +54,15 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<List<User>> GetDoctorsAsync()
             => _appointmentRepo.GetDoctorsAsync();
 
-        public Task<bool> UpdateAppointmentStatusAsync(int id, string newStatus)
-            => _appointmentRepo.UpdateStatusAsync(id, newStatus);
+        public async Task<(bool Success, bool IsEarlyArrival)> UpdateAppointmentStatusAsync(int id, string newStatus)
+        {
+            var appt = await _appointmentRepo.GetByIdAsync(id);
+            if (appt == null) return (false, false);
+
+            bool isEarly = (newStatus == "Đã đến" && appt.appointment_date.Date > DateTime.Today);
+            bool success = await _appointmentRepo.UpdateStatusAsync(id, newStatus, isEarly);
+            return (success, isEarly);
+        }
 
         // ========== Invoice ==========
         public Task<Invoice?> GetInvoiceByAppointmentIdAsync(int appointmentId)
