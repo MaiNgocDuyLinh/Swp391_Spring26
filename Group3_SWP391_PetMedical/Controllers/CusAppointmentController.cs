@@ -95,10 +95,6 @@ namespace Group3_SWP391_PetMedical.Controllers
         }
 
         //  GET: /CusAppointment/Book
-<<<<<<< HEAD
-    
-=======
->>>>>>> main
         [HttpGet]
         public async Task<IActionResult> Book(
             [FromQuery(Name = "Form.DoctorId")] int? doctorId,
