@@ -108,7 +108,7 @@
                                             @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Staff"))
                                             {
                                                 <li>
-                                                    <a href="#">Staff</a>
+                                                    <a href="#">Nhân Viên</a>
                                                     <ul class="submenu">
                                                         <li><a href="@Url.Action("ListServices", "Staff")">Danh sách dịch vụ</a></li>
                                                         <li><a href="@Url.Action("ListCustomers", "Staff")">Danh sách khách hàng</a></li>
@@ -139,7 +139,7 @@
                                             @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Manager"))
                                             {
                                                 <li>
-                                                    <a href="#">Manager</a>
+                                                    <a href="#">Quản Lý</a>
                                                     <ul class="submenu">
                                                         <li><a href="@Url.Action("ListScheduleChangeRequests", "ManagerModule")">Yêu cầu đổi lịch (duyệt/từ chối)</a></li>
                                                         <li><a href="@Url.Action("Overview", "ManagerModule")">Thống kê tổng quan</a></li>
