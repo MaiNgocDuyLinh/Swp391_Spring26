@@ -433,7 +433,7 @@
 
                         <div class="mr-chip">
                             <i class="fas fa-stethoscope"></i>
-                            <span>Dịch vụ đã chọn: @(string.IsNullOrWhiteSpace(Model.SelectedServiceNames) ? "Chưa có dữ liệu" : Model.SelectedServiceNames)</span>
+                            <span>Dịch vụ: @(string.IsNullOrWhiteSpace(Model.SelectedServiceNames) ? "Chưa có dữ liệu" : Model.SelectedServiceNames)</span>
                         </div>
 
                         <div class="mr-chip">
@@ -459,7 +459,46 @@
 
                     <div class="mr-field">
                         <div class="mr-label">Hình ảnh kết quả</div>
-                        <div class="mr-value">@(string.IsNullOrWhiteSpace(Model.ResultImages) ? "Chưa có dữ liệu." : Model.ResultImages)</div>
+                        
+                        @{
+                            var imgStr = Model.ResultImages ?? "";
+                            var resultImageList = imgStr.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                                        .Select(x => x.Trim())
+                                                        .Where(x => !string.IsNullOrEmpty(x))
+                                                        .ToList();
+
+                            string normalizeImageUrl(string rawPath)
+                            {
+                                if (rawPath.StartsWith("~")) return rawPath.Substring(1);
+                                if (!rawPath.StartsWith("/")) return "/" + rawPath;
+                                return rawPath;
+                            }
+                        }
+
+                        @if (resultImageList.Any())
+                        {
+                            <div class="mr-value">
+                                <div class="mr-result-gallery">
+                                    @foreach (var img in resultImageList)
+                                    {
+                                        var imgUrl = normalizeImageUrl(img);
+
+                                        <a href="@imgUrl" target="_blank" rel="noopener noreferrer" class="mr-result-item">
+                                            <div class="mr-result-thumb-wrap">
+                                                <img src="@imgUrl"
+                                                     alt="Hình ảnh kết quả"
+                                                     class="mr-result-thumb"
+                                                     loading="lazy" />
+                                            </div>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mr-value">Chưa có dữ liệu.</div>
+                        }
                     </div>
                 </div>
 
@@ -468,7 +507,7 @@
                         <span class="mr-section-icon">
                             <i class="fas fa-concierge-bell"></i>
                         </span>
-                        <span>Dịch vụ phát sinh</span>
+                        <span>Các Dịch vụ sau khám</span>
                     </div>
 
                     @if (Model.ExtraServices != null && Model.ExtraServices.Any())
@@ -478,7 +517,6 @@
                                 <thead>
                                     <tr>
                                         <th>Tên dịch vụ</th>
-                                        <th>Ghi chú</th>
                                         <th class="mr-text-right" style="width:180px;">Đơn giá</th>
                                     </tr>
                                 </thead>
@@ -487,14 +525,13 @@
                                     {
                                         <tr>
                                             <td><i class="fas fa-plus-circle" style="color:#ff5a5a; margin-right:6px;"></i>@s.ServiceName</td>
-                                            <td>@(string.IsNullOrWhiteSpace(s.Notes) ? "--" : s.Notes)</td>
                                             <td class="mr-text-right mr-money">@s.Price.ToString("N0")</td>
                                         </tr>
                                     }
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <th colspan="2" class="mr-text-right">Tổng dịch vụ</th>
+                                        <th colspan="1" class="mr-text-right">Tổng dịch vụ</th>
                                         <th class="mr-text-right" style="color:#ef4444;">@Model.TotalServiceAmount.ToString("N0")</th>
                                     </tr>
                                 </tfoot>

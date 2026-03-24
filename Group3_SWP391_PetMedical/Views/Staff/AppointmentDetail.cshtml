@@ -176,8 +176,8 @@
             <!-- Col 2: Actions -->
             <div class="col-md-6">
 
-                @* Assign Doctor — only if no doctor yet and not cancelled/paid *@
-                @if (Model.status?.ToLower() != "đã hủy" && Model.status?.ToLower() != "đã thanh toán" && Model.status?.ToLower() != "không đến")
+                @* Assign Doctor — only if no doctor yet and not cancelled/paid/examining/examined *@
+                @if (Model.status?.ToLower() != "đã hủy" && Model.status?.ToLower() != "đã thanh toán" && Model.status?.ToLower() != "không đến" && Model.status?.ToLower() != "đang khám" && Model.status?.ToLower() != "đã khám")
                 {
                     <div class="pc-card">
                         <div class="pc-card-head"><i class="fas fa-user-md"></i>Chỉ định Bác sĩ</div>
