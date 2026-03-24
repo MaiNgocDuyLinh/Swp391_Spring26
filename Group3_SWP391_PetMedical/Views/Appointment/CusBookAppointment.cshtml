@@ -423,7 +423,7 @@
                                                 var sid = int.Parse(s.Value);
                                                 var isChecked = Model.Form.ServiceIds != null && Model.Form.ServiceIds.Contains(sid);
                                                 var inputId = $"svc_{sid}";
-                                                var price = _priceMap.ContainsKey(sid) ? _priceMap[sid] : 0m;
+                                                var price = _priceMap1.ContainsKey(sid) ? _priceMap1[sid] : 0m;
                                                 var origPrice = _originalPriceMap.ContainsKey(sid) ? _originalPriceMap[sid] : 0m;
                                                 var discInfo = _discountMap.ContainsKey(sid) ? _discountMap[sid] : null;
 

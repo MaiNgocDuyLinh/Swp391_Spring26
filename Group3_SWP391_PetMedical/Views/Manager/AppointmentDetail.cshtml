@@ -1,22 +1,41 @@
 @model Group3_SWP391_PetMedical.Models.Appointment
 @using Group3_SWP391_PetMedical.Models
+@using Group3_SWP391_PetMedical.Services.Interfaces
+@inject IServiceService ServiceService
 @{
     ViewData["Title"] = "Chi tiết Lịch hẹn";
     var doctors = ViewBag.Doctors as List<User> ?? new List<User>();
 
     // Status color mapping
-    (string bg, string color, string icon) StatusStyle(string? s) => (s ?? "").Trim() switch {
-        "Đặt lịch thành công" => ("#d1fae5", "#047857", "fa-check-circle"),
-        "Đã Hủy"              => ("#fee2e2", "#dc2626", "fa-times-circle"),
-        "Đã đến"              => ("#e0e7ff", "#4338ca", "fa-map-marker-alt"),
-        "Không đến"           => ("#f3f4f6", "#6b7280", "fa-user-slash"),
-        "Đang khám"           => ("#fce7f3", "#be185d", "fa-stethoscope"),
-        "Đã khám"             => ("#ede9fe", "#6d28d9", "fa-clipboard-check"),
-        "Đã thanh toán"       => ("#dcfce7", "#15803d", "fa-money-check-alt"),
+    (string bg, string color, string icon) StatusStyle(string? s) => (s ?? "").Trim().ToLower() switch {
+        "đặt lịch thành công" => ("#d1fae5", "#047857", "fa-check-circle"),
+        "đã thanh toán"       => ("#dbeafe", "#1d4ed8", "fa-file-invoice-dollar"),
+        "đã hủy"              => ("#fee2e2", "#dc2626", "fa-times-circle"),
+        "không đến"           => ("#f1f5f9", "#475569", "fa-user-slash"),
+        "đã đến"              => ("#fef9c3", "#a16207", "fa-walking"),
+        "đang khám"           => ("#fce7f3", "#be185d", "fa-stethoscope"),
+        "đã khám"             => ("#ede9fe", "#6d28d9", "fa-clipboard-check"),
         _                     => ("#f3f4f6", "#6b7280", "fa-question-circle")
     };
 
     var st = StatusStyle(Model.status);
+
+    // Discount price helper — check against appointment date, not current time
+    var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
+    var _appointmentDate = Model.created_at ?? Model.appointment_date;
+    Func<int, decimal> getDiscountedPrice = (serviceId) =>
+    {
+        var svc = _allSvcs.FirstOrDefault(x => x.service_id == serviceId);
+        if (svc == null) return 0;
+        var disc = svc.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= _appointmentDate && sd.end_date >= _appointmentDate && (sd.created_at ?? DateTime.MinValue) <= _appointmentDate);
+        if (disc != null) return svc.base_price * (1 - (decimal)disc.discount_percent / 100);
+        return svc.base_price;
+    };
+    Func<int, Group3_SWP391_PetMedical.Models.ServiceDiscount?> getActiveDiscount = (serviceId) =>
+    {
+        var svc = _allSvcs.FirstOrDefault(x => x.service_id == serviceId);
+        return svc?.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= _appointmentDate && sd.end_date >= _appointmentDate && (sd.created_at ?? DateTime.MinValue) <= _appointmentDate);
+    };
 }
 
 @section Styles {
@@ -107,13 +126,35 @@
                                     <tbody>
                                         @foreach (var d in Model.AppointmentDetails)
                                         {
-                                            <tr><td style="padding:10px 16px;">@(d.service?.service_name ?? "N/A")</td>
-                                                <td class="text-end pc-money" style="padding:10px 16px;">@((d.actual_price ?? d.service?.base_price ?? 0).ToString("N0")) đ</td></tr>
+                                            var svcId = d.service_id;
+                                            var actualP = d.actual_price;
+                                            var discInfo = getActiveDiscount(svcId);
+                                            var effectivePrice = actualP ?? getDiscountedPrice(svcId);
+                                            var origPrice = d.service?.base_price ?? 0;
+
+                                            <tr><td style="padding:10px 16px;">
+                                                @(d.service?.service_name ?? "N/A")
+                                                @if (discInfo != null && actualP == null)
+                                                {
+                                                    <span style="background:#dc2626; color:#fff; padding:1px 6px; border-radius:999px; font-size:0.7rem; font-weight:800; margin-left:4px;">-@discInfo.discount_percent%</span>
+                                                }
+                                            </td>
+                                            <td class="text-end pc-money" style="padding:10px 16px;">
+                                                @if (discInfo != null && actualP == null)
+                                                {
+                                                    <small style="text-decoration:line-through; color:rgba(0,0,0,.40); margin-right:4px;">@origPrice.ToString("N0")</small>
+                                                    <span style="color:#dc2626;">@effectivePrice.ToString("N0") đ</span>
+                                                }
+                                                else
+                                                {
+                                                    @effectivePrice.ToString("N0") <text>đ</text>
+                                                }
+                                            </td></tr>
                                         }
                                         <tr style="background:#fff7f7;">
                                             <td style="padding:10px 16px; font-weight:800;">Tổng cộng</td>
                                             <td class="text-end pc-money" style="padding:10px 16px; color:var(--pc-red);">
-                                                @(Model.AppointmentDetails.Sum(d => d.actual_price ?? d.service?.base_price ?? 0).ToString("N0")) đ
+                                                @(Model.AppointmentDetails.Sum(d => d.actual_price ?? getDiscountedPrice(d.service_id)).ToString("N0")) đ
                                             </td>
                                         </tr>
                                     </tbody>
@@ -128,8 +169,8 @@
             <!-- Col 2: Actions -->
             <div class="col-md-6">
 
-                @* Assign Doctor *@
-                @if (Model.status != "Đã Hủy" && Model.status != "Đã thanh toán" && Model.status != "Không đến")
+                @* Assign Doctor — only if no doctor yet and not cancelled/paid *@
+                @if (Model.status?.ToLower() != "đã hủy" && Model.status?.ToLower() != "đã thanh toán" && Model.status?.ToLower() != "không đến")
                 {
                     <div class="pc-card">
                         <div class="pc-card-head"><i class="fas fa-user-md"></i>Chỉ định Bác sĩ</div>
@@ -169,7 +210,7 @@
                                     </div>
                                     <div class="pc-readonly-row">
                                         <span class="pc-readonly-label">Tình trạng:</span>
-                                        <span class="pc-readonly-val">@(Model.MedicalRecord.health_status ?? "N/A")</span>
+                                        <span class="pc-readonly-val">@(Model.MedicalRecord.health_status == "Checked" ? "Đã Khám" : Model.MedicalRecord.health_status ?? "N/A")</span>
                                     </div>
                                 </div>
                                 
@@ -211,8 +252,8 @@
                     </div>
                 }
 
-                @* Cancel — Manager cancel *@
-                @if (Model.status != "Đã Hủy" && Model.status != "Đã thanh toán" && Model.status != "Không đến" && Model.status != "Đã khám" && Model.status != "Đang khám")
+                @* Cancel — Manager cancel when customer contacts *@
+                @if (Model.status?.ToLower() != "đã hủy" && Model.status?.ToLower() != "đã thanh toán" && Model.status?.ToLower() != "không đến" && Model.status?.ToLower() != "đã khám" && Model.status?.ToLower() != "đang khám")
                 {
                     <div class="pc-card">
                         <div class="pc-card-head"><i class="fas fa-times-circle"></i>Hủy lịch hẹn</div>

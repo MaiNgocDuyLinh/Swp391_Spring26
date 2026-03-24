@@ -18,9 +18,18 @@
     var fromVal = Model.Filter.FromDate?.ToString("yyyy-MM-dd") ?? "";
     var toVal = Model.Filter.ToDate?.ToString("yyyy-MM-dd") ?? "";
 
-    //  map service_id -> base_price
+    //  map service_id -> effective price (discounted if applicable)
     var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
-    var _priceMap = _allSvcs.ToDictionary(x => x.service_id, x => (decimal)x.base_price);
+
+    // Check discount against a specific date (appointment date), NOT current time
+    Func<Group3_SWP391_PetMedical.Models.Service, DateTime, decimal> getEffectivePrice = (svc, refDate) =>
+    {
+        var disc = svc.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= refDate && sd.end_date >= refDate && (sd.created_at ?? DateTime.MinValue) <= refDate);
+        if (disc != null) return svc.base_price * (1 - (decimal)disc.discount_percent / 100);
+        return svc.base_price;
+    };
+
+    var _priceMap = _allSvcs.ToDictionary(x => x.service_id, x => getEffectivePrice(x, DateTime.Now));
 
 @functions {
     public static string GetShiftLabel(DateTime dt)
@@ -567,8 +576,9 @@
 
                     @foreach (var item in Model.Page.Data.Items)
                     {
-                        // ✅ NEW: tính tổng theo base_price từ ServiceNames
+                        // ✅ tính tổng theo giá sau giảm từ ServiceNames (check discount against appointment date)
                         decimal totalFromServices = 0m;
+                        var _itemDate = item.CreatedAt;
                         if (!string.IsNullOrWhiteSpace(item.ServiceNames))
                         {
                             var names = item.ServiceNames
@@ -583,7 +593,7 @@
 
                                 if (svc != null)
                                 {
-                                    totalFromServices += (decimal)svc.base_price;
+                                    totalFromServices += getEffectivePrice(svc, _itemDate);
                                 }
                             }
                         }

@@ -1,6 +1,24 @@
 @model Group3_SWP391_PetMedical.Models.Invoice
+@using Group3_SWP391_PetMedical.Services.Interfaces
+@inject IServiceService ServiceService
 @{
     ViewData["Title"] = "Hóa đơn";
+
+    var _allSvcs = ServiceService.GetAllAsync().GetAwaiter().GetResult();
+    var _appointmentDate = Model.appointment?.created_at ?? Model.appointment?.appointment_date ?? DateTime.Now;
+    Func<int, decimal> getDiscountedPrice = (serviceId) =>
+    {
+        var svc = _allSvcs.FirstOrDefault(x => x.service_id == serviceId);
+        if (svc == null) return 0;
+        var disc = svc.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= _appointmentDate && sd.end_date >= _appointmentDate && (sd.created_at ?? DateTime.MinValue) <= _appointmentDate);
+        if (disc != null) return svc.base_price * (1 - (decimal)disc.discount_percent / 100);
+        return svc.base_price;
+    };
+    Func<int, Group3_SWP391_PetMedical.Models.ServiceDiscount?> getActiveDiscount = (serviceId) =>
+    {
+        var svc = _allSvcs.FirstOrDefault(x => x.service_id == serviceId);
+        return svc?.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= _appointmentDate && sd.end_date >= _appointmentDate && (sd.created_at ?? DateTime.MinValue) <= _appointmentDate);
+    };
 }
 
 @section Styles {
@@ -99,10 +117,32 @@
                                 @{int i = 1;}
                                 @foreach (var d in Model.appointment.AppointmentDetails)
                                 {
+                                    var svcId = d.service_id;
+                                    var actualP = d.actual_price;
+                                    var discInfo = getActiveDiscount(svcId);
+                                    var effectivePrice = actualP ?? getDiscountedPrice(svcId);
+                                    var origPrice = d.service?.base_price ?? 0;
+
                                     <tr>
                                         <td style="padding:10px 16px;">@i</td>
-                                        <td style="padding:10px 16px;">@(d.service?.service_name ?? "N/A")</td>
-                                        <td class="text-end pc-money" style="padding:10px 16px;">@((d.actual_price ?? d.service?.base_price ?? 0).ToString("N0")) đ</td>
+                                        <td style="padding:10px 16px;">
+                                            @(d.service?.service_name ?? "N/A")
+                                            @if (discInfo != null && actualP == null)
+                                            {
+                                                <span style="background:#dc2626; color:#fff; padding:1px 6px; border-radius:999px; font-size:0.7rem; font-weight:800; margin-left:4px;">-@discInfo.discount_percent%</span>
+                                            }
+                                        </td>
+                                        <td class="text-end pc-money" style="padding:10px 16px;">
+                                            @if (discInfo != null && actualP == null)
+                                            {
+                                                <small style="text-decoration:line-through; color:rgba(0,0,0,.40); margin-right:4px;">@origPrice.ToString("N0")</small>
+                                                <span style="color:#dc2626;">@effectivePrice.ToString("N0") đ</span>
+                                            }
+                                            else
+                                            {
+                                                @effectivePrice.ToString("N0") <text>đ</text>
+                                            }
+                                        </td>
                                     </tr>
                                     i++;
                                 }
@@ -116,7 +156,7 @@
                     <h6 class="pc-label mt-4"><i class="fas fa-notes-medical" style="color:var(--pc-red);"></i> Kết quả khám bệnh</h6>
                     <div class="mb-3" style="font-size:0.95rem;">
                         <div class="mb-1"><span class="text-muted" style="width:100px; display:inline-block;">Chẩn đoán:</span> <strong>@(Model.appointment.MedicalRecord.diagnosis ?? "N/A")</strong></div>
-                        <div class="mb-1"><span class="text-muted" style="width:100px; display:inline-block;">Tình trạng:</span> <strong>@(Model.appointment.MedicalRecord.health_status ?? "N/A")</strong></div>
+                        <div class="mb-1"><span class="text-muted" style="width:100px; display:inline-block;">Tình trạng:</span> <strong>@(Model.appointment.MedicalRecord.health_status == "Checked" ? "Đã Khám" : Model.appointment.MedicalRecord.health_status ?? "N/A")</strong></div>
                     </div>
 
                     @if (Model.appointment.MedicalRecord.Prescriptions != null && Model.appointment.MedicalRecord.Prescriptions.Any())
