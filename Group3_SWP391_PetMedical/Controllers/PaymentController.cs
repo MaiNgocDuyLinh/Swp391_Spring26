@@ -168,6 +168,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                         if (order != null && order.status == "PENDING" && amount >= (int)order.total_amount)
                         {
                             order.status = "PAID";
+                            order.status_order = "Đã tiếp nhận";
                             order.transaction_reference = orderCode.ToString();
 
                             foreach (var detail in order.OrderDetails)

@@ -47,7 +47,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(o => (o.user != null && o.user.full_name != null && o.user.full_name.Contains(search))
-                                      || (o.note != null && o.note.Contains(search)));
+                                      || (o.note != null && o.note.Contains(search))
+                                      || (o.status_order != null && o.status_order.Contains(search)));
             }
 
             return await query.OrderByDescending(o => o.created_at).ToListAsync();
@@ -60,6 +61,16 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.medicine)
                 .FirstOrDefaultAsync(o => o.id == id);
+        }
+
+        public async Task UpdateStatusOrderAsync(int orderId, string statusOrder)
+        {
+            var order = await _context.RetailOrders.FindAsync(orderId);
+            if (order != null)
+            {
+                order.status_order = statusOrder;
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

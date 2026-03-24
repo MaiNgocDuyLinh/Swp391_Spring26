@@ -1,6 +1,15 @@
 @model IEnumerable<Group3_SWP391_PetMedical.Models.RetailOrder>
 @{
     ViewData["Title"] = "Đơn thuốc của bạn";
+
+    (string bg, string color, string icon) OrderStatusStyle(string? s) => (s ?? "").Trim() switch {
+        "Đã tiếp nhận" => ("#e0f2fe", "#0369a1", "fa-bell"),
+        "Đã soạn hàng" => ("#f3e8ff", "#7e22ce", "fa-box-open"),
+        "Đã giao thuốc" => ("#d1fae5", "#047857", "fa-shipping-fast"),
+        "Hủy/Hoàn trả" => ("#fee2e2", "#dc2626", "fa-undo"),
+        "Không nhận" => ("#fef3c7", "#d97706", "fa-exclamation-triangle"),
+        _ => ("#f3f4f6", "#6b7280", "fa-spinner")
+    };
 }
 
 @section Styles {
@@ -38,9 +47,18 @@
                                 <h5 style="font-weight:800; margin:0;">
                                     Đơn hàng #@order.id
                                 </h5>
-                                <span class="pc-badge" style="background:#dcfce7; color:#15803d;">
-                                    <i class="fas fa-check-circle"></i> @(order.status == "PAID" ? "Đã thanh toán" : order.status)
-                                </span>
+                                <div class="d-flex gap-2">
+                                    <span class="pc-badge" style="background:#dcfce7; color:#15803d;">
+                                        <i class="fas fa-check-circle"></i> @(order.status == "PAID" ? "Đã thanh toán" : order.status)
+                                    </span>
+                                    @if (!string.IsNullOrEmpty(order.status_order))
+                                    {
+                                        var os = OrderStatusStyle(order.status_order);
+                                        <span class="pc-badge" style="background:@os.bg; color:@os.color;">
+                                            <i class="fas @os.icon"></i> @order.status_order
+                                        </span>
+                                    }
+                                </div>
                             </div>
                             
                             <div class="row mb-3 text-muted small">

@@ -182,6 +182,9 @@ public partial class PetClinicContext : DbContext
                     .WithMany(u => u.RetailOrders)
                     .HasForeignKey(ro => ro.user_id)
                     .OnDelete(DeleteBehavior.ClientSetNull);
+
+                  entity.Property(ro => ro.status_order)
+                    .HasMaxLength(50);
             });
 
             modelBuilder.Entity<OrderDetail>(entity =>

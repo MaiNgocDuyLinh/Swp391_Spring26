@@ -92,5 +92,25 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
             return View(order);
         }
+
+        [Authorize(Roles = "Staff,Manager")]
+        [HttpPost]
+        public async Task<IActionResult> StaffUpdateStatusOrder(int id, string status_order)
+        {
+            if (string.IsNullOrEmpty(status_order))
+            {
+                return BadRequest("Trạng thái không hợp lệ.");
+            }
+
+            var order = await _retailOrderService.GetOrderByIdAsync(id);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            await _retailOrderService.UpdateStatusOrderAsync(id, status_order);
+            TempData["SuccessMessage"] = "Cập nhật trạng thái đơn hàng thành công.";
+            return RedirectToAction("StaffViewRetailDetail", new { id = id });
+        }
     }
 }

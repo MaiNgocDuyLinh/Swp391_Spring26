@@ -29,5 +29,10 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         {
             return await _retailOrderRepo.GetOrderByIdAsync(id);
         }
+
+        public async Task UpdateStatusOrderAsync(int orderId, string statusOrder)
+        {
+            await _retailOrderRepo.UpdateStatusOrderAsync(orderId, statusOrder);
+        }
     }
 }
