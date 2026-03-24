@@ -72,5 +72,40 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<bool> CancelAndReturnStockAsync(int orderId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var order = await _context.RetailOrders
+                    .Include(o => o.OrderDetails)
+                        .ThenInclude(od => od.medicine)
+                    .FirstOrDefaultAsync(o => o.id == orderId);
+
+                if (order == null) return false;
+
+                // Update status
+                order.status_order = "Hủy/Hoàn trả";
+
+                // Return stock
+                foreach (var detail in order.OrderDetails)
+                {
+                    if (detail.medicine != null)
+                    {
+                        detail.medicine.stock_quantity = (detail.medicine.stock_quantity ?? 0) + detail.quantity;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
+        }
     }
 }

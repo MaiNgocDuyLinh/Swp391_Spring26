@@ -152,6 +152,15 @@
                     </div>
 
                     <div class="mb-3">
+                        <div class="pc-label">Trạng thái</div>
+                        <select asp-for="status" class="form-select pc-input">
+                            <option value="active">Đang hoạt động</option>
+                            <option value="inactive">Ngừng hoạt động</option>
+                        </select>
+                        <span asp-validation-for="status" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
                         <div class="pc-label">Mô tả</div>
                         <textarea asp-for="description" class="form-control pc-input pc-textarea" placeholder="Nhập mô tả..."></textarea>
                         <span asp-validation-for="description" class="text-danger"></span>

@@ -16,5 +16,6 @@ namespace Group3_SWP391_PetMedical.ViewModels.Medicin
 
         [StringLength(1000, ErrorMessage = "Mô tả tối đa 1000 ký tự.")]
         public string? description { get; set; }
+        public string status { get; set; } = "active";
     }
 }

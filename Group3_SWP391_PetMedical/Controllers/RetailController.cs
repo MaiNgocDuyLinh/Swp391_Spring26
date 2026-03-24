@@ -112,5 +112,26 @@ namespace Group3_SWP391_PetMedical.Controllers
             TempData["SuccessMessage"] = "Cập nhật trạng thái đơn hàng thành công.";
             return RedirectToAction("StaffViewRetailDetail", new { id = id });
         }
+
+        [Authorize(Roles = "Customer")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelOrder(int id)
+        {
+            var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("user_id");
+            if (!int.TryParse(userIdRaw, out int userId)) return Forbid();
+
+            var success = await _retailOrderService.CancelOrderAsync(id, userId);
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Hủy đơn hàng và hoàn kho thành công.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Không thể hủy đơn hàng này (Đơn không tồn tại hoặc đã được xử lý).";
+            }
+
+            return RedirectToAction(nameof(RetailOrderedViewList));
+        }
     }
 }

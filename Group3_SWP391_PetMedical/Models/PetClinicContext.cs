@@ -161,7 +161,11 @@ public partial class PetClinicContext : DbContext
             modelBuilder.Entity<Feedback>().HasKey(f => f.feedback_id);
             modelBuilder.Entity<Invoice>().HasKey(i => i.invoice_id);
             modelBuilder.Entity<MedicalRecord>().HasKey(m => m.record_id);
-            modelBuilder.Entity<Medication>().HasKey(m => m.medicine_id);
+            modelBuilder.Entity<Medication>(entity =>
+            {
+                entity.HasKey(m => m.medicine_id);
+                entity.Property(m => m.status).HasMaxLength(20).HasDefaultValue("active");
+            });
             modelBuilder.Entity<Pet>().HasKey(p => p.pet_id);
             modelBuilder.Entity<Prescription>().HasKey(p => p.prescription_id);
             modelBuilder.Entity<Role>().HasKey(r => r.role_id);
@@ -202,6 +206,8 @@ public partial class PetClinicContext : DbContext
                     .WithMany() // no navigation collection on Medication for order details
                     .HasForeignKey(od => od.medicine_id)
                     .OnDelete(DeleteBehavior.ClientSetNull);
+
+                  entity.Property(od => od.price_at_purchase).HasColumnType("decimal(18,2)");
             });
 
             // Cart ↔ User / CartItemsMedicin / Medication
