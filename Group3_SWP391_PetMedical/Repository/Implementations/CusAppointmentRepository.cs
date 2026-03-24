@@ -628,7 +628,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     ResultImages = m.result_images,
                     FollowUpDate = m.follow_up_date,
 
-                    // Chỉ lấy dịch vụ gốc lúc khách đặt lịch
                     SelectedServiceNames = string.Join(", ",
                         m.appointment.AppointmentDetails
                             .Where(d => ((decimal?)d.actual_price ?? 0) <= 0)

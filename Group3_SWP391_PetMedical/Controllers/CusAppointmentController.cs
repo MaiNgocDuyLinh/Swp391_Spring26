@@ -95,9 +95,7 @@ namespace Group3_SWP391_PetMedical.Controllers
         }
 
         //  GET: /CusAppointment/Book
-        //  Dùng cho:
-        //  - Lần đầu mở form
-        //  - Bấm nút "Xem lịch bác sĩ" (submit GET với các field của Form)
+    
         [HttpGet]
         public async Task<IActionResult> Book(
             [FromQuery(Name = "Form.DoctorId")] int? doctorId,

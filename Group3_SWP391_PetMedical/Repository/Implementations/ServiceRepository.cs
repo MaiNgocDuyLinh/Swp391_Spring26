@@ -17,6 +17,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
         public Task<List<Service>> GetAllAsync()
            => _context.Services
+           .Where(s => s.status == true)
          .Include(s => s.ServiceDiscounts.Where(sd => sd.is_active == true))
          .AsNoTracking()
         .OrderBy(s => s.service_name)
@@ -26,6 +27,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         public async Task<PagedResult<Service>> GetPagedAsync(string? search, int page, int pageSize)
         {
             var query = _context.Services
+                .Where(s => s.status == true)
                 .Include(s => s.ServiceDiscounts.Where(sd => sd.is_active == true))
                 .AsNoTracking()
                 .AsQueryable();
