@@ -1,4 +1,5 @@
-﻿@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusMedicalRecordVM
+﻿@using System.Linq
+@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusMedicalRecordVM
 
 @{
     var isPopup = Context.Request.Query["popup"] == "1";
@@ -16,6 +17,39 @@
     string petWeightText = Model.PetWeight.HasValue
         ? Model.PetWeight.Value.ToString("0.##") + " kg"
         : "Chưa có dữ liệu";
+
+    Func<string, string> normalizeImageUrl = path =>
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return "";
+
+        path = path.Trim();
+
+        if (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return path;
+        }
+
+        if (path.StartsWith("~/"))
+        {
+            return Url.Content(path);
+        }
+
+        if (path.StartsWith("/"))
+        {
+            return Url.Content("~" + path);
+        }
+
+        return Url.Content("~/" + path.TrimStart('/'));
+    };
+
+    var resultImageList = (Model.ResultImages ?? "")
+        .Split(new[] { "\r\n", "\n", ";", "|" }, StringSplitOptions.RemoveEmptyEntries)
+        .Select(x => x.Trim())
+        .Where(x => !string.IsNullOrWhiteSpace(x))
+        .Distinct()
+        .ToList();
 }
 
 <link rel="stylesheet" href="~/assets/css/fontawesome-all.min.css" />
@@ -228,6 +262,42 @@
         white-space: pre-line;
     }
 
+    .mr-result-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+    }
+
+    .mr-result-item {
+        display: block;
+        text-decoration: none !important;
+        color: inherit;
+    }
+
+    .mr-result-thumb-wrap {
+        width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--pet-border);
+        background: #fff;
+    }
+
+    .mr-result-thumb {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        display: block;
+        background: #fff;
+    }
+
+    .mr-result-path {
+        margin-top: 8px;
+        font-size: 0.82rem;
+        color: var(--pet-muted);
+        word-break: break-all;
+        line-height: 1.4;
+    }
+
     .mr-table-wrap {
         border: 1px solid var(--pet-border);
         border-radius: 14px;
@@ -337,6 +407,10 @@
 
         .mr-box {
             padding: 16px;
+        }
+
+        .mr-result-thumb {
+            height: 180px;
         }
     }
 </style>
@@ -459,7 +533,32 @@
 
                     <div class="mr-field">
                         <div class="mr-label">Hình ảnh kết quả</div>
-                        <div class="mr-value">@(string.IsNullOrWhiteSpace(Model.ResultImages) ? "Chưa có dữ liệu." : Model.ResultImages)</div>
+
+                        @if (resultImageList.Any())
+                        {
+                            <div class="mr-value">
+                                <div class="mr-result-gallery">
+                                    @foreach (var img in resultImageList)
+                                    {
+                                        var imgUrl = normalizeImageUrl(img);
+
+                                        <a href="@imgUrl" target="_blank" rel="noopener noreferrer" class="mr-result-item">
+                                            <div class="mr-result-thumb-wrap">
+                                                <img src="@imgUrl"
+                                                     alt="Hình ảnh kết quả"
+                                                     class="mr-result-thumb"
+                                                     loading="lazy" />
+                                            </div>
+                                            <div class="mr-result-path">@img</div>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mr-value">Chưa có dữ liệu.</div>
+                        }
                     </div>
                 </div>
 
