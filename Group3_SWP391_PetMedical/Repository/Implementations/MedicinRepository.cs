@@ -46,14 +46,15 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             => _context.Medications.AsNoTracking()
                 .FirstOrDefaultAsync(m => m.medicine_id == id);
 
-        public async Task<Medication> AddAsync(string name, decimal unitPrice, int stockQuantity, string? description)
+        public async Task<Medication> AddAsync(string name, decimal unitPrice, int stockQuantity, string? description, string status)
         {
             var entity = new Medication
             {
                 name = name,
                 unit_price = unitPrice,
                 stock_quantity = stockQuantity,
-                description = description
+                description = description,
+                status = status
             };
 
             _context.Medications.Add(entity);
@@ -61,7 +62,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return entity;
         }
 
-        public async Task<bool> UpdateAsync(int id, string name, decimal unitPrice, int stockQuantity, string? description)
+        public async Task<bool> UpdateAsync(int id, string name, decimal unitPrice, int stockQuantity, string? description, string status)
         {
             var entity = await _context.Medications.FirstOrDefaultAsync(m => m.medicine_id == id);
             if (entity == null) return false;
@@ -70,6 +71,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             entity.unit_price = unitPrice;
             entity.stock_quantity = stockQuantity;
             entity.description = description;
+            entity.status = status;
 
             await _context.SaveChangesAsync();
             return true;

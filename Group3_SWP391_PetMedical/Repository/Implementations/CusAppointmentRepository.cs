@@ -63,6 +63,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                      {
                          AppointmentId = a.appointment_id,
                          AppointmentDate = a.appointment_date,
+                         CreatedAt = EF.Property<DateTime?>(a, CREATED_AT_FIELD) ?? a.appointment_date,
                          PetName = a.pet.name,
                          DoctorName =
                         (a.doctor_id != null && a.doctor != null && a.doctor.role_id == 3)
@@ -625,6 +626,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     Diagnosis = m.diagnosis,
                     HealthStatus = m.health_status,
                     TestResults = m.test_results,
+
                     ResultImages = m.result_images,
                     FollowUpDate = m.follow_up_date,
 
@@ -650,19 +652,45 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 })
                 .ToListAsync();
 
-            // Lấy dịch vụ phát sinh do bác sĩ thêm lúc khám
-            vm.ExtraServices = await _context.AppointmentDetails
+            // Lấy tất cả dịch vụ của lịch khám
+            var rawServices = await _context.AppointmentDetails
+                .Include(ad => ad.service)
+                    .ThenInclude(s => s.ServiceDiscounts)
                 .AsNoTracking()
-                .Where(ad => ad.appointment_id == vm.AppointmentId
-                             && ((decimal?)ad.actual_price ?? 0) > 0)
-                .Select(ad => new CusMedicalRecordServiceItemVM
+                .Where(ad => ad.appointment_id == vm.AppointmentId)
+                .ToListAsync();
+
+            var bookingTime = vm.CreatedAt ?? vm.AppointmentDate;
+
+            vm.ExtraServices = rawServices.Select(ad =>
+            {
+                decimal price = 0;
+                if (ad.actual_price.HasValue)
+                {
+                    price = ad.actual_price.Value;
+                }
+                else
+                {
+                    var basePrice = ad.service?.base_price ?? 0;
+                    var disc = ad.service?.ServiceDiscounts?
+                        .FirstOrDefault(sd => sd.is_active == true
+                            && sd.start_date <= bookingTime
+                            && sd.end_date >= bookingTime
+                            && (sd.created_at ?? DateTime.MinValue) <= bookingTime);
+                    if (disc != null)
+                        price = basePrice * (1 - (decimal)disc.discount_percent / 100);
+                    else
+                        price = basePrice;
+                }
+
+                return new CusMedicalRecordServiceItemVM
                 {
                     ServiceId = ad.service_id,
-                    ServiceName = ad.service.service_name,
-                    Price = ((decimal?)ad.actual_price ?? ad.service.base_price),
+                    ServiceName = ad.service?.service_name ?? "",
+                    Price = price,
                     Notes = null
-                })
-                .ToListAsync();
+                };
+            }).ToList();
 
             return vm;
         }

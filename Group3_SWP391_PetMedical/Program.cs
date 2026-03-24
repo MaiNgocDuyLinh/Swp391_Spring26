@@ -1,4 +1,4 @@
-﻿using Group3_SWP391_PetMedical.Models;
+using Group3_SWP391_PetMedical.Models;
 using Microsoft.EntityFrameworkCore;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Group3_SWP391_PetMedical.Repository.Implementations;
@@ -61,6 +61,9 @@ namespace Group3_SWP391_PetMedical
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
             builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
+            // Background Services
+            builder.Services.AddHostedService<AutoCancelAppointmentService>();
+
             // Staff Module DI
             builder.Services.AddScoped<Group3_SWP391_PetMedical.Repository.Interfaces.IAppointmentRepository,
                                        Group3_SWP391_PetMedical.Repository.Implementations.AppointmentRepository>();
@@ -74,6 +77,12 @@ namespace Group3_SWP391_PetMedical
                                        Group3_SWP391_PetMedical.Services.Implementations.ManagerService>();
             // Service Discount
             builder.Services.AddScoped<IServiceDiscountRepository, ServiceDiscountRepository>();
+
+            // Retail Orders
+            builder.Services.AddScoped<Group3_SWP391_PetMedical.Repository.Interfaces.IRetailOrderRepository,
+                                       Group3_SWP391_PetMedical.Repository.Implementations.RetailOrderRepository>();
+            builder.Services.AddScoped<Group3_SWP391_PetMedical.Services.Interfaces.IRetailOrderService,
+                                       Group3_SWP391_PetMedical.Services.Implementations.RetailOrderService>();
 
             builder.Services.AddAuthentication("MyCookieAuth")
                 .AddCookie("MyCookieAuth", options =>

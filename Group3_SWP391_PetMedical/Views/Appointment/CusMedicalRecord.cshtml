@@ -18,38 +18,7 @@
         ? Model.PetWeight.Value.ToString("0.##") + " kg"
         : "Chưa có dữ liệu";
 
-    Func<string, string> normalizeImageUrl = path =>
-    {
-        if (string.IsNullOrWhiteSpace(path))
-            return "";
-
-        path = path.Trim();
-
-        if (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-        {
-            return path;
-        }
-
-        if (path.StartsWith("~/"))
-        {
-            return Url.Content(path);
-        }
-
-        if (path.StartsWith("/"))
-        {
-            return Url.Content("~" + path);
-        }
-
-        return Url.Content("~/" + path.TrimStart('/'));
-    };
-
-    var resultImageList = (Model.ResultImages ?? "")
-        .Split(new[] { "\r\n", "\n", ";", "|" }, StringSplitOptions.RemoveEmptyEntries)
-        .Select(x => x.Trim())
-        .Where(x => !string.IsNullOrWhiteSpace(x))
-        .Distinct()
-        .ToList();
+    
 }
 
 <link rel="stylesheet" href="~/assets/css/fontawesome-all.min.css" />
@@ -507,7 +476,7 @@
 
                         <div class="mr-chip">
                             <i class="fas fa-stethoscope"></i>
-                            <span>Dịch vụ đã chọn: @(string.IsNullOrWhiteSpace(Model.SelectedServiceNames) ? "Chưa có dữ liệu" : Model.SelectedServiceNames)</span>
+                            <span>Dịch vụ: @(string.IsNullOrWhiteSpace(Model.SelectedServiceNames) ? "Chưa có dữ liệu" : Model.SelectedServiceNames)</span>
                         </div>
 
                         <div class="mr-chip">
@@ -533,6 +502,21 @@
 
                     <div class="mr-field">
                         <div class="mr-label">Hình ảnh kết quả</div>
+                        
+                        @{
+                            var imgStr = Model.ResultImages ?? "";
+                            var resultImageList = imgStr.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                                        .Select(x => x.Trim())
+                                                        .Where(x => !string.IsNullOrEmpty(x))
+                                                        .ToList();
+
+                            string normalizeImageUrl(string rawPath)
+                            {
+                                if (rawPath.StartsWith("~")) return rawPath.Substring(1);
+                                if (!rawPath.StartsWith("/")) return "/" + rawPath;
+                                return rawPath;
+                            }
+                        }
 
                         @if (resultImageList.Any())
                         {
@@ -549,7 +533,6 @@
                                                      class="mr-result-thumb"
                                                      loading="lazy" />
                                             </div>
-                                            <div class="mr-result-path">@img</div>
                                         </a>
                                     }
                                 </div>
@@ -567,7 +550,7 @@
                         <span class="mr-section-icon">
                             <i class="fas fa-concierge-bell"></i>
                         </span>
-                        <span>Dịch vụ phát sinh</span>
+                        <span>Các Dịch vụ sau khám</span>
                     </div>
 
                     @if (Model.ExtraServices != null && Model.ExtraServices.Any())
@@ -577,7 +560,6 @@
                                 <thead>
                                     <tr>
                                         <th>Tên dịch vụ</th>
-                                        <th>Ghi chú</th>
                                         <th class="mr-text-right" style="width:180px;">Đơn giá</th>
                                     </tr>
                                 </thead>
@@ -586,14 +568,13 @@
                                     {
                                         <tr>
                                             <td><i class="fas fa-plus-circle" style="color:#ff5a5a; margin-right:6px;"></i>@s.ServiceName</td>
-                                            <td>@(string.IsNullOrWhiteSpace(s.Notes) ? "--" : s.Notes)</td>
                                             <td class="mr-text-right mr-money">@s.Price.ToString("N0")</td>
                                         </tr>
                                     }
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <th colspan="2" class="mr-text-right">Tổng dịch vụ</th>
+                                        <th colspan="1" class="mr-text-right">Tổng dịch vụ</th>
                                         <th class="mr-text-right" style="color:#ef4444;">@Model.TotalServiceAmount.ToString("N0")</th>
                                     </tr>
                                 </tfoot>

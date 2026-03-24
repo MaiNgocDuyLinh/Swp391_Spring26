@@ -1,0 +1,148 @@
+@model IEnumerable<Group3_SWP391_PetMedical.Models.RetailOrder>
+@{
+    ViewData["Title"] = "Đơn thuốc của bạn";
+
+    (string bg, string color, string icon) OrderStatusStyle(string? s) => (s ?? "").Trim() switch {
+        "Đã tiếp nhận" => ("#e0f2fe", "#0369a1", "fa-bell"),
+        "Đã soạn hàng" => ("#f3e8ff", "#7e22ce", "fa-box-open"),
+        "Đã giao thuốc" => ("#d1fae5", "#047857", "fa-shipping-fast"),
+        "Hủy/Hoàn trả" => ("#fee2e2", "#dc2626", "fa-undo"),
+        "Không nhận" => ("#fef3c7", "#d97706", "fa-exclamation-triangle"),
+        _ => ("#f3f4f6", "#6b7280", "fa-spinner")
+    };
+}
+
+@section Styles {
+    <style>
+        :root { --pc-red:#ff3b3b; --pc-red-dark:#e83434; --pc-text:#2b2b2b; --pc-muted:#7a7a7a; --pc-border:rgba(0,0,0,0.06); }
+        .pc-wrap { background:#f3d7d5; border:1px solid var(--pc-border); border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(0,0,0,0.06); }
+        .pc-title { font-weight:800; margin:0; } .pc-sub { color:var(--pc-muted); margin:0; }
+        .pc-filter { background:#fff; border:1px solid var(--pc-border); border-radius:16px; padding:18px; margin:18px 0; box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+        .pc-table { border-radius:16px; overflow:hidden; background:#fff; border:1px solid var(--pc-border); box-shadow:0 10px 25px rgba(0,0,0,0.04); }
+        .pc-table thead th { background:#fff7f7; font-weight:800; }
+        .pc-table td { vertical-align: middle; }
+        .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; font-weight:700; font-size:0.85rem; }
+    </style>
+}
+
+<section class="container py-4" id="retailOrderedArea">
+    <div class="pc-wrap" style="margin-top:150px;">
+        <h3 class="pc-title mb-3">Đơn thuốc của bạn</h3>
+        <p class="pc-sub mb-3">Danh sách các đơn thuốc đã đặt mua và thanh toán thành công.</p>
+        
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius:14px;">
+                <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius:14px;">
+                <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (Model == null || !Model.Any())
+        {
+            <div class="alert alert-info mt-3" style="border-radius:14px;">
+                <i class="fas fa-box-open me-2"></i> Bạn chưa có đơn thuốc nào.
+            </div>
+        }
+        else
+        {
+            <div class="row g-4 mt-1">
+                @foreach (var order in Model)
+                {
+                    <div class="col-12">
+                        <div class="pc-filter" style="margin-top:0;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 style="font-weight:800; margin:0;">
+                                    Đơn hàng #@order.id
+                                </h5>
+                                <div class="d-flex gap-2">
+                                    <span class="pc-badge" style="background:#dcfce7; color:#15803d;">
+                                        <i class="fas fa-check-circle"></i> @(order.status == "PAID" ? "Đã thanh toán" : order.status)
+                                    </span>
+                                    @if (!string.IsNullOrEmpty(order.status_order))
+                                    {
+                                        var os = OrderStatusStyle(order.status_order);
+                                        <span class="pc-badge" style="background:@os.bg; color:@os.color;">
+                                            <i class="fas @os.icon"></i> @order.status_order
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3 text-muted small">
+                                <div class="col-md-4 mb-2 mb-md-0">
+                                    <strong><i class="far fa-calendar-alt"></i> Ngày đặt:</strong> @(order.created_at?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(order.pickup_slot))
+                                {
+                                    <div class="col-md-4 mb-2 mb-md-0">
+                                        <strong><i class="far fa-clock"></i> Khung giờ lấy:</strong> @order.pickup_slot
+                                    </div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(order.note))
+                                {
+                                    <div class="col-md-4">
+                                        <strong><i class="far fa-sticky-note"></i> Ghi chú:</strong> @order.note
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="pc-table table-responsive mb-0">
+                                <table class="table align-middle m-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Tên thuốc</th>
+                                            <th class="text-end">Đơn giá</th>
+                                            <th class="text-center">Số lượng</th>
+                                            <th class="text-end">Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (order.OrderDetails != null)
+                                        {
+                                            foreach (var item in order.OrderDetails)
+                                            {
+                                                <tr>
+                                                    <td><div class="fw-bold">@(item.medicine?.name ?? "N/A")</div></td>
+                                                    <td class="text-end">
+                                                        @{
+                                                            var price = item.price_at_purchase ?? item.medicine?.unit_price ?? 0;
+                                                        }
+                                                        @(price.ToString("N0")) đ
+                                                    </td>
+                                                    <td class="text-center">@item.quantity</td>
+                                                    <td class="text-end fw-semibold">@((price * item.quantity).ToString("N0")) đ</td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-end align-items-center mt-3 pt-2 gap-3">
+                                @if (order.status_order == "Đã tiếp nhận")
+                                {
+                                    <form asp-action="CancelOrder" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này và hoàn trả thuốc về kho?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@order.id" />
+                                        <button type="submit" class="pc-btn pc-btn--ghost" style="color:#dc2626 !important; border-color:#fee2e2;">
+                                            <i class="fas fa-times me-2"></i> Hủy đơn
+                                        </button>
+                                    </form>
+                                }
+                                <div style="font-weight:600; font-size:1.1rem;">
+                                    Tổng cộng: <span style="font-weight:800; font-size:1.35rem; color:var(--pc-red);">@order.total_amount.ToString("N0") đ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>

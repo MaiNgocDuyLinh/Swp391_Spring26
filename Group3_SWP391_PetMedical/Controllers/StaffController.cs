@@ -37,7 +37,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(result.Items.ToList());
         }
 
-        public async Task<IActionResult> CustomerDetail(int id)
+        public async Task<IActionResult> CustomerDetail(int id, int page = 1)
         {
             var customer = await _staffService.GetCustomerDetailAsync(id);
             if (customer == null)
@@ -45,6 +45,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                 TempData["ErrorMessage"] = "Không tìm thấy khách hàng.";
                 return RedirectToAction(nameof(ListCustomers));
             }
+            ViewBag.CurrentPage = page;
             return View(customer);
         }
 

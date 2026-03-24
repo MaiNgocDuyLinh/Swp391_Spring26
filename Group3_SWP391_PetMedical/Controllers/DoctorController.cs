@@ -51,9 +51,9 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             if (appointment == null) return NotFound();
 
-            if (appointment.status == "Arrived")
+            if (appointment.status == "Đã đến")
             {
-                appointment.status = "In-Progress";
+                appointment.status = "Đang khám";
                 _context.Update(appointment);
                 await _context.SaveChangesAsync();
             }
@@ -96,7 +96,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                     diagnosis = Diagnosis,
                     test_results = DoctorNotes,
                     created_at = DateTime.Now,
-                    health_status = "Checked"
+                    health_status = "Đã Khám"
                 };
 
                 if (ExamImages != null && ExamImages.Any())
@@ -135,7 +135,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                             {
                                 appointment_id = appointment_id,
                                 service_id = item.service_id,
-                                actual_price = serviceInfo?.base_price ?? 0
+                                actual_price = null // Để null để tự động tính theo giá Giảm giá lúc tạo Hóa đơn
                             });
                         }
                     }
@@ -161,7 +161,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                     }
                 }
 
-                appointment.status = "Completed";
+                appointment.status = "Đã khám";
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();

@@ -254,6 +254,7 @@
                             <th style="width:60px;">#</th>
                             <th>Tên thuốc</th>
                             <th style="width:150px;">Tồn kho</th>
+                            <th style="width:150px;">Trạng thái</th>
                             <th class="text-end" style="width:180px;">Thao tác</th>
                         </tr>
                     </thead>
@@ -271,6 +272,13 @@
                                         <i class="fas fa-capsules"></i> @qty
                                     </span>
                                 </td>
+                                <td>
+                                    @{
+                                        var statusText = m.status == "active" ? "Đang hoạt động" : "Ngừng hoạt động";
+                                        var statusBadge = m.status == "active" ? "pc-badge--ok" : "pc-badge--danger";
+                                    }
+                                    <span class="pc-badge @statusBadge">@statusText</span>
+                                </td>
                                 <td class="text-end">
                                     <div class="pc-action-icons">
                                         <a class="pc-ico" title="Xem chi tiết"
@@ -280,11 +288,6 @@
                                         <a class="pc-ico" title="Chỉnh sửa"
                                            asp-controller="Medicin" asp-action="MedicinEditForm" asp-route-id="@m.medicine_id">
                                             <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a class="pc-ico" title="Xóa"
-                                           asp-controller="Medicin" asp-action="Delete" asp-route-id="@m.medicine_id"
-                                           onclick="return confirm('Bạn có chắc muốn xóa thuốc này?');">
-                                            <i class="fas fa-trash-alt"></i>
                                         </a>
                                     </div>
                                 </td>

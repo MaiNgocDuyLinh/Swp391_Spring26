@@ -111,6 +111,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 {
                     AppointmentId = a.appointment_id,
                     AppointmentDate = a.appointment_date,
+                    CreatedAt = EF.Property<DateTime?>(a, "created_at") ?? a.appointment_date,
                     PetName = a.pet.name,
                     DoctorName = (a.doctor_id != null && a.doctor != null && a.doctor.role_id == 3)
                             ? a.doctor.full_name
