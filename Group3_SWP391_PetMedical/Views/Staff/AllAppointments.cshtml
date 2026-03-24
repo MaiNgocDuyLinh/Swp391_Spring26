@@ -7,14 +7,14 @@
     string? search = ViewBag.Search;
     string statusFilter = ViewBag.StatusFilter ?? "All";
 
-    (string bg, string color, string icon) StatusStyle(string? s) => (s ?? "").Trim() switch {
-        "Đặt lịch thành công" => ("#d1fae5", "#047857", "fa-check-circle"),
-        "Đã Hủy"              => ("#fee2e2", "#dc2626", "fa-times-circle"),
-        "Đã đến"              => ("#e0e7ff", "#4338ca", "fa-map-marker-alt"),
-        "Không đến"           => ("#f3f4f6", "#6b7280", "fa-user-slash"),
-        "Đang khám"           => ("#fce7f3", "#be185d", "fa-stethoscope"),
-        "Đã khám"             => ("#ede9fe", "#6d28d9", "fa-clipboard-check"),
-        "Đã thanh toán"       => ("#dcfce7", "#15803d", "fa-money-check-alt"),
+    (string bg, string color, string icon) StatusStyle(string? s) => (s ?? "").Trim().ToLower() switch {
+        "đặt lịch thành công" => ("#d1fae5", "#047857", "fa-check-circle"),
+        "đã hủy"              => ("#fee2e2", "#dc2626", "fa-times-circle"),
+        "đã đến"              => ("#e0e7ff", "#4338ca", "fa-map-marker-alt"),
+        "không đến"           => ("#f3f4f6", "#6b7280", "fa-user-slash"),
+        "đang khám"           => ("#fce7f3", "#be185d", "fa-stethoscope"),
+        "đã khám"             => ("#ede9fe", "#6d28d9", "fa-clipboard-check"),
+        "đã thanh toán"       => ("#dcfce7", "#15803d", "fa-money-check-alt"),
         _                     => ("#f3f4f6", "#6b7280", "fa-question-circle")
     };
 }

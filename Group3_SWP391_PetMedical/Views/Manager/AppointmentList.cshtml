@@ -7,14 +7,15 @@
     string? search = ViewBag.Search;
     string statusFilter = ViewBag.StatusFilter ?? "All";
 
-    (string bg, string color, string icon) StatusStyle(string? s) => (s ?? "").Trim() switch {
-        "Đặt lịch thành công" => ("#d1fae5", "#047857", "fa-check-circle"),
-        "Đã Hủy"              => ("#fee2e2", "#dc2626", "fa-times-circle"),
-        "Đã đến"              => ("#e0e7ff", "#4338ca", "fa-map-marker-alt"),
-        "Không đến"           => ("#f3f4f6", "#6b7280", "fa-user-slash"),
-        "Đang khám"           => ("#fce7f3", "#be185d", "fa-stethoscope"),
-        "Đã khám"             => ("#ede9fe", "#6d28d9", "fa-clipboard-check"),
-        "Đã thanh toán"       => ("#dcfce7", "#15803d", "fa-money-check-alt"),
+    (string bg, string color, string icon) StatusStyle(string? s) => (s ?? "").Trim().ToLower() switch
+    {
+        "đặt lịch thành công" => ("#d1fae5", "#047857", "fa-check-circle"),
+        "đã thanh toán"       => ("#dbeafe", "#1d4ed8", "fa-file-invoice-dollar"),
+        "đã hủy"              => ("#fee2e2", "#dc2626", "fa-times-circle"),
+        "không đến"           => ("#f1f5f9", "#475569", "fa-user-slash"),
+        "đã đến"              => ("#fef9c3", "#a16207", "fa-walking"),
+        "đang khám"           => ("#fce7f3", "#be185d", "fa-stethoscope"),
+        "đã khám"             => ("#ede9fe", "#6d28d9", "fa-clipboard-check"),
         _                     => ("#f3f4f6", "#6b7280", "fa-question-circle")
     };
 }
@@ -69,7 +70,7 @@
                         <option value="Đang khám" selected="@(statusFilter == "Đang khám" ? "selected" : null)">Đang khám</option>
                         <option value="Đã khám" selected="@(statusFilter == "Đã khám" ? "selected" : null)">Đã khám</option>
                         <option value="Đã thanh toán" selected="@(statusFilter == "Đã thanh toán" ? "selected" : null)">Đã thanh toán</option>
-                        <option value="Đã Hủy" selected="@(statusFilter == "Đã Hủy" ? "selected" : null)">Đã Hủy</option>
+                        <option value="Đã hủy" selected="@(statusFilter == "Đã hủy" ? "selected" : null)">Đã hủy</option>
                         <option value="Không đến" selected="@(statusFilter == "Không đến" ? "selected" : null)">Không đến</option>
                     </select>
                 </div>

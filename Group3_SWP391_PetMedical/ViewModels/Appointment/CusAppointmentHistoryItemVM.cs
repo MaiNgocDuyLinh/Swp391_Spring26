@@ -4,6 +4,7 @@
     {
         public int AppointmentId { get; set; }
         public DateTime AppointmentDate { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         public string PetName { get; set; } = "";
         public string DoctorName { get; set; } = "";
