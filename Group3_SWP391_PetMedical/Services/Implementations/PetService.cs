@@ -24,7 +24,6 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
 
         public async Task<PagedResult<PetListItemVm>> GetMyPetsAsync(int ownerId, PagingQuery query)
         {
-            // Normalize/validate ở Service
             var normalizedQuery = NormalizePagingQuery(query);
 
             var paged = await _repo.GetPetsByOwnerAsync(ownerId, normalizedQuery);
@@ -43,17 +42,13 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                     Age = p.age,
                     Weight = p.weight,
                     PetImg = p.PetImg,
-
-                    // ADD: giới tính + ngày sinh + tuổi tự tăng (hiển thị năm-tháng-ngày)
                     PetGender = p.pet_gender,
                     PetBirthdate = p.pet_birthdate,
                     RealAgeText = BuildRealAgeText(p.pet_birthdate)
-
                 }).ToList()
             };
         }
 
-        //  CREATE 
         public async Task CreatePetAsync(int ownerId, CreatePetVm vm)
         {
             var pet = new Pet
@@ -64,10 +59,10 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                 breed = (vm.Breed ?? "").Trim(),
                 age = vm.Age,
                 weight = vm.Weight.HasValue ? (double)vm.Weight.Value : (double?)null,
-                PetImg = null
+                PetImg = null,
+                created_at = DateTime.Now
             };
 
-            //  lưu giới tính + ngày sinh (tuổi tự tăng xử lý khi hiển thị)
             pet.pet_gender = NormalizeGender(vm.PetGender);
             pet.pet_birthdate = vm.PetBirthdate?.Date;
 
@@ -78,7 +73,6 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                 pet.age = CalculateAgeYmd(pet.pet_birthdate.Value.Date, DateTime.Today).years;
             }
 
-            //  Validate trùng tên pet theo owner (ADD) 
             await EnsureUniquePetNameAsync(ownerId, pet.name, excludePetId: null);
 
             if (vm.PetImage != null && vm.PetImage.Length > 0)
@@ -103,7 +97,6 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             await _repo.AddAsync(pet);
         }
 
-        // edit -get
         public async Task<EditPetVm?> GetEditPetAsync(int ownerId, int petId)
         {
             var pet = await _repo.GetByIdAndOwnerAsync(petId, ownerId);
@@ -118,15 +111,12 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                 Age = pet.age,
                 Weight = pet.weight.HasValue ? (decimal)pet.weight.Value : (decimal?)null,
                 CurrentPetImg = pet.PetImg,
-
-                // ADD: giới tính + ngày sinh + tuổi tự tăng
                 PetGender = pet.pet_gender,
                 PetBirthdate = pet.pet_birthdate,
                 RealAgeText = BuildRealAgeText(pet.pet_birthdate)
             };
         }
 
-        //edit post
         public async Task<bool> UpdatePetAsync(int ownerId, EditPetVm vm)
         {
             var pet = await _repo.GetByIdAndOwnerAsync(vm.PetId, ownerId);
@@ -138,19 +128,16 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             pet.age = vm.Age;
             pet.weight = vm.Weight.HasValue ? (double)vm.Weight.Value : (double?)null;
 
-            //   update giới tính + ngày sinh
             pet.pet_gender = NormalizeGender(vm.PetGender);
             pet.pet_birthdate = vm.PetBirthdate?.Date;
 
             ValidateBirthdate(pet.pet_birthdate);
 
-            //  đồng bộ age theo ngày sinh (để không bị null/sai)
             if (pet.pet_birthdate.HasValue)
             {
                 pet.age = CalculateAgeYmd(pet.pet_birthdate.Value.Date, DateTime.Today).years;
             }
 
-            //Validate trùng tên pet theo owner (EDIT) - loại trừ chính nó
             await EnsureUniquePetNameAsync(ownerId, pet.name, excludePetId: vm.PetId);
 
             if (vm.NewPetImage != null && vm.NewPetImage.Length > 0)
@@ -178,11 +165,14 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             return true;
         }
 
-        //delete
         public async Task<bool> DeletePetAsync(int ownerId, int petId)
         {
             var pet = await _repo.GetByIdAndOwnerAsync(petId, ownerId);
             if (pet == null) return false;
+
+            var hasAppointments = await _repo.HasAppointmentsAsync(petId);
+            if (hasAppointments)
+                throw new Exception("thú cưng đang có lịch khám");
 
             DeleteOldPetImageIfAny(pet.PetImg);
 
@@ -190,11 +180,8 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             return true;
         }
 
-        // VALIDATE / NORMALIZE
-
         private static PagingQuery NormalizePagingQuery(PagingQuery query)
         {
-            // q: trim + gộp nhiều khoảng trắng thành 1 + rỗng => null
             var q = query.Q;
             if (string.IsNullOrWhiteSpace(q))
             {
@@ -206,13 +193,11 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                 if (q.Length == 0) q = null;
             }
 
-            // page/pageSize: default + clamp
             var page = query.Page <= 0 ? 1 : query.Page;
 
             var pageSize = query.PageSize <= 0 ? DefaultPageSize : query.PageSize;
             pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
 
-            // tạo object mới để không làm side-effect lên query gốc
             return new PagingQuery
             {
                 Q = q,
@@ -243,8 +228,6 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                 File.Delete(path);
         }
 
-        // validate  không được có 2 pet trùng tên (không phân biệt hoa/thường, trim, gộp khoảng trắng)
-
         private static string NormalizePetName(string? name)
         {
             if (string.IsNullOrWhiteSpace(name)) return "";
@@ -259,13 +242,12 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             if (string.IsNullOrWhiteSpace(normalized))
                 throw new Exception("Tên thú cưng không được để trống.");
 
-            // Duyệt theo trang để lấy toàn bộ pets của owner  
             var page = 1;
             while (true)
             {
                 var paged = await _repo.GetPetsByOwnerAsync(ownerId, new PagingQuery
                 {
-                    Q = null,                 // lấy tất cả để so sánh chính xác
+                    Q = null,
                     Page = page,
                     PageSize = MaxPageSize
                 });
@@ -284,11 +266,6 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             }
         }
 
-       
-        //   Gender + Real Age
-       
-
-        //  bắt buộc giới tính + chỉ cho phép giá trị hợp lệ
         private static string NormalizeGender(string? gender)
         {
             if (string.IsNullOrWhiteSpace(gender))
@@ -302,7 +279,6 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             return g;
         }
 
-        // bắt buộc ngày sinh (tức tuổi không được để trống) + không được lớn hơn hôm nay
         private static void ValidateBirthdate(DateTime? birthdate)
         {
             if (!birthdate.HasValue)
@@ -346,6 +322,5 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             var days = (today - cursor).Days;
             return (years, months, days);
         }
-
     }
 }
