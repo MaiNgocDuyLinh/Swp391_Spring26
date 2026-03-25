@@ -1,4 +1,4 @@
-﻿using Group3_SWP391_PetMedical.Models;
+using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Models.Common;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +28,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             IQueryable<Pet> pets = _context.Pets
                 .AsNoTracking()
-                .Where(p => p.owner_id == ownerId);
+                .Where(p => p.owner_id == ownerId && p.status == "Active");
 
             if (!string.IsNullOrWhiteSpace(q))
             {
@@ -79,6 +79,13 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         public async Task<bool> HasAppointmentsAsync(int petId)
         {
             return await _context.Appointments.AnyAsync(a => a.pet_id == petId);
+        }
+
+        public async Task<bool> HasActiveAppointmentsAsync(int petId)
+        {
+            var blockingStatuses = new[] { "Đặt lịch thành công", "Đã đến", "Đang khám", "Đã khám" };
+            return await _context.Appointments
+                .AnyAsync(a => a.pet_id == petId && blockingStatuses.Contains(a.status));
         }
     }
 }

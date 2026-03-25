@@ -1,4 +1,4 @@
-﻿using Group3_SWP391_PetMedical.Models;
+using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Models.Common;
 
 namespace Group3_SWP391_PetMedical.Repository.Interfaces
@@ -13,5 +13,6 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         Task DeleteAsync(Pet pet);
 
         Task<bool> HasAppointmentsAsync(int petId);
+        Task<bool> HasActiveAppointmentsAsync(int petId);
     }
 }

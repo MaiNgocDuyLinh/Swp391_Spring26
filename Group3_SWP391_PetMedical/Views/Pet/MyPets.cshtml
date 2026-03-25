@@ -1,4 +1,4 @@
-﻿@using Group3_SWP391_PetMedical.ViewModels.Pet
+@using Group3_SWP391_PetMedical.ViewModels.Pet
 @model MyPetsVm
 
 @{
@@ -405,7 +405,7 @@
                                               asp-route-id="@pet.PetId"
                                               method="post"
                                               style="margin:0;"
-                                              onsubmit="return confirm('Bạn chắc chắn muốn xóa thú cưng này không?');">
+                                              onsubmit="return confirm('Bạn chắc chắn muốn ẩn thú cưng này không? Thú cưng sẽ không hiển thị trong danh sách và không thể đặt lịch khám.');">
                                             @Html.AntiForgeryToken()
                                             <button type="submit" class="btn btn-delete">
                                                 <i class="fas fa-trash"></i> Xóa
@@ -413,13 +413,13 @@
                                         </form>
                                     </div>
 
-                            @if (hasDeleteError)
-                                    {
-                                        <div class="alert alert-danger mypets-inline-alert">
-                                            thú cưng đang có lịch khám
-                                        </div>
-                                    }
 
+                            @if (hasDeleteError)
+                            {
+                                <div class="alert alert-danger mypets-inline-alert">
+                                    @deleteError
+                                </div>
+                            }
                                 </div>
                             </div>
                         }

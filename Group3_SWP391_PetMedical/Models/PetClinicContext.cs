@@ -286,6 +286,10 @@ public partial class PetClinicContext : DbContext
                     .WithMany(u => u.Pets)
                     .HasForeignKey(p => p.owner_id)
                     .OnDelete(DeleteBehavior.ClientSetNull);
+
+                  entity.Property(p => p.status)
+                    .HasMaxLength(20)
+                    .HasDefaultValue("Active");
             });
 
             // User ↔ Role

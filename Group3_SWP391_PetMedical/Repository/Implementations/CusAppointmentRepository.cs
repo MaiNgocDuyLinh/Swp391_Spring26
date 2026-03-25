@@ -141,7 +141,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         {
             return await _context.Pets
                 .AsNoTracking()
-                .Where(p => p.owner_id == customerId)
+                .Where(p => p.owner_id == customerId && p.status == "Active")
                 .OrderBy(p => p.name)
                 .Select(p => new ValueTuple<int, string>(p.pet_id, p.name))
                 .ToListAsync();
@@ -244,10 +244,10 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         {
             var petOk = await _context.Pets
                 .AsNoTracking()
-                .AnyAsync(p => p.pet_id == cmd.PetId && p.owner_id == customerId);
+                .AnyAsync(p => p.pet_id == cmd.PetId && p.owner_id == customerId && p.status == "Active");
 
             if (!petOk)
-                throw new Exception("Thú cưng không hợp lệ (không thuộc tài khoản).");
+                throw new Exception("Thú cưng không hợp lệ (không thuộc tài khoản hoặc đã bị ẩn).");
 
             var serviceCount = await _context.Services
                 .AsNoTracking()
