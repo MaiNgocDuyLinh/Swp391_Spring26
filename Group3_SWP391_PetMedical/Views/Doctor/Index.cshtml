@@ -46,6 +46,11 @@
         color: #6c757d;
     }
 
+    .bg-cancelled {
+        background-color: #fee2e2;
+        color: #dc2626;
+    }
+
     /* CSS ĐỒNG BỘ THEO KÍCH THƯỚC NÚT CẬP NHẬT */
     .btn-pet-pink {
         background-color: #ff4d4d;
@@ -100,7 +105,7 @@
                     <table class="table table-hover mb-0 align-middle">
                         <thead style="background-color: #fffafa;">
                             <tr class="text-muted">
-                                <th class="pl-4 py-4 border-0">GIỜ KHÁM</th>
+                                <th class="pl-4 py-4 border-0">CA KHÁM</th>
                                 <th class="border-0">THÚ CƯNG</th>
                                 <th class="border-0">CHỦ NUÔI</th>
                                 <th class="border-0">TRẠNG THÁI</th>
@@ -111,7 +116,7 @@
                             @foreach (var item in Model)
                             {
                                 <tr>
-                                    <td class="pl-4 font-weight-bold">@item.appointment_date.ToString("HH:mm")</td>
+                                    <td class="pl-4 font-weight-bold">@(item.appointment_date.Hour < 12 ? "Ca sáng" : "Ca chiều")</td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="rounded-circle mr-3 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; background: #fff0f0;">
@@ -123,8 +128,27 @@
                                     <td>@item.customer?.full_name</td>
                                     <td>
                                         @{
-                                            var statusClass = item.status == "Đã đến" ? "bg-arrived" : item.status == "Đang khám" ? "bg-progress" : "bg-completed";
-                                            var statusText = item.status == "Đã đến" ? "Đã đến" : item.status == "Đang khám" ? "Đang khám" : "Hoàn thành";
+                                            var s = (item.status ?? "").Trim().ToLower();
+                                            var statusLabel = item.status ?? "-";
+                                            var statusClass = s switch {
+                                                "đã đến" => "bg-arrived",
+                                                "đang khám" => "bg-progress",
+                                                "đã hủy" => "bg-cancelled",
+                                                "đã khám" => "bg-completed",
+                                                "đã thanh toán" => "bg-completed",
+                                                _ => "bg-pending"
+                                            };
+                                            
+                                            // Chốt lại nhãn hiển thị cho đẹp
+                                            var statusText = s switch {
+                                                "đã đến" => "Đã đến",
+                                                "đang khám" => "Đang khám",
+                                                "đã hủy" => "Đã hủy",
+                                                "đã khám" => "Đã khám",
+                                                "đã thanh toán" => "Hoàn thành",
+                                                "đặt lịch thành công" => "Lịch hẹn mới",
+                                                _ => statusLabel
+                                            };
                                         }
                                         <span class="status-badge @statusClass">@statusText</span>
                                     </td>

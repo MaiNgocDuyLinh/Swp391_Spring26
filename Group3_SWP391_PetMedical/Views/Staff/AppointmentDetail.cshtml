@@ -180,32 +180,6 @@
             <!-- Col 2: Actions -->
             <div class="col-md-6">
 
-                @* Assign Doctor — only if no doctor yet and not cancelled/paid/examining/examined *@
-                @if (Model.status?.ToLower() != "đã hủy" && Model.status?.ToLower() != "đã thanh toán" && Model.status?.ToLower() != "không đến" && Model.status?.ToLower() != "đang khám" && Model.status?.ToLower() != "đã khám")
-                {
-                    <div class="pc-card">
-                        <div class="pc-card-head"><i class="fas fa-user-md"></i>Chỉ định Bác sĩ</div>
-                        <div class="pc-card-body" style="overflow:visible;">
-                            @if (doctors.Any())
-                            {
-                                <form asp-action="AssignDoctor" asp-controller="Staff" method="post" class="d-flex align-items-center gap-2 flex-wrap">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="appointmentId" value="@Model.appointment_id" />
-                                    <select name="doctorId" class="form-control pc-select" style="max-width:220px;" required>
-                                        <option value="">-- Chọn bác sĩ --</option>
-                                        @foreach (var doc in doctors)
-                                        { <option value="@doc.user_id" selected="@(Model.doctor_id == doc.user_id)">@doc.full_name</option> }
-                                    </select>
-                                    <button type="submit" class="pc-btn pc-btn--primary">
-                                        <i class="fas fa-user-check"></i> Chỉ định
-                                    </button>
-                                </form>
-                            }
-                            else { <p class="text-muted mb-0">Chưa có bác sĩ nào.</p> }
-                        </div>
-                    </div>
-                }
-
                 @* Update Status — check-in, payment *@
                 @if (Model.status == "Đặt lịch thành công")
                 {
@@ -231,6 +205,32 @@
                                     <i class="fas fa-save"></i> Cập nhật
                                 </button>
                             </form>
+                        </div>
+                    </div>
+                }
+
+                @* Assign Doctor — only if no doctor yet and not cancelled/paid/examining/examined *@
+                @if (Model.status?.ToLower() != "đã hủy" && Model.status?.ToLower() != "đã thanh toán" && Model.status?.ToLower() != "không đến" && Model.status?.ToLower() != "đang khám" && Model.status?.ToLower() != "đã khám")
+                {
+                    <div class="pc-card">
+                        <div class="pc-card-head"><i class="fas fa-user-md"></i>Chỉ định Bác sĩ</div>
+                        <div class="pc-card-body" style="overflow:visible;">
+                            @if (doctors.Any())
+                            {
+                                <form asp-action="AssignDoctor" asp-controller="Staff" method="post" class="d-flex align-items-center gap-2 flex-wrap">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="appointmentId" value="@Model.appointment_id" />
+                                    <select name="doctorId" class="form-control pc-select" style="max-width:220px;" required>
+                                        <option value="">-- Chọn bác sĩ --</option>
+                                        @foreach (var doc in doctors)
+                                        { <option value="@doc.user_id" selected="@(Model.doctor_id == doc.user_id)">@doc.full_name</option> }
+                                    </select>
+                                    <button type="submit" class="pc-btn pc-btn--primary">
+                                        <i class="fas fa-user-check"></i> Chỉ định
+                                    </button>
+                                </form>
+                            }
+                            else { <p class="text-muted mb-0">Chưa có bác sĩ nào.</p> }
                         </div>
                     </div>
                 }
