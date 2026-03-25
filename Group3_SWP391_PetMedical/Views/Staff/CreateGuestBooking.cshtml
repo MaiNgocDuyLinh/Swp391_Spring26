@@ -1,0 +1,491 @@
+@model Group3_SWP391_PetMedical.ViewModels.Staff.StaffCreateGuestBookingVM
+@using Group3_SWP391_PetMedical.Services.Interfaces
+@inject IServiceService ServiceService
+
+@{
+    ViewData["Title"] = "Đặt lịch cho khách";
+
+    // Re-fetch all services to get discount info (same as customer booking)
+    var allServices = (await ServiceService.GetAllAsync()).Where(s => s.status == true).ToList();
+
+    Func<Group3_SWP391_PetMedical.Models.Service, decimal> getEffectivePrice = (svc) =>
+    {
+        var activeDiscount = svc.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= DateTime.Now && sd.end_date >= DateTime.Now);
+        if (activeDiscount != null) return svc.base_price * (1 - (decimal)activeDiscount.discount_percent / 100);
+        return svc.base_price;
+    };
+
+    var priceMap = allServices.ToDictionary(x => x.service_id, x => getEffectivePrice(x));
+    var originalPriceMap = allServices.ToDictionary(x => x.service_id, x => x.base_price);
+    var discountMap = allServices.ToDictionary(x => x.service_id, x => x.ServiceDiscounts?.FirstOrDefault(sd => sd.is_active == true && sd.start_date <= DateTime.Now && sd.end_date >= DateTime.Now));
+}
+
+<style>
+    .pc-hero {
+        position: relative;
+        border-radius: 24px;
+        background: linear-gradient(90deg, rgba(255, 216, 216, 0.75) 0%, rgba(255,255,255,0.92) 55%, rgba(255,255,255,0.95) 100%);
+        box-shadow: 0 12px 30px rgba(0,0,0,.06);
+        padding: 32px;
+    }
+
+    .pc-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(0,0,0,.04) 1px, transparent 1px);
+        background-size: 18px 18px;
+        opacity: .35;
+        pointer-events: none;
+    }
+
+    .pc-hero-inner {
+        position: relative;
+        z-index: 1;
+    }
+
+    .pc-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.85);
+        border: 1px solid rgba(0,0,0,.06);
+        font-weight: 600;
+    }
+
+    .pc-title {
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        margin: 14px 0 8px;
+        color: #111;
+    }
+
+    .pc-sub {
+        color: rgba(0,0,0,.62);
+        max-width: 520px;
+        margin-bottom: 18px;
+        line-height: 1.6;
+    }
+
+    .pc-card {
+        border-radius: 22px;
+        border: 1px solid rgba(0,0,0,.06);
+        box-shadow: 0 12px 30px rgba(0,0,0,.07);
+        background: #fff;
+        margin-bottom: 24px;
+    }
+
+    .pc-card-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid rgba(0,0,0,.06);
+        background: rgba(255, 246, 246, .7);
+        border-radius: 22px 22px 0 0;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pc-card-body {
+        padding: 24px;
+    }
+
+    .pc-field label {
+        font-weight: 700;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .pc-equal-control {
+        width: 100% !important;
+        height: 50px !important;
+        border-radius: 18px !important;
+        border: 1px solid rgba(0,0,0,.12) !important;
+        padding: 0 16px !important;
+        font-size: 15px !important;
+        background-color: #fff !important;
+        transition: all 0.2s ease;
+    }
+
+    .pc-textarea {
+        border-radius: 18px !important;
+        border: 1px solid rgba(0,0,0,.12) !important;
+        padding: 16px !important;
+        font-size: 15px !important;
+        background-color: #fff !important;
+    }
+
+    .pc-equal-control:focus, .pc-textarea:focus {
+        outline: none !important;
+        border-color: #ff3b3b !important;
+        box-shadow: 0 0 0 4px rgba(255, 59, 59, 0.1) !important;
+    }
+
+    .pc-btn-primary {
+        border: 0;
+        border-radius: 999px;
+        padding: 16px 32px;
+        font-weight: 800;
+        background: #ff2e2e;
+        color: #fff;
+        box-shadow: 0 10px 18px rgba(255,46,46,.20);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pc-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 24px rgba(255,46,46,.30);
+        color: #fff;
+    }
+
+    .pc-services-box {
+        border-radius: 18px;
+        border: 1px solid rgba(0,0,0,.08);
+        padding: 14px;
+        max-height: 280px;
+        overflow: auto;
+        background: rgba(255, 246, 246, .35);
+    }
+
+    .pc-service-item2 {
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: #fff;
+        border: 1px solid rgba(0,0,0,.06);
+        margin-bottom: 10px;
+        transition: all 0.2s;
+    }
+
+    .pc-service-item2:hover {
+        border-color: #ff3b3b;
+        background: rgba(255, 246, 246, 0.5);
+    }
+
+    .pc-service-item2:last-child {
+        margin-bottom: 0;
+    }
+
+    .pc-svc-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .form-check-input:checked {
+        background-color: #ff2e2e;
+        border-color: #ff2e2e;
+    }
+
+    .pc-total-box {
+        margin-top: 20px;
+        border-top: 1px dashed rgba(0,0,0,.15);
+        padding: 20px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 800;
+        font-size: 1.25rem;
+        color: #111;
+    }
+
+    .pc-visual {
+        border-radius: 24px;
+        background: radial-gradient(circle at 20% 30%, rgba(255, 46, 46, .08), transparent 55%), linear-gradient(135deg, #fff, #f8faff);
+        border: 1px solid rgba(0,0,0,.06);
+        padding: 24px;
+        position: sticky;
+        top: 100px;
+    }
+
+    .pc-step {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        background: #fff;
+        border: 1px solid rgba(0,0,0,.05);
+        border-radius: 18px;
+        padding: 14px;
+        margin-bottom: 12px;
+    }
+
+    .pc-step-num {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        background: rgba(255,46,46,.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        color: #ff2e2e;
+        flex: 0 0 auto;
+    }
+</style>
+
+<div class="container my-5">
+    <div class="pc-hero" style="margin-top: 120px;">
+        <div class="pc-hero-inner">
+            <div class="row g-4 d-flex align-items-stretch">
+                <!-- Left Column Form -->
+                <div class="col-lg-12">
+                    <div class="pc-badge mb-3">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Đặt lịch cho khách vãng lai</span>
+                    </div>
+                    <div class="pc-title">Lấy thông tin khám</div>
+                    <div class="pc-sub">Nhập thông tin khách hàng và thú cưng để hệ thống tự động sắp xếp lịch khám nhanh nhất.</div>
+
+                    <form asp-action="CreateGuestBooking" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Customer Info Card -->
+                        <div class="pc-card">
+                            <div class="pc-card-header">
+                                <i class="fas fa-user-circle"></i> Thông tin khách hàng
+                            </div>
+                            <div class="pc-card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6 pc-field">
+                                        <label asp-for="CustomerPhone">Số điện thoại *</label>
+                                        <input asp-for="CustomerPhone" class="pc-equal-control" placeholder="09xx xxx xxx" />
+                                        <span asp-validation-for="CustomerPhone" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 pc-field">
+                                        <label asp-for="CustomerName">Họ và tên *</label>
+                                        <input asp-for="CustomerName" class="pc-equal-control" placeholder="Nguyễn Văn A" />
+                                        <span asp-validation-for="CustomerName" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-12 pc-field">
+                                        <label asp-for="CustomerEmail">Email (Không bắt buộc)</label>
+                                        <input asp-for="CustomerEmail" type="email" class="pc-equal-control" placeholder="guest@example.com" />
+                                        <span asp-validation-for="CustomerEmail" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pet Info Card -->
+                        <div class="pc-card">
+                            <div class="pc-card-header">
+                                <i class="fas fa-paw"></i> Thông tin thú cưng
+                            </div>
+                            <div class="pc-card-body">
+                                <div class="row g-3">
+                                    <!-- Row 1: Name & Species -->
+                                    <div class="col-md-6 pc-field">
+                                        <label asp-for="PetName">Tên thú cưng *</label>
+                                        <input asp-for="PetName" class="pc-equal-control" placeholder="Nhập tên bé..." />
+                                        <span asp-validation-for="PetName" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 pc-field">
+                                        <label asp-for="PetSpecies">Loài *</label>
+                                        <input asp-for="PetSpecies" class="pc-equal-control" placeholder="Ví dụ: Chó, Mèo, Chim..." />
+                                        <span asp-validation-for="PetSpecies" class="text-danger"></span>
+                                    </div>
+
+                                    <!-- Row 2: Breed & Gender -->
+                                    <div class="col-md-6 pc-field">
+                                        <label asp-for="PetBreed">Giống</label>
+                                        <input asp-for="PetBreed" class="pc-equal-control" placeholder="Ví dụ: Poodle, Golden..." />
+                                    </div>
+                                    <div class="col-md-6 pc-field">
+                                        <label asp-for="PetGender">Giới tính</label>
+                                        <select asp-for="PetGender" class="pc-equal-control">
+                                            <option value="Không rõ">Không rõ</option>
+                                            <option value="Đực">Đực</option>
+                                            <option value="Cái">Cái</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Row 3: Weight & Birthdate -->
+                                    <div class="col-md-6 pc-field">
+                                        <label asp-for="PetWeight">Cân nặng (kg)</label>
+                                        <input asp-for="PetWeight" type="number" step="0.1" class="pc-equal-control" placeholder="Nhập số kg..." />
+                                    </div>
+                                    <div class="col-md-6 pc-field">
+                                        <label asp-for="PetBirthdate">Ngày sinh</label>
+                                        <input asp-for="PetBirthdate" type="date" class="pc-equal-control" 
+                                               max="@DateTime.Now.ToString("yyyy-MM-dd")" id="PetBirthdate" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Appointment Card -->
+                        <div class="pc-card">
+                            <div class="pc-card-header">
+                                <i class="fas fa-calendar-alt"></i> Chi tiết lịch hẹn
+                            </div>
+                            <div class="pc-card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6 pc-field">
+                                        <label asp-for="AppointmentDate">Ngày khám *</label>
+                                        <input asp-for="AppointmentDate" type="date" class="pc-equal-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                        <span asp-validation-for="AppointmentDate" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 pc-field">
+                                        <label>Ca khám *</label>
+                                        <select name="Shift" class="pc-equal-control">
+                                            <option value="Sáng" selected="@(Model.Shift == "Sáng")">Ca sáng</option>
+                                            <option value="Chiều" selected="@(Model.Shift == "Chiều")">Ca chiều</option>
+                                        </select>
+                                        <span asp-validation-for="Shift" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 pc-field">
+                                        <label asp-for="DoctorId">Bác sĩ khám *</label>
+                                        <select asp-for="DoctorId" asp-items="Model.DoctorOptions" class="pc-equal-control" required>
+                                            <option value="">-- Chọn bác sĩ --</option>
+                                        </select>
+                                        <span asp-validation-for="DoctorId" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 pc-field">
+                                        <label>Dịch vụ thực hiện *</label>
+                                        <div class="pc-services-box">
+                                            @foreach (var svc in allServices)
+                                            {
+                                                var sid = svc.service_id;
+                                                var isChecked = Model.ServiceIds != null && Model.ServiceIds.Contains(sid);
+                                                var priceAfterDiscount = priceMap.ContainsKey(sid) ? priceMap[sid] : 0m;
+                                                var originalPrice = originalPriceMap.ContainsKey(sid) ? originalPriceMap[sid] : 0m;
+                                                var activeDisc = discountMap.ContainsKey(sid) ? discountMap[sid] : null;
+
+                                                <div class="pc-service-item2">
+                                                    <div class="form-check m-0 pc-svc-row">
+                                                        <div>
+                                                            <input class="form-check-input svc-cb" 
+                                                                   type="checkbox" 
+                                                                   name="@Html.NameFor(m => m.ServiceIds)" 
+                                                                   id="svc_@sid" 
+                                                                   value="@sid"
+                                                                   data-price="@priceAfterDiscount"
+                                                                   @(isChecked ? "checked" : "") />
+                                                            <label class="form-check-label ms-2" for="svc_@sid">
+                                                                @svc.service_name
+                                                                @if (activeDisc != null)
+                                                                {
+                                                                    <span style="background:#dc2626; color:#fff; padding:1px 6px; border-radius:999px; font-size:0.7rem; font-weight:800; margin-left:4px;">-@activeDisc.discount_percent%</span>
+                                                                }
+                                                            </label>
+                                                        </div>
+                                                        <div style="font-weight: 800; font-size: 0.9rem; color: #111;">
+                                                            @if (activeDisc != null)
+                                                            {
+                                                                <small style="text-decoration:line-through; color:rgba(0,0,0,.40); margin-right:4px;">@originalPrice.ToString("N0")</small>
+                                                                <span style="color:#dc2626; font-weight:900;">@priceAfterDiscount.ToString("N0") VNĐ</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                @originalPrice.ToString("N0") <text>VNĐ</text>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <span asp-validation-for="ServiceIds" class="text-danger"></span>
+                                        <div class="pc-total-box" id="totalBox">
+                                            <div style="color:rgba(0,0,0,.5); font-weight:700; font-size:15px;">Tổng cộng</div>
+                                            <div id="totalMoney" style="color:#ff2e2e; font-size:1.4rem;">0 VNĐ</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 pc-field">
+                                        <label asp-for="Notes">Ghi chú triệu chứng</label>
+                                        <textarea asp-for="Notes" class="pc-textarea w-100" rows="3" placeholder="Ví dụ: Bé mệt, bỏ ăn..."></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <button type="submit" class="pc-btn-primary w-100 justify-content-center">
+                                        <i class="fas fa-check-circle"></i> XÁC NHẬN ĐẶT LỊCH
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Hiệu ứng focus input
+            $('.pc-equal-control, .pc-textarea').on('focus', function() {
+                $(this).closest('.pc-field').find('label').css('color', '#ff2e2e');
+            }).on('blur', function() {
+                $(this).closest('.pc-field').find('label').css('color', '#111');
+            });
+
+            // Total calculation same as customer booking
+            function updateTotal() {
+                let total = 0;
+                document.querySelectorAll(".svc-cb:checked").forEach(cb => {
+                    const price = parseFloat(cb.getAttribute("data-price") || "0");
+                    if (!isNaN(price)) total += price;
+                });
+                const fmt = new Intl.NumberFormat('vi-VN');
+                document.getElementById("totalMoney").textContent = fmt.format(total) + " VNĐ";
+            }
+
+            document.querySelectorAll(".svc-cb").forEach(cb => {
+                cb.addEventListener("change", updateTotal);
+            });
+
+            // Auto-fill customer data by phone
+            $('#CustomerPhone').on('input', function() {
+                var phone = $(this).val();
+                if (phone.length >= 10) {
+                    $.get('/Staff/GetCustomerByPhone', { phone: phone }, function(data) {
+                        if (data) {
+                            if (!$('#CustomerName').val()) $('#CustomerName').val(data.fullName);
+                            if (!$('#CustomerEmail').val()) $('#CustomerEmail').val(data.email);
+                            // Highlight the auto-filled fields briefly
+                            $('#CustomerName, #CustomerEmail').css('background-color', '#fff9f9');
+                            setTimeout(function() {
+                                $('#CustomerName, #CustomerEmail').css('background-color', '#fff');
+                            }, 1000);
+                        }
+                    });
+                }
+            });
+
+            // Form submit validation
+            $('#bookingForm').on('submit', function(e) {
+                // 1. Check services
+                if ($('.svc-cb:checked').length === 0) {
+                    alert('Vui lòng chọn ít nhất 1 dịch vụ cho bé.');
+                    e.preventDefault();
+                    return false;
+                }
+
+                // 2. Check birthdate (Frontend validation)
+                var birthdateStr = $('#PetBirthdate').val();
+                if (birthdateStr) {
+                    var selectedDate = new Date(birthdateStr);
+                    var today = new Date();
+                    today.setHours(0,0,0,0);
+                    if (selectedDate > today) {
+                        alert('Ngày sinh thú cưng thủ công không được ở tương lai.');
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+
+            updateTotal();
+        });
+    </script>
+}

@@ -86,7 +86,7 @@
                     <thead>
                         <tr>
                             <th style="width:60px;">#</th>
-                            <th style="width:100px;">Giờ khám</th>
+                            <th style="width:120px;">Ca khám</th>
                             <th>Khách hàng</th>
                             <th>Thú cưng</th>
                             <th>Bác sĩ</th>
@@ -102,7 +102,7 @@
                         <tbody class="pc-record">
                             <tr>
                                 <td>@idx</td>
-                                <td><strong>@a.appointment_date.ToString("HH:mm")</strong></td>
+                                <td><strong>@(a.appointment_date.Hour < 12 ? "Ca sáng" : "Ca chiều")</strong></td>
                                 <td>@(a.customer?.full_name ?? "N/A")</td>
                                 <td>
                                     <strong>@(a.pet?.name ?? "N/A")</strong>
