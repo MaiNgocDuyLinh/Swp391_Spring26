@@ -157,8 +157,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .ToListAsync();
         }
 
-        public Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime day)
-            => GetDoctorShiftsAsync(doctorId, day.Date, day.Date);
+     
 
 
         public async Task<List<DoctorAppointmentEventVM>>
@@ -199,9 +198,9 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             return list;
         }
-        public async Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime from, DateTime to)
+        public async Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime day)
         {
-            var targetDate = DateOnly.FromDateTime(from.Date);
+            var targetDate = DateOnly.FromDateTime(day.Date);
 
             var schedules = await _context.Schedules
                 .AsNoTracking()

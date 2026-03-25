@@ -27,9 +27,6 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         // shifts: overload 1 ngày
         Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime day);
 
-        // shifts: overload from-to
-        Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime from, DateTime to);
-
         Task<List<DoctorAppointmentEventVM>> GetDoctorAppointmentsAsync(int doctorId, DateTime from, DateTime to);
         Task<bool> IsDoctorWorkingAtAsync(int doctorId, DateTime appointmentDateTime);
 
