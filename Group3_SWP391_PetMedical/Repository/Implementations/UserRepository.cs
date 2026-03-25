@@ -181,5 +181,12 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                         .ThenInclude(a => a.Invoice)
                 .FirstOrDefaultAsync(u => u.user_id == customerId);
         }
+
+        public async Task<User?> GetByPhoneAsync(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone)) return null;
+            var p = phone.Trim();
+            return await _context.Users.FirstOrDefaultAsync(u => u.phone == p);
+        }
     }
 }

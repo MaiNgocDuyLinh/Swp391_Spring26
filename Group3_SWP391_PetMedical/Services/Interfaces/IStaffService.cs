@@ -25,5 +25,9 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         // ========== Invoice ==========
         Task<Invoice?> GetInvoiceByAppointmentIdAsync(int appointmentId);
         Task<bool> CreateInvoiceAsync(int appointmentId);
+
+        // ========== Guest Booking ==========
+        Task<int> CreateGuestBookingAsync(Group3_SWP391_PetMedical.ViewModels.Staff.StaffCreateGuestBookingVM model);
+        Task<User?> GetCustomerByPhoneAsync(string phone);
     }
 }
