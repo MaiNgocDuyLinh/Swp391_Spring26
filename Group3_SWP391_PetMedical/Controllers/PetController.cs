@@ -30,7 +30,7 @@ public class PetController : Controller
             Query = query,
             Result = result
         };
-
+        
         return View(vm);
     }
 

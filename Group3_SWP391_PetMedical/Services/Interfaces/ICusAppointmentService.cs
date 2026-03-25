@@ -26,7 +26,7 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
 
         // shifts: overload 1 ngày
         Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime day);
-
+        // giới hạn ca làm bác sĩ
         Task<List<DoctorAppointmentEventVM>> GetDoctorAppointmentsAsync(int doctorId, DateTime from, DateTime to);
         Task<bool> IsDoctorWorkingAtAsync(int doctorId, DateTime appointmentDateTime);
 
@@ -41,6 +41,6 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         Task<bool> CancelCusAppointmentAsync(int customerId, int appointmentId, string reason);
 
         //xem benh an 
-        Task<CusMedicalRecordVM?> GetCusMedicalRecordAsync(int customerId, int appointmentId);
+        Task<CusMedicalRecordVM?> GetCusMedicalRecordAsync(int customerId, int appointmentId); 
     }
 }

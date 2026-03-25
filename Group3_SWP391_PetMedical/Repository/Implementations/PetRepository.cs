@@ -46,6 +46,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             var items = await pets
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
+                //.Include(e => e.Appointments).ThenInclude(a => a.Invoice)
                 .ToListAsync();
 
             return new PagedResult<Pet>

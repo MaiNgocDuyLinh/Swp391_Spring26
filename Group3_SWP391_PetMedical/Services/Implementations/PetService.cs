@@ -28,6 +28,8 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
 
             var paged = await _repo.GetPetsByOwnerAsync(ownerId, normalizedQuery);
 
+            //GetInvoiceByAppointmentIdAsync
+           
             return new PagedResult<PetListItemVm>
             {
                 Page = paged.Page,
@@ -44,7 +46,11 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                     PetImg = p.PetImg,
                     PetGender = p.pet_gender,
                     PetBirthdate = p.pet_birthdate,
-                    RealAgeText = BuildRealAgeText(p.pet_birthdate)
+                    RealAgeText = BuildRealAgeText(p.pet_birthdate),
+                    //totalAmount = p.Appointments
+                    //.Where(a => a.Invoice != null && a.Invoice.payment_status == "Paid")
+                    //.Sum(a => (double?)(a.Invoice?.total_amount)) ?? 0
+
                 }).ToList()
             };
         }
