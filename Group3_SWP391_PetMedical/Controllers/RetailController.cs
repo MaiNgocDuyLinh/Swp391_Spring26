@@ -40,7 +40,7 @@ namespace Group3_SWP391_PetMedical.Controllers
 
         [Authorize(Roles = "Customer")]
         [HttpGet]
-        public async Task<IActionResult> RetailOrderedViewList()
+        public async Task<IActionResult> RetailOrderedViewList(string? status = "PAID")
         {
             var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("user_id");
             if (!int.TryParse(userIdRaw, out int userId))
@@ -48,12 +48,10 @@ namespace Group3_SWP391_PetMedical.Controllers
                 return Forbid();
             }
 
-            var orders = await _retailOrderService.GetOrdersByUserIdAsync(userId);
+            var orders = await _retailOrderService.GetOrdersByUserIdAsync(userId, status);
             
-            // Lọc ra những đơn hàng có status là 'PAID'
-            var paidOrders = orders.Where(o => (o.status ?? "").ToUpper() == "PAID").ToList();
-            
-            return View(paidOrders);
+            ViewBag.CurrentStatus = status;
+            return View(orders);
         }
 
         [Authorize(Roles = "Staff,Manager")]

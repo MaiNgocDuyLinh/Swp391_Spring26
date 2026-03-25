@@ -176,13 +176,14 @@ namespace Group3_SWP391_PetMedical.Controllers
                 // 4. Nếu là thanh toán Online thì gọi PayOS, ngược lại thì bỏ qua
                 if (form.PaymentMethod == "ONLINE")
                 {
+                    var baseUrl = $"{Request.Scheme}://{Request.Host}";
                     var request = new CreatePaymentLinkRequest
                     {
                         OrderCode = order.id,
                         Amount = (int)total,
                         Description = $"PET{order.id}",
-                        CancelUrl = $"{_baseUrl}/api/payment/cancel?orderId={order.id}",
-                        ReturnUrl = $"{_baseUrl}/api/payment/success?orderId={order.id}"
+                        CancelUrl = $"{baseUrl}/api/payment/cancel?orderId={order.id}",
+                        ReturnUrl = $"{baseUrl}/api/payment/success?orderId={order.id}"
                     };
 
                     var result = await _payOSClient.PaymentRequests.CreateAsync(request);

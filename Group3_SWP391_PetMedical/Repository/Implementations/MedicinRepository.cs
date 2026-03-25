@@ -14,7 +14,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             _context = context;
         }
 
-        public async Task<PagedResult<Medication>> GetPagedAsync(string? search, int page, int pageSize)
+        public async Task<PagedResult<Medication>> GetPagedAsync(string? search, int page, int pageSize, string? status = null)
         {
             var query = _context.Medications.AsNoTracking().AsQueryable();
 
@@ -23,6 +23,12 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 var keyword = search.Trim().ToLower();
                 query = query.Where(m =>
                     m.name.ToLower().Contains(keyword));
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                var statusLower = status.Trim().ToLower();
+                query = query.Where(m => m.status.ToLower() == statusLower);
             }
 
             var totalItems = await query.CountAsync();
@@ -75,6 +81,12 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<Medication?> GetByNameAsync(string name)
+        {
+            return await _context.Medications
+                .FirstOrDefaultAsync(m => m.name.ToLower() == name.ToLower().Trim());
         }
     }
 }

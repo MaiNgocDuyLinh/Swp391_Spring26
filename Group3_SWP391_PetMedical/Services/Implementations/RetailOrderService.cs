@@ -15,9 +15,9 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             _retailOrderRepo = retailOrderRepo;
         }
 
-        public async Task<IEnumerable<RetailOrder>> GetOrdersByUserIdAsync(int userId)
+        public async Task<IEnumerable<RetailOrder>> GetOrdersByUserIdAsync(int userId, string? status = null)
         {
-            return await _retailOrderRepo.GetOrdersByUserIdAsync(userId);
+            return await _retailOrderRepo.GetOrdersByUserIdAsync(userId, status);
         }
 
         public async Task<IEnumerable<RetailOrder>> GetAllOrdersAsync(DateTime? date, string? search, string? status, string? statusOrder)
@@ -43,8 +43,7 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
 
             if (order.status_order != "Đã tiếp nhận") return false;
 
-            // Update status
-            await _retailOrderRepo.UpdateStatusOrderAsync(orderId, "Hủy/Hoàn trả");
+            // CancelAndReturnStockAsync will handle both status change and stock return
 
             
             return await _retailOrderRepo.CancelAndReturnStockAsync(orderId);

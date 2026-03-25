@@ -6,7 +6,7 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
 {
     public interface IRetailOrderRepository
     {
-        Task<IEnumerable<RetailOrder>> GetOrdersByUserIdAsync(int userId);
+        Task<IEnumerable<RetailOrder>> GetOrdersByUserIdAsync(int userId, string? status = null);
         Task<IEnumerable<RetailOrder>> GetAllOrdersAsync(DateTime? date, string? search, string? status, string? statusOrder);
         Task<RetailOrder?> GetOrderByIdAsync(int id);
         Task UpdateStatusOrderAsync(int orderId, string statusOrder);

@@ -104,7 +104,8 @@ namespace Group3_SWP391_PetMedical.Controllers
                 await _db.SaveChangesAsync();
             }
 
-            return Redirect($"{_baseUrl}/Home/Index?payment=success");
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            return Redirect($"{baseUrl}/Home/Index?payment=success");
         }
 
         [HttpGet("cancel")]
@@ -118,7 +119,8 @@ namespace Group3_SWP391_PetMedical.Controllers
                 await _db.SaveChangesAsync();
             }
 
-            return Redirect($"{_baseUrl}/Home/Index?payment=cancel");
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            return Redirect($"{baseUrl}/Home/Index?payment=cancel");
         }
 
         // ==============================================================================
