@@ -180,7 +180,12 @@ namespace Group3_SWP391_PetMedical.Controllers
                 TempData["ErrorMessage"] = "Phần trăm giảm giá phải từ 1 đến 100.";
                 return RedirectToAction("ManageDiscount", new { serviceId });
             }
-            if (endDate <= startDate)
+            if (startDate < DateTime.Now.AddMinutes(-1))
+    {
+        TempData["ErrorMessage"] = "Thời gian bắt đầu không được ở quá khứ.";
+        return RedirectToAction("ManageDiscount", new { serviceId });
+    }
+    if (endDate <= startDate)
             {
                 TempData["ErrorMessage"] = "Ngày kết thúc phải sau ngày bắt đầu.";
                 return RedirectToAction("ManageDiscount", new { serviceId });

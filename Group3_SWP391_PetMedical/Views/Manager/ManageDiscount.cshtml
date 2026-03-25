@@ -95,8 +95,8 @@
                             </div>
                         </div>
                         <div class="pc-info-item">
-                            <div class="pc-info-label">Thời hạn</div>
-                            <div class="pc-info-value">@activeDiscount.start_date.ToString("dd/MM/yyyy") - @activeDiscount.end_date.ToString("dd/MM/yyyy")</div>
+                                <div class="pc-info-label">Thời hạn</div>
+                            <div class="pc-info-value">@activeDiscount.start_date.ToString("dd/MM/yyyy HH:mm") - @activeDiscount.end_date.ToString("dd/MM/yyyy HH:mm")</div>
                         </div>
                         <form asp-controller="Manager" asp-action="RemoveDiscount" method="post" class="mt-3">
                             @Html.AntiForgeryToken()
@@ -132,16 +132,18 @@
                                        oninput="updatePreview()" />
                             </div>
                             <div class="col-md-6">
-                                <div class="pc-label">Ngày bắt đầu</div>
-                                <input type="date" class="form-control pc-input" name="startDate"
+                                    <div class="pc-label">Ngày bắt đầu</div>
+                                <input type="datetime-local" class="form-control pc-input" name="startDate"
                                        id="startDate" required
-                                       value="@(hasActive ? activeDiscount!.start_date.ToString("yyyy-MM-dd") : DateTime.Today.ToString("yyyy-MM-dd"))" />
+                                       min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                                       value="@(hasActive ? activeDiscount!.start_date.ToString("yyyy-MM-ddTHH:mm") : DateTime.Now.ToString("yyyy-MM-ddTHH:mm"))" />
                             </div>
                             <div class="col-md-6">
                                 <div class="pc-label">Ngày kết thúc</div>
-                                <input type="date" class="form-control pc-input" name="endDate"
+                                <input type="datetime-local" class="form-control pc-input" name="endDate"
                                        id="endDate" required
-                                       value="@(hasActive ? activeDiscount!.end_date.ToString("yyyy-MM-dd") : DateTime.Today.AddDays(7).ToString("yyyy-MM-dd"))" />
+                                       min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                                       value="@(hasActive ? activeDiscount!.end_date.ToString("yyyy-MM-ddTHH:mm") : DateTime.Now.AddDays(7).ToString("yyyy-MM-ddTHH:mm"))" />
                             </div>
                         </div>
 
