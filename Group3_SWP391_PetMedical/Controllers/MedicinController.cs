@@ -80,6 +80,18 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(medicin);
         }
 
+        [Authorize(Roles = "Doctor,Staff,Manager")]
+        public async Task<IActionResult> MedicinInactiveDetails(int id)
+        {
+            var medicin = await _medicinService.GetByIdAsync(id);
+            if (medicin == null)
+            {
+                return NotFound();
+            }
+
+            return View(medicin);
+        }
+
         [Authorize(Roles = "Staff,Manager")]
         [HttpGet]
         public IActionResult MedicinAddForm()
