@@ -49,5 +49,7 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         Task<Role?> GetDefaultRoleAsync();
         /// <summary>Lấy thông tin chi tiết khách hàng và thú cưng (Staff)</summary>
         Task<User?> GetCustomerDetailAsync(int customerId);
+        /// <summary>Tìm user theo số điện thoại.</summary>
+        Task<User?> GetByPhoneAsync(string phone);
     }
 }

@@ -18,5 +18,6 @@ namespace Group3_SWP391_PetMedical.ViewModels.Appointment
 
         public int? DoctorId { get; set; }  
         public string? Notes { get; set; }
+        public bool IgnoreDoctorShiftCheck { get; set; } = false;
     }
 }

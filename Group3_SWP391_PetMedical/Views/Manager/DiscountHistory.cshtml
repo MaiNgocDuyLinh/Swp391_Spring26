@@ -113,7 +113,7 @@
                                     <span class="@(isOngoing ? "price-new" : "pc-money")">@discountedPrice.ToString("N0")</span>
                                 </td>
                                 <td>
-                                    <small>@sd.start_date.ToString("dd/MM/yyyy") - @sd.end_date.ToString("dd/MM/yyyy")</small>
+                                    <small>@sd.start_date.ToString("dd/MM/yyyy HH:mm") - @sd.end_date.ToString("dd/MM/yyyy HH:mm")</small>
                                 </td>
                                 <td>
                                     <small>@(sd.created_at?.ToString("dd/MM/yyyy HH:mm") ?? "-")</small>

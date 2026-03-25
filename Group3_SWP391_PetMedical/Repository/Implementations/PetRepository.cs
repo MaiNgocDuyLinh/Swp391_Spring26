@@ -87,5 +87,27 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return await _context.Appointments
                 .AnyAsync(a => a.pet_id == petId && blockingStatuses.Contains(a.status));
         }
+        public async Task<Pet?> GetByNameAndOwnerAsync(string name, int ownerId)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return null;
+            var n = name.Trim().ToLower();
+            return await _context.Pets.FirstOrDefaultAsync(p => p.owner_id == ownerId && p.name.ToLower() == n);
+        }
+
+        public async Task<Pet?> GetByDetailsAndOwnerAsync(string name, string species, string breed, string? gender, DateTime? birthdate, int ownerId)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return null;
+            var n = name.Trim().ToLower();
+            var s = (species ?? "").Trim().ToLower();
+            var b = (breed ?? "").Trim().ToLower();
+            var g = (gender ?? "").Trim().ToLower();
+
+            return await _context.Pets.FirstOrDefaultAsync(p => p.owner_id == ownerId
+                                                && p.name.ToLower() == n
+                                                && (p.species ?? "").ToLower() == s
+                                                && (p.breed ?? "").ToLower() == b
+                                                && (p.pet_gender ?? "").ToLower() == g
+                                                && p.pet_birthdate == birthdate);
+        }
     }
 }

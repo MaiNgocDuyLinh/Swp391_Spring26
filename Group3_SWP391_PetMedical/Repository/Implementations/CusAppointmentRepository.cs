@@ -256,16 +256,28 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (serviceCount != cmd.ServiceIds.Count)
                 throw new Exception("Danh sách dịch vụ không hợp lệ.");
 
+            var now = DateTime.Now;
             var appointmentDateTime = BuildAppointmentDateTime(cmd.AppointmentDate, cmd.Shift);
 
-            if (appointmentDateTime <= DateTime.Now)
-                throw new Exception("Ngày khám phải lớn hơn hiện tại.");
+            // Cho phép đặt lịch cho ca hiện tại nếu ca đó chưa kết thúc (Sáng tới 12h, Chiều tới 18h)
+            var shiftKey = NormalizeShiftKey(cmd.Shift);
+            var shiftEnd = appointmentDateTime.Date.AddHours(shiftKey == "sáng" ? 12 : 18);
+
+            if (now > shiftEnd)
+                throw new Exception("Ca khám đã chọn đã kết thúc hoặc đã qua.");
+
+            if (appointmentDateTime.Date < now.Date)
+                throw new Exception("Ngày khám không hợp lệ (đã qua).");
 
             var duplicated = await _context.Appointments
                 .AsNoTracking()
                 .AnyAsync(a => a.customer_id == customerId
                             && a.pet_id == cmd.PetId
-                            && a.appointment_date == appointmentDateTime);
+                            && a.appointment_date == appointmentDateTime
+                            && a.status != "Đã hủy" 
+                            && a.status != "Đã thanh toán" 
+                            && a.status != "Đã khám" 
+                            && a.status != "Không đến");
 
             if (duplicated)
                 throw new Exception("Bạn đã có lịch cho thú cưng này ở ca đó.");
@@ -279,9 +291,13 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 if (!doctorOk)
                     throw new Exception("Bác sĩ không hợp lệ.");
 
-                var inShift = await IsDoctorWorkingAtAsync(cmd.DoctorId.Value, appointmentDateTime);
-                if (!inShift)
-                    throw new Exception("Ca khám đã chọn không nằm trong ca làm của bác sĩ.");
+                // Staff có thể bỏ qua check ca làm của bác sĩ (cho phép cưỡng bức đặt lịch)
+                if (!cmd.IgnoreDoctorShiftCheck)
+                {
+                    var inShift = await IsDoctorWorkingAtAsync(cmd.DoctorId.Value, appointmentDateTime);
+                    if (!inShift)
+                        throw new Exception("Ca khám đã chọn không nằm trong ca làm của bác sĩ.");
+                }
             }
 
             var appt = new Appointment

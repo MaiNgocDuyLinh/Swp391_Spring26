@@ -156,14 +156,22 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .ToListAsync();
         }
 
-        public async Task<bool> UpdateStatusAsync(int id, string newStatus)
+        public async Task<bool> UpdateStatusAsync(int id, string newStatus, bool updateDateToNow = false)
         {
-            var appt = await _context.Appointments.FindAsync(id);
+            var appt = await _context.Appointments.FirstOrDefaultAsync(a => a.appointment_id == id);
             if (appt == null) return false;
-            appt.status = newStatus;
+
+            // Update status
+            appt.status = newStatus?.Trim();
+            
+            // Update date if early arrival
+            if (updateDateToNow)
+            {
+                appt.appointment_date = DateTime.Now;
+            }
             
             // Sync related invoice if newly paid
-            if (newStatus == "Đã thanh toán")
+            if (appt.status == "Đã thanh toán")
             {
                 var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.appointment_id == id);
                 if (invoice != null)

@@ -20,10 +20,14 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         Task<bool> CancelAppointmentAsync(int id, string? reason);
         Task<bool> AssignDoctorAsync(int appointmentId, int doctorId);
         Task<List<User>> GetDoctorsAsync();
-        Task<bool> UpdateAppointmentStatusAsync(int id, string newStatus);
+        Task<(bool Success, bool IsEarlyArrival)> UpdateAppointmentStatusAsync(int id, string newStatus);
 
         // ========== Invoice ==========
         Task<Invoice?> GetInvoiceByAppointmentIdAsync(int appointmentId);
         Task<bool> CreateInvoiceAsync(int appointmentId);
+
+        // ========== Guest Booking ==========
+        Task<int> CreateGuestBookingAsync(Group3_SWP391_PetMedical.ViewModels.Staff.StaffCreateGuestBookingVM model);
+        Task<User?> GetCustomerByPhoneAsync(string phone);
     }
 }

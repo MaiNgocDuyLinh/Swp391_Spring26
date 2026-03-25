@@ -20,7 +20,7 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
         Task<List<User>> GetDoctorsAsync();
 
         // ========== Staff: Update status ==========
-        Task<bool> UpdateStatusAsync(int id, string newStatus);
+        Task<bool> UpdateStatusAsync(int id, string newStatus, bool updateDateToNow = false);
 
         // ========== Invoice ==========
         Task<Invoice?> GetInvoiceByAppointmentIdAsync(int appointmentId);
