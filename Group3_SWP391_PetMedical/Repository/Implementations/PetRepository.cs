@@ -1,4 +1,4 @@
-﻿using Group3_SWP391_PetMedical.Models;
+using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Models.Common;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +28,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             IQueryable<Pet> pets = _context.Pets
                 .AsNoTracking()
-                .Where(p => p.owner_id == ownerId);
+                .Where(p => p.owner_id == ownerId && p.status == "Active");
 
             if (!string.IsNullOrWhiteSpace(q))
             {
@@ -46,6 +46,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             var items = await pets
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
+                //.Include(e => e.Appointments).ThenInclude(a => a.Invoice)
                 .ToListAsync();
 
             return new PagedResult<Pet>
@@ -80,6 +81,12 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             return await _context.Appointments.AnyAsync(a => a.pet_id == petId);
         }
 
+        public async Task<bool> HasActiveAppointmentsAsync(int petId)
+        {
+            var blockingStatuses = new[] { "Đặt lịch thành công", "Đã đến", "Đang khám", "Đã khám" };
+            return await _context.Appointments
+                .AnyAsync(a => a.pet_id == petId && blockingStatuses.Contains(a.status));
+        }
         public async Task<Pet?> GetByNameAndOwnerAsync(string name, int ownerId)
         {
             if (string.IsNullOrWhiteSpace(name)) return null;
@@ -94,8 +101,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             var s = (species ?? "").Trim().ToLower();
             var b = (breed ?? "").Trim().ToLower();
             var g = (gender ?? "").Trim().ToLower();
-            
-            return await _context.Pets.FirstOrDefaultAsync(p => p.owner_id == ownerId 
+
+            return await _context.Pets.FirstOrDefaultAsync(p => p.owner_id == ownerId
                                                 && p.name.ToLower() == n
                                                 && (p.species ?? "").ToLower() == s
                                                 && (p.breed ?? "").ToLower() == b

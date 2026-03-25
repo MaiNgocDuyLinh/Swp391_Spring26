@@ -89,9 +89,6 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime day)
             => _repo.GetDoctorShiftsAsync(doctorId, day.Date);
 
-        public Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime from, DateTime to)
-            => _repo.GetDoctorShiftsAsync(doctorId, from.Date, to.Date);
-
         public Task<List<DoctorAppointmentEventVM>> GetDoctorAppointmentsAsync(int doctorId, DateTime from, DateTime to)
             => _repo.GetDoctorAppointmentsAsync(doctorId, from, to);
 

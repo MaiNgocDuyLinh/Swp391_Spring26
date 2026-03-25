@@ -1,4 +1,4 @@
-﻿namespace Group3_SWP391_PetMedical.ViewModels.Pet
+namespace Group3_SWP391_PetMedical.ViewModels.Pet
 {
     public class PetListItemVm
     {
@@ -10,11 +10,15 @@
         public double? Weight { get; set; }
         public string? PetImg { get; set; } // lưu filename hoặc path
 
-        
+
         public string? PetGender { get; set; }
 
         public DateTime? PetBirthdate { get; set; }
 
         public string? RealAgeText { get; set; }
+
+        public string Status { get; set; } = "Active";
+
+        public double? totalAmount { get; set; } = 0;
     }
 }

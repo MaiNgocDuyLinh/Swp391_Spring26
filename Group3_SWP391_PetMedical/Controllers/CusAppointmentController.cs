@@ -153,7 +153,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             if (vm.Form.DoctorId.HasValue && vm.Form.AppointmentDate != default)
             {
                 var day = vm.Form.AppointmentDate.Date;
-                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day, day);
+                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day);
 
                 if (!string.IsNullOrWhiteSpace(vm.Form.Shift))
                 {
@@ -240,7 +240,7 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             targetDay = targetDay.Date;
 
-            var shifts = await _cusAppointmentService.GetDoctorShiftsAsync(doctorId, targetDay, targetDay);
+            var shifts = await _cusAppointmentService.GetDoctorShiftsAsync(doctorId, targetDay);
 
             return Json(shifts.Select(x => new
             {
@@ -583,7 +583,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             if (vm.Form.DoctorId.HasValue && vm.Form.AppointmentDate != default)
             {
                 var day = vm.Form.AppointmentDate.Date;
-                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day, day);
+                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day);
             }
             vm.ShiftCapacityWarning = null;
 
@@ -592,7 +592,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                 && !string.IsNullOrWhiteSpace(vm.Form.Shift))
             {
                 var day = vm.Form.AppointmentDate.Date;
-                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day, day);
+                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day);
 
                 var isFull = await IsDoctorShiftFullAsync(
                     vm.Form.DoctorId.Value,

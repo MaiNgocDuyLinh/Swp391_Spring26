@@ -141,7 +141,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         {
             return await _context.Pets
                 .AsNoTracking()
-                .Where(p => p.owner_id == customerId)
+                .Where(p => p.owner_id == customerId && p.status == "Active")
                 .OrderBy(p => p.name)
                 .Select(p => new ValueTuple<int, string>(p.pet_id, p.name))
                 .ToListAsync();
@@ -157,8 +157,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                 .ToListAsync();
         }
 
-        public Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime day)
-            => GetDoctorShiftsAsync(doctorId, day.Date, day.Date);
+     
 
 
         public async Task<List<DoctorAppointmentEventVM>>
@@ -199,9 +198,9 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
             return list;
         }
-        public async Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime from, DateTime to)
+        public async Task<List<DoctorShiftVM>> GetDoctorShiftsAsync(int doctorId, DateTime day)
         {
-            var targetDate = DateOnly.FromDateTime(from.Date);
+            var targetDate = DateOnly.FromDateTime(day.Date);
 
             var schedules = await _context.Schedules
                 .AsNoTracking()
@@ -245,10 +244,10 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
         {
             var petOk = await _context.Pets
                 .AsNoTracking()
-                .AnyAsync(p => p.pet_id == cmd.PetId && p.owner_id == customerId);
+                .AnyAsync(p => p.pet_id == cmd.PetId && p.owner_id == customerId && p.status == "Active");
 
             if (!petOk)
-                throw new Exception("Thú cưng không hợp lệ (không thuộc tài khoản).");
+                throw new Exception("Thú cưng không hợp lệ (không thuộc tài khoản hoặc đã bị ẩn).");
 
             var serviceCount = await _context.Services
                 .AsNoTracking()
@@ -646,7 +645,6 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     ResultImages = m.result_images,
                     FollowUpDate = m.follow_up_date,
 
-                    // Chỉ lấy dịch vụ gốc lúc khách đặt lịch
                     SelectedServiceNames = string.Join(", ",
                         m.appointment.AppointmentDetails
                             .Where(d => ((decimal?)d.actual_price ?? 0) <= 0)
