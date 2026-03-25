@@ -115,8 +115,22 @@ namespace Group3_SWP391_PetMedical.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(int id, string newStatus)
         {
-            await _staffService.UpdateAppointmentStatusAsync(id, newStatus);
-            TempData["SuccessMessage"] = "Đã cập nhật trạng thái!";
+            var result = await _staffService.UpdateAppointmentStatusAsync(id, newStatus);
+
+            if (result.Success)
+            {
+                string msg = "Đã cập nhật trạng thái!";
+                if (result.IsEarlyArrival)
+                {
+                    msg += " Khách hàng đến sớm, lịch hẹn đã được chuyển về hôm nay!";
+                }
+                TempData["SuccessMessage"] = msg;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Cập nhật trạng thái thất bại!";
+            }
+
             return RedirectToAction("AppointmentDetail", new { id });
         }
 
@@ -150,6 +164,105 @@ namespace Group3_SWP391_PetMedical.Controllers
                 return RedirectToAction("AppointmentDetail", new { id = appointmentId });
             }
             return View(invoice);
+        }
+
+        // ========== GUEST BOOKING ==========
+        [HttpGet]
+        public async Task<IActionResult> CreateGuestBooking()
+        {
+            var services = await _staffService.GetServicesPagedAsync(null, 1, 100);
+            var doctors = await _staffService.GetDoctorsAsync();
+
+            var model = new Group3_SWP391_PetMedical.ViewModels.Staff.StaffCreateGuestBookingVM
+            {
+                ServiceOptions = services.Items
+                    .Where(s => s.status == true)
+                    .Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = s.service_id.ToString(),
+                    Text = s.service_name
+                }).ToList(),
+                DoctorOptions = doctors.Select(d => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = d.user_id.ToString(),
+                    Text = d.full_name
+                }).ToList(),
+                PetSpeciesOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+                {
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "Chó", Text = "Chó" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "Mèo", Text = "Mèo" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "Chim", Text = "Chim" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "Khác", Text = "Khác" }
+                }
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateGuestBooking(Group3_SWP391_PetMedical.ViewModels.Staff.StaffCreateGuestBookingVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var services = await _staffService.GetServicesPagedAsync(null, 1, 100);
+                var doctors = await _staffService.GetDoctorsAsync();
+
+                model.ServiceOptions = services.Items
+                    .Where(s => s.status == true)
+                    .Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = s.service_id.ToString(),
+                    Text = s.service_name
+                }).ToList();
+                model.DoctorOptions = doctors.Select(d => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = d.user_id.ToString(),
+                    Text = d.full_name
+                }).ToList();
+                model.PetSpeciesOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+                {
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "Chó", Text = "Chó" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "Mèo", Text = "Mèo" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "Chim", Text = "Chim" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "Khác", Text = "Khác" }
+                };
+                return View(model);
+            }
+
+            try
+            {
+                int appointmentId = await _staffService.CreateGuestBookingAsync(model);
+                TempData["SuccessMessage"] = "Đặt lịch cho khách vãng lai thành công!";
+                return RedirectToAction("AppointmentDetail", new { id = appointmentId });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Lỗi khi đặt lịch: " + ex.Message);
+                
+                var services = await _staffService.GetServicesPagedAsync(null, 1, 100);
+                var doctors = await _staffService.GetDoctorsAsync();
+                model.ServiceOptions = services.Items
+                    .Where(s => s.status == true)
+                    .Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = s.service_id.ToString(), Text = s.service_name }).ToList();
+                model.DoctorOptions = doctors.Select(d => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = d.user_id.ToString(), Text = d.full_name }).ToList();
+                model.PetSpeciesOptions = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+                {
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "Chó", Text = "Chó" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "Mèo", Text = "Mèo" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "Chim", Text = "Chim" },
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "Khác", Text = "Khác" }
+                };
+                return View(model);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCustomerByPhone(string phone)
+        {
+            var user = await _staffService.GetCustomerByPhoneAsync(phone);
+            if (user == null) return NotFound();
+            return Ok(new { fullName = user.full_name, email = user.email });
         }
     }
 }
