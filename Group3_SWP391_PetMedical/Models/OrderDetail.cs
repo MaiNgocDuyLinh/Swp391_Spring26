@@ -10,6 +10,7 @@ public partial class OrderDetail
     public int medicine_id { get; set; }
 
     public int quantity { get; set; }
+    public decimal? price_at_purchase { get; set; }
 
     public virtual RetailOrder order { get; set; } = null!;
 

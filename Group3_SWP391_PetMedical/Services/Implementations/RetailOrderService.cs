@@ -34,5 +34,22 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         {
             await _retailOrderRepo.UpdateStatusOrderAsync(orderId, statusOrder);
         }
+
+        public async Task<bool> CancelOrderAsync(int orderId, int userId)
+        {
+            var order = await _retailOrderRepo.GetOrderByIdAsync(orderId);
+            if (order == null || order.user_id != userId) return false;
+
+            // Only allow cancellation if the order is in "Đã tiếp nhận" status
+            if (order.status_order != "Đã tiếp nhận") return false;
+
+            // Update status
+            await _retailOrderRepo.UpdateStatusOrderAsync(orderId, "Hủy/Hoàn trả");
+
+            // Return stock is handled in the repository or here? 
+            // Better to have the repository handle the atomic transaction if possible.
+            // But for now, I will use a new method in the repository for cancellation and stock return.
+            return await _retailOrderRepo.CancelAndReturnStockAsync(orderId);
+        }
     }
 }

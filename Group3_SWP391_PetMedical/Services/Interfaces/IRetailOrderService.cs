@@ -10,5 +10,6 @@ namespace Group3_SWP391_PetMedical.Services.Interfaces
         Task<IEnumerable<RetailOrder>> GetAllOrdersAsync(DateTime? date, string? search, string? status);
         Task<RetailOrder?> GetOrderByIdAsync(int id);
         Task UpdateStatusOrderAsync(int orderId, string statusOrder);
+        Task<bool> CancelOrderAsync(int orderId, int userId);
     }
 }

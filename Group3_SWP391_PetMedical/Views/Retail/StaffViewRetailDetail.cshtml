@@ -154,9 +154,14 @@
                                         <div style="font-weight: 700;">@(detail.medicine?.name ?? "Thuốc không rõ")</div>
                                         <div style="font-size: 0.85rem; color: var(--pc-muted);">Mã: @detail.medicine_id</div>
                                     </td>
-                                    <td class="text-end">@((detail.medicine?.unit_price ?? 0).ToString("N0")) đ</td>
+                                    <td class="text-end">
+                                        @{
+                                            var price = detail.price_at_purchase ?? detail.medicine?.unit_price ?? 0;
+                                        }
+                                        @(price.ToString("N0")) đ
+                                    </td>
                                     <td class="text-center" style="font-weight: 700;">@detail.quantity</td>
-                                    <td class="text-end">@(((detail.medicine?.unit_price ?? 0) * detail.quantity).ToString("N0")) đ</td>
+                                    <td class="text-end">@((price * detail.quantity).ToString("N0")) đ</td>
                                 </tr>
                                 idx++;
                             }

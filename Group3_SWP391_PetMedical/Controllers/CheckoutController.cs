@@ -136,7 +136,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                     user_id = userId.Value,
                     total_amount = total,
                     status = "PENDING",
-                    created_at = DateTime.UtcNow,
+                    created_at = DateTime.Now,
                     pickup_slot = form.PickupSlot,
                     note = form.Note
                 };
@@ -151,7 +151,8 @@ namespace Group3_SWP391_PetMedical.Controllers
                     {
                         order_id = order.id,
                         medicine_id = ci.medicine_id,
-                        quantity = ci.quantity
+                        quantity = ci.quantity,
+                        price_at_purchase = ci.medicine.unit_price
                     });
                 }
 
