@@ -76,7 +76,8 @@ namespace Group3_SWP391_PetMedical.Controllers
                 vm.name.Trim(),
                 vm.unit_price,
                 vm.stock_quantity,
-                vm.description?.Trim());
+                vm.description?.Trim(),
+                vm.status);
 
             TempData["SuccessMessage"] = "Thêm thuốc thành công!";
             return RedirectToAction(nameof(MedicinDetails), new { id = created.medicine_id });
@@ -96,7 +97,8 @@ namespace Group3_SWP391_PetMedical.Controllers
                 name = medicin.name,
                 unit_price = medicin.unit_price,
                 stock_quantity = medicin.stock_quantity ?? 0,
-                description = medicin.description
+                description = medicin.description,
+                status = medicin.status
             };
 
             return View(vm);
@@ -118,7 +120,8 @@ namespace Group3_SWP391_PetMedical.Controllers
                 vm.name.Trim(),
                 vm.unit_price,
                 vm.stock_quantity,
-                vm.description?.Trim());
+                vm.description?.Trim(),
+                vm.status);
 
             if (!updated) return NotFound();
 

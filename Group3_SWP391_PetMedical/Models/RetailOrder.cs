@@ -20,6 +20,7 @@ public partial class RetailOrder
     public string? pickup_slot { get; set; }
 
     public string? note { get; set; }
+    public string? status_order { get; set; }
 
     public virtual User? user { get; set; }
 

@@ -1,6 +1,15 @@
 @model IEnumerable<Group3_SWP391_PetMedical.Models.RetailOrder>
 @{
     ViewData["Title"] = "Đơn thuốc của bạn";
+
+    (string bg, string color, string icon) OrderStatusStyle(string? s) => (s ?? "").Trim() switch {
+        "Đã tiếp nhận" => ("#e0f2fe", "#0369a1", "fa-bell"),
+        "Đã soạn hàng" => ("#f3e8ff", "#7e22ce", "fa-box-open"),
+        "Đã giao thuốc" => ("#d1fae5", "#047857", "fa-shipping-fast"),
+        "Hủy/Hoàn trả" => ("#fee2e2", "#dc2626", "fa-undo"),
+        "Không nhận" => ("#fef3c7", "#d97706", "fa-exclamation-triangle"),
+        _ => ("#f3f4f6", "#6b7280", "fa-spinner")
+    };
 }
 
 @section Styles {
@@ -21,6 +30,20 @@
         <h3 class="pc-title mb-3">Đơn thuốc của bạn</h3>
         <p class="pc-sub mb-3">Danh sách các đơn thuốc đã đặt mua và thanh toán thành công.</p>
         
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius:14px;">
+                <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius:14px;">
+                <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
         @if (Model == null || !Model.Any())
         {
             <div class="alert alert-info mt-3" style="border-radius:14px;">
@@ -38,9 +61,18 @@
                                 <h5 style="font-weight:800; margin:0;">
                                     Đơn hàng #@order.id
                                 </h5>
-                                <span class="pc-badge" style="background:#dcfce7; color:#15803d;">
-                                    <i class="fas fa-check-circle"></i> @(order.status == "PAID" ? "Đã thanh toán" : order.status)
-                                </span>
+                                <div class="d-flex gap-2">
+                                    <span class="pc-badge" style="background:#dcfce7; color:#15803d;">
+                                        <i class="fas fa-check-circle"></i> @(order.status == "PAID" ? "Đã thanh toán" : order.status)
+                                    </span>
+                                    @if (!string.IsNullOrEmpty(order.status_order))
+                                    {
+                                        var os = OrderStatusStyle(order.status_order);
+                                        <span class="pc-badge" style="background:@os.bg; color:@os.color;">
+                                            <i class="fas @os.icon"></i> @order.status_order
+                                        </span>
+                                    }
+                                </div>
                             </div>
                             
                             <div class="row mb-3 text-muted small">
@@ -78,16 +110,31 @@
                                             {
                                                 <tr>
                                                     <td><div class="fw-bold">@(item.medicine?.name ?? "N/A")</div></td>
-                                                    <td class="text-end">@(item.medicine != null ? item.medicine.unit_price.ToString("N0") : "0") đ</td>
+                                                    <td class="text-end">
+                                                        @{
+                                                            var price = item.price_at_purchase ?? item.medicine?.unit_price ?? 0;
+                                                        }
+                                                        @(price.ToString("N0")) đ
+                                                    </td>
                                                     <td class="text-center">@item.quantity</td>
-                                                    <td class="text-end fw-semibold">@((item.medicine != null ? (item.medicine.unit_price * item.quantity) : 0).ToString("N0")) đ</td>
+                                                    <td class="text-end fw-semibold">@((price * item.quantity).ToString("N0")) đ</td>
                                                 </tr>
                                             }
                                         }
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="d-flex justify-content-end mt-3 pt-2">
+                            <div class="d-flex justify-content-end align-items-center mt-3 pt-2 gap-3">
+                                @if (order.status_order == "Đã tiếp nhận")
+                                {
+                                    <form asp-action="CancelOrder" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này và hoàn trả thuốc về kho?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@order.id" />
+                                        <button type="submit" class="pc-btn pc-btn--ghost" style="color:#dc2626 !important; border-color:#fee2e2;">
+                                            <i class="fas fa-times me-2"></i> Hủy đơn
+                                        </button>
+                                    </form>
+                                }
                                 <div style="font-weight:600; font-size:1.1rem;">
                                     Tổng cộng: <span style="font-weight:800; font-size:1.35rem; color:var(--pc-red);">@order.total_amount.ToString("N0") đ</span>
                                 </div>

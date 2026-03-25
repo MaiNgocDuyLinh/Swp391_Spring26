@@ -14,6 +14,15 @@
         "CANCELLED" => ("#f3f4f6", "#6b7280", "fa-ban"),
         _ => ("#f3f4f6", "#6b7280", "fa-question-circle")
     };
+
+    (string bg, string color, string icon) OrderStatusStyle(string? s) => (s ?? "").Trim() switch {
+        "Đã tiếp nhận" => ("#e0f2fe", "#0369a1", "fa-bell"),
+        "Đã soạn hàng" => ("#f3e8ff", "#7e22ce", "fa-box-open"),
+        "Đã giao thuốc" => ("#d1fae5", "#047857", "fa-shipping-fast"),
+        "Hủy/Hoàn trả" => ("#fee2e2", "#dc2626", "fa-undo"),
+        "Không nhận" => ("#fef3c7", "#d97706", "fa-exclamation-triangle"),
+        _ => ("#f3f4f6", "#6b7280", "fa-spinner")
+    };
 }
 
 @section Styles {
@@ -96,7 +105,8 @@
                             <th>Khách hàng</th>
                             <th class="text-center">Số loại thuốc</th>
                             <th class="text-end">Tổng tiền</th>
-                            <th style="width:160px;">Trạng thái</th>
+                            <th style="width:160px;">Trạng thái TT</th>
+                            <th style="width:130px;">Trạng thái ĐH</th>
                             <th style="width:80px;" class="text-end">Thao tác</th>
                         </tr>
                     </thead>
@@ -117,6 +127,12 @@
                             <td>
                                 <span class="pc-badge" style="background:@s.bg; color:@s.color;">
                                     <i class="fas @s.icon"></i> @(o.status == "PAID" ? "Đã thanh toán" : (o.status == "PENDING" ? "Chờ xử lý" : (o.status == "UNPAID" ? "Chưa thanh toán" : o.status)))
+                                </span>
+                            </td>
+                            <td>
+                                @{ var os = OrderStatusStyle(o.status_order); }
+                                <span class="pc-badge" style="background:@os.bg; color:@os.color;">
+                                    <i class="fas @os.icon"></i> @(o.status_order ?? "Chưa cập nhật")
                                 </span>
                             </td>
                             <td class="text-end">

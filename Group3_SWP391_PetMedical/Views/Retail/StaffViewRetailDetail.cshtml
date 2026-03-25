@@ -10,6 +10,15 @@
         _ => ("#f3f4f6", "#6b7280", "fa-question-circle", s ?? "Không rõ")
     };
 
+    (string bg, string color, string icon) OrderStatusStyle(string? s) => (s ?? "").Trim() switch {
+        "Đã tiếp nhận" => ("#e0f2fe", "#0369a1", "fa-bell"),
+        "Đã soạn hàng" => ("#f3e8ff", "#7e22ce", "fa-box-open"),
+        "Đã giao thuốc" => ("#d1fae5", "#047857", "fa-shipping-fast"),
+        "Hủy/Hoàn trả" => ("#fee2e2", "#dc2626", "fa-undo"),
+        "Không nhận" => ("#fef3c7", "#d97706", "fa-exclamation-triangle"),
+        _ => ("#f3f4f6", "#6b7280", "fa-spinner")
+    };
+
     var statusInfo = StatusStyle(Model.status);
 }
 
@@ -24,6 +33,8 @@
         .pc-btn { border-radius:999px; padding:0 24px; height:46px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; text-decoration:none; transition:all 0.2s; }
         .pc-btn--ghost { background:#fff; border:1px solid rgba(0,0,0,0.15); color:var(--pc-text); }
         .pc-btn--ghost:hover { border-color:var(--pc-text); background:#f9f9f9; color:var(--pc-text); }
+        .pc-btn--primary { background:var(--pc-red); color:#fff; border:none; }
+        .pc-btn--primary:hover { background:var(--pc-red-dark); color:#fff; box-shadow:0 6px 15px rgba(255,59,59,0.25); }
         .pc-badge { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:999px; font-weight:700; font-size:0.9rem; }
         .pc-table { border-radius:12px; overflow:hidden; background:#fff; border:1px solid var(--pc-border); width: 100%; margin-top: 20px;}
         .pc-table thead th { background:#fff7f7; font-weight:800; padding: 14px 16px; border-bottom: 2px solid #fcebeb; }
@@ -45,6 +56,14 @@
             </a>
         </div>
 
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius:14px; margin-bottom: 20px;">
+                <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
         <div class="pc-card">
             <div class="row">
                 <div class="col-md-6 col-lg-3">
@@ -56,11 +75,27 @@
                     <div class="pc-value">@(Model.created_at?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
                 </div>
                 <div class="col-md-6 col-lg-3">
-                    <div class="pc-label">Trạng thái</div>
+                    <div class="pc-label">Trạng thái TT</div>
                     <div class="mb-3">
                         <span class="pc-badge" style="background:@statusInfo.bg; color:@statusInfo.color;">
                             <i class="fas @statusInfo.icon"></i> @statusInfo.text
                         </span>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="pc-label">Trạng thái đơn hàng</div>
+                    <div class="pc-value">
+                        @if (!string.IsNullOrEmpty(Model.status_order))
+                        {
+                            var os = OrderStatusStyle(Model.status_order);
+                            <span class="pc-badge" style="background:@os.bg; color:@os.color;">
+                                <i class="fas @os.icon"></i> @Model.status_order
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="text-muted" style="font-weight: 500;">Chưa cập nhật</span>
+                        }
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
@@ -69,6 +104,28 @@
                         @(string.IsNullOrEmpty(Model.note) ? "Không có ghi chú" : Model.note)
                     </div>
                 </div>
+            </div>
+
+            <div class="mt-4 p-4" style="background: #fffafa; border-radius: 20px; border: 2px solid #fcebeb; box-shadow: 0 8px 20px rgba(255, 59, 59, 0.03);">
+                <h6 style="font-weight: 800; margin-bottom: 20px; color: var(--pc-red-dark);"><i class="fas fa-edit me-2"></i> Cập nhật trạng thái đơn hàng</h6>
+                <form asp-action="StaffUpdateStatusOrder" method="post" class="row align-items-end g-3">
+                    <input type="hidden" name="id" value="@Model.id" />
+                    <div class="col-md-7">
+                        <div class="pc-label" style="text-transform: none; color: var(--pc-text); margin-bottom: 8px;">Trạng thái mới</div>
+                        <select name="status_order" class="form-select pc-input" style="height: 48px; border-color: #fcebeb; font-weight: 600;">
+                            <option value="Đã tiếp nhận" selected="@(Model.status_order == "Đã tiếp nhận")">🔵 Đã tiếp nhận</option>
+                            <option value="Đã soạn hàng" selected="@(Model.status_order == "Đã soạn hàng")">📦 Đã soạn hàng</option>
+                            <option value="Đã giao thuốc" selected="@(Model.status_order == "Đã giao thuốc")">✅ Đã giao thuốc</option>
+                            <option value="Hủy/Hoàn trả" selected="@(Model.status_order == "Hủy/Hoàn trả")">❌ Hủy/Hoàn trả</option>
+                            <option value="Không nhận" selected="@(Model.status_order == "Không nhận")">⚠️ Không nhận</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <button type="submit" class="pc-btn pc-btn--primary w-100" style="height: 48px; border-radius: 12px;">
+                            <i class="fas fa-save me-2"></i> Lưu thay đổi
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <hr style="border-color: var(--pc-border); margin: 24px 0;" />
@@ -97,9 +154,14 @@
                                         <div style="font-weight: 700;">@(detail.medicine?.name ?? "Thuốc không rõ")</div>
                                         <div style="font-size: 0.85rem; color: var(--pc-muted);">Mã: @detail.medicine_id</div>
                                     </td>
-                                    <td class="text-end">@((detail.medicine?.unit_price ?? 0).ToString("N0")) đ</td>
+                                    <td class="text-end">
+                                        @{
+                                            var price = detail.price_at_purchase ?? detail.medicine?.unit_price ?? 0;
+                                        }
+                                        @(price.ToString("N0")) đ
+                                    </td>
                                     <td class="text-center" style="font-weight: 700;">@detail.quantity</td>
-                                    <td class="text-end">@(((detail.medicine?.unit_price ?? 0) * detail.quantity).ToString("N0")) đ</td>
+                                    <td class="text-end">@((price * detail.quantity).ToString("N0")) đ</td>
                                 </tr>
                                 idx++;
                             }

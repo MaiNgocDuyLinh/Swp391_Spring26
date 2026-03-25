@@ -614,7 +614,8 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                             && m.appointment.status != null
                             && (
                                 m.appointment.status.Trim().ToLower() == "đã khám" ||
-                                m.appointment.status.Trim().ToLower() == "đã thanh toán"
+                                m.appointment.status.Trim().ToLower() == "đã thanh toán" ||
+                                m.appointment.status.Trim().ToLower() == "completed"
                             ))
                 .Select(m => new CusMedicalRecordVM
                 {
@@ -645,8 +646,11 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     ResultImages = m.result_images,
                     FollowUpDate = m.follow_up_date,
 
+                    // Chỉ lấy dịch vụ gốc lúc khách đặt lịch
                     SelectedServiceNames = string.Join(", ",
-                        m.appointment.AppointmentDetails.Select(d => d.service.service_name))
+                        m.appointment.AppointmentDetails
+                            .Where(d => ((decimal?)d.actual_price ?? 0) <= 0)
+                            .Select(d => d.service.service_name))
                 })
                 .FirstOrDefaultAsync();
 
