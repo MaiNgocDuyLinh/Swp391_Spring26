@@ -40,7 +40,7 @@ namespace Group3_SWP391_PetMedical.Controllers
 
         [Authorize(Roles = "Customer")]
         [HttpGet]
-        public async Task<IActionResult> RetailOrderedViewList()
+        public async Task<IActionResult> RetailOrderedViewList(string? status = "PAID")
         {
             var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("user_id");
             if (!int.TryParse(userIdRaw, out int userId))
@@ -48,23 +48,21 @@ namespace Group3_SWP391_PetMedical.Controllers
                 return Forbid();
             }
 
-            var orders = await _retailOrderService.GetOrdersByUserIdAsync(userId);
+            var orders = await _retailOrderService.GetOrdersByUserIdAsync(userId, status);
             
-            // Lọc ra những đơn hàng có status là 'PAID'
-            var paidOrders = orders.Where(o => (o.status ?? "").ToUpper() == "PAID").ToList();
-            
-            return View(paidOrders);
+            ViewBag.CurrentStatus = status;
+            return View(orders);
         }
 
         [Authorize(Roles = "Staff,Manager")]
         [HttpGet]
-        public async Task<IActionResult> StaffViewRetailList(DateTime? date, string? search, string? status, int page = 1)
+        public async Task<IActionResult> StaffViewRetailList(DateTime? date, string? search, string? status, string? statusOrder, int page = 1)
         {
             if (page < 1) page = 1;
             int pageSize = 10;
             var queryDate = date ?? DateTime.Today;
 
-            var allOrders = await _retailOrderService.GetAllOrdersAsync(queryDate, search, status);
+            var allOrders = await _retailOrderService.GetAllOrdersAsync(queryDate, search, status, statusOrder);
 
             int totalItems = allOrders.Count();
             int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
@@ -77,6 +75,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             ViewBag.SelectedDate = queryDate;
             ViewBag.Search = search;
             ViewBag.Status = status;
+            ViewBag.StatusOrder = statusOrder;
 
             return View(pagedOrders);
         }
@@ -106,6 +105,12 @@ namespace Group3_SWP391_PetMedical.Controllers
             if (order == null)
             {
                 return NotFound();
+            }
+
+            if (order.status_order == "Đã giao thuốc" || order.status_order == "Hủy/Hoàn trả")
+            {
+                TempData["ErrorMessage"] = "Đơn hàng đã ở trạng thái kết thúc, không thể cập nhật thêm.";
+                return RedirectToAction("StaffViewRetailDetail", new { id = id });
             }
 
             await _retailOrderService.UpdateStatusOrderAsync(id, status_order);

@@ -1,4 +1,4 @@
-﻿using Group3_SWP391_PetMedical.Models;
+using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Group3_SWP391_PetMedical.ViewModels.Retail;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +27,7 @@ public class CartItemRepository : ICartItemRepository
             {
                 user_id = userId,
                 status = "ACTIVE",
-                created_at = DateTime.UtcNow
+                created_at = DateTime.Now
             };
             _context.CartsMedicin.Add(cart);
             await _context.SaveChangesAsync();
@@ -56,7 +56,7 @@ public class CartItemRepository : ICartItemRepository
             {
                 user_id = userId,
                 status = "ACTIVE",
-                created_at = DateTime.UtcNow
+                created_at = DateTime.Now
             };
             _context.CartsMedicin.Add(cart);
             await _context.SaveChangesAsync();

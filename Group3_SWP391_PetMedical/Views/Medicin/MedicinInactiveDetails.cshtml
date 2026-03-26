@@ -1,0 +1,159 @@
+@model Group3_SWP391_PetMedical.Models.Medication
+@{
+    ViewData["Title"] = "Chi tiết thuốc (Ngừng bán)";
+    var qty = Model.stock_quantity ?? 0;
+    var badgeClass = qty == 0 ? "pc-badge--danger" : qty <= 10 ? "pc-badge--warn" : "pc-badge--ok";
+    var badgeText = qty == 0 ? "Hết hàng" : qty <= 10 ? "Sắp hết" : "Còn hàng";
+}
+
+@section Styles {
+    <style>
+        :root {
+            --pc-red: #ff3b3b;
+            --pc-red-dark: #e83434;
+            --pc-text: #2b2b2b;
+            --pc-muted: #7a7a7a;
+            --pc-border: rgba(0,0,0,0.06);
+            --pc-bg-soft: #fff7f7;
+        }
+
+        .pc-wrap {
+            background: #f3d7d5;
+            border: 1px solid var(--pc-border);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+            margin-top: 150px;
+        }
+
+        .pc-card {
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+        .pc-title {
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .pc-sub {
+            color: var(--pc-muted);
+            margin: 0;
+        }
+
+        .pc-label {
+            font-size: 0.9rem;
+            color: var(--pc-muted);
+            margin-bottom: 4px;
+        }
+
+        .pc-value {
+            font-weight: 700;
+            color: var(--pc-text);
+            margin-bottom: 16px;
+            word-break: break-word;
+        }
+
+        .pc-price {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--pc-red-dark);
+        }
+
+        .pc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .pc-badge--ok {
+            background: #ebffef;
+            color: #1e7e34;
+            border: 1px solid #b7ebc4;
+        }
+
+        .pc-badge--warn {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffe08a;
+        }
+
+        .pc-badge--danger {
+            background: #ffecec;
+            color: #b02a37;
+            border: 1px solid #ffc9cf;
+        }
+
+        .pc-btn {
+            border-radius: 999px;
+            padding: 0 18px;
+            height: 42px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            text-decoration: none;
+        }
+
+        .pc-btn--ghost {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.1);
+            color: var(--pc-text) !important;
+        }
+    </style>
+}
+
+<section class="container py-4">
+    <div class="pc-wrap">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="pc-title">Chi tiết thuốc (Ngừng bán)</h3>
+                <p class="pc-sub">Thông tin thuốc đã ngừng hoạt động trong hệ thống</p>
+            </div>
+            <a class="pc-btn pc-btn--ghost" asp-controller="Medicin" asp-action="MedicinInactiveList">
+                <i class="fas fa-arrow-left"></i> Quay lại danh sách
+            </a>
+        </div>
+
+        <div class="pc-card">
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="pc-label">Tên thuốc</div>
+                    <div class="pc-value text-muted">@Model.name</div>
+
+                    <div class="pc-label">Mã thuốc</div>
+                    <div class="pc-value">#@Model.medicine_id</div>
+
+                    <div class="pc-label">Mô tả</div>
+                    <div class="pc-value">@(string.IsNullOrWhiteSpace(Model.description) ? "-" : Model.description)</div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="pc-label">Đơn giá</div>
+                    <div class="pc-price mb-3">@Model.unit_price.ToString("N0") đ</div>
+
+                    <div class="pc-label">Số lượng tồn kho</div>
+                    <div class="pc-value">
+                        <span class="pc-badge @badgeClass">
+                            <i class="fas fa-capsules"></i> @qty (@badgeText)
+                        </span>
+                    </div>
+
+                    <div class="pc-label">Trạng thái</div>
+                    <div class="pc-value">
+                        <span class="pc-badge pc-badge--danger">Ngừng hoạt động</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -20,6 +20,50 @@ namespace Group3_SWP391_PetMedical.Controllers
             _context = context;
         }
 
+        // ========== DOANH THU THUỐC BÁN LẺ ==========
+        [HttpGet]
+        public async Task<IActionResult> RetailRevenue(DateTime? date)
+        {
+            var selectedDate = date ?? DateTime.Today;
+
+            // Lấy tất cả đơn hàng thành công trong ngày (PAID + Đã giao thuốc)
+            var orders = await _context.RetailOrders
+                .Include(o => o.user)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.medicine)
+                .Where(o =>
+                    o.created_at.HasValue &&
+                    o.created_at.Value.Date == selectedDate.Date &&
+                    o.status == "PAID" &&
+                    o.status_order == "Đã giao thuốc")
+                .OrderByDescending(o => o.created_at)
+                .ToListAsync();
+
+            // Tổng doanh thu và số đơn
+            var totalRevenue = orders.Sum(o => o.total_amount);
+            var totalOrders = orders.Count;
+
+            // Thống kê từng loại thuốc bán ra
+            var medicineSales = orders
+                .SelectMany(o => o.OrderDetails)
+                .GroupBy(od => new { od.medicine_id, Name = od.medicine?.name ?? "N/A" })
+                .Select(g => new
+                {
+                    MedicineName = g.Key.Name,
+                    TotalQuantity = g.Sum(od => od.quantity),
+                    TotalAmount = g.Sum(od => od.quantity * od.price_at_purchase.GetValueOrDefault())
+                })
+                .OrderByDescending(x => x.TotalQuantity)
+                .ToList();
+
+            ViewBag.SelectedDate = selectedDate;
+            ViewBag.TotalRevenue = totalRevenue;
+            ViewBag.TotalOrders = totalOrders;
+            ViewBag.MedicineSales = medicineSales;
+
+            return View(orders);
+        }
+
         // Trang cấu hình & xem trước dữ liệu export
         [HttpGet]
         public async Task<IActionResult> Index(DateTime? fromDate, DateTime? toDate, string? exportType)

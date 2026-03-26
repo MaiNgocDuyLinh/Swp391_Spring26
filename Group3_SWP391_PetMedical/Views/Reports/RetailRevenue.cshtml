@@ -1,0 +1,236 @@
+@model List<Group3_SWP391_PetMedical.Models.RetailOrder>
+@{
+    ViewData["Title"] = "Doanh thu bán thuốc";
+    var selectedDate = (DateTime)ViewBag.SelectedDate;
+    var totalRevenue = (decimal)ViewBag.TotalRevenue;
+    var totalOrders = (int)ViewBag.TotalOrders;
+    var medicineSales = ViewBag.MedicineSales as IEnumerable<dynamic>;
+}
+
+@section Styles {
+    <style>
+        :root {
+            --pc-red: #ff3b3b;
+            --pc-red-dark: #e83434;
+            --pc-text: #2b2b2b;
+            --pc-muted: #7a7a7a;
+            --pc-border: rgba(0,0,0,0.06);
+        }
+
+        .pc-wrap {
+            background: #f3d7d5;
+            border: 1px solid var(--pc-border);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+            margin-top: 150px;
+        }
+
+        .pc-title { font-weight: 800; margin: 0; }
+        .pc-sub { color: var(--pc-muted); margin: 0; }
+
+        .pc-stat-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px 24px;
+            border: 1px solid var(--pc-border);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .pc-stat-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .pc-stat-icon--red   { background: #fee2e2; color: var(--pc-red); }
+        .pc-stat-icon--green { background: #d1fae5; color: #047857; }
+        .pc-stat-icon--blue  { background: #dbeafe; color: #1d4ed8; }
+
+        .pc-stat-label { font-size: 0.85rem; color: var(--pc-muted); font-weight: 600; }
+        .pc-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--pc-text); margin: 0; }
+
+        .pc-filter {
+            background: #fff;
+            border: 1px solid var(--pc-border);
+            border-radius: 16px;
+            padding: 18px;
+            margin: 18px 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+        }
+
+        .pc-label { font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; }
+        .pc-input { border-radius: 12px; border: 1px solid rgba(0,0,0,0.10); height: 42px; padding: 0 12px; }
+        .pc-btn { border-radius: 999px; padding: 0 18px; height: 42px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; text-decoration: none; cursor: pointer; }
+        .pc-btn--primary { background: var(--pc-red); color: #fff; box-shadow: 0 10px 20px rgba(255,59,59,0.25); }
+        .pc-btn--primary:hover { background: var(--pc-red-dark); color: #fff; }
+        .pc-btn--ghost { background: #fff; border: 1px solid rgba(0,0,0,0.10); color: var(--pc-text) !important; }
+
+        .pc-card { background: #fff; border: 1px solid var(--pc-border); border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.04); }
+        .pc-card-head { background: #fff7f7; padding: 14px 20px; font-weight: 800; border-bottom: 1px solid var(--pc-border); }
+        .pc-table { margin: 0; }
+        .pc-table thead th { background: #fff7f7; font-weight: 800; white-space: nowrap; }
+
+        .pc-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 10px; border-radius: 999px;
+            font-weight: 700; font-size: 0.8rem;
+        }
+    </style>
+}
+
+<section class="container py-4">
+    <div class="pc-wrap">
+        <h3 class="pc-title">📊 Doanh thu bán thuốc hàng ngày</h3>
+        <p class="pc-sub">Thống kê đơn hàng thành công (Đã thanh toán & Đã giao thuốc)</p>
+
+        <div class="pc-filter mt-3">
+            <form method="get" asp-controller="Reports" asp-action="RetailRevenue" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <div class="pc-label">Chọn ngày</div>
+                    <input type="date" name="date" class="form-control pc-input"
+                           value="@selectedDate.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="pc-btn pc-btn--primary">
+                        <i class="fas fa-search"></i> Xem
+                    </button>
+                    <a href="@Url.Action("RetailRevenue", "Reports")" class="pc-btn pc-btn--ghost">
+                        <i class="fas fa-undo-alt"></i> Hôm nay
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="pc-stat-card">
+                    <div class="pc-stat-icon pc-stat-icon--red"><i class="fas fa-money-bill-wave"></i></div>
+                    <div>
+                        <div class="pc-stat-label">Tổng doanh thu</div>
+                        <div class="pc-stat-value">@totalRevenue.ToString("N0") ₫</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="pc-stat-card">
+                    <div class="pc-stat-icon pc-stat-icon--green"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <div class="pc-stat-label">Đơn thành công</div>
+                        <div class="pc-stat-value">@totalOrders</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="pc-stat-card">
+                    <div class="pc-stat-icon pc-stat-icon--blue"><i class="fas fa-pills"></i></div>
+                    <div>
+                        <div class="pc-stat-label">Loại thuốc bán ra</div>
+                        <div class="pc-stat-value">@(medicineSales?.Count() ?? 0)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info" style="border-radius:14px;">
+                <i class="fas fa-info-circle me-2"></i>
+                Không có đơn hàng thành công nào vào ngày <strong>@selectedDate.ToString("dd/MM/yyyy")</strong>.
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="pc-card">
+                        <div class="pc-card-head">
+                            <i class="fas fa-list me-2"></i> Danh sách đơn hàng (@totalOrders đơn)
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle pc-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Khách hàng</th>
+                                        <th>Giờ đặt</th>
+                                        <th class="text-end">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <a href="@Url.Action("StaffViewRetailDetail", "Retail", new { id = order.id })"
+                                                   class="fw-bold text-danger">
+                                                    #@order.id
+                                                </a>
+                                            </td>
+                                            <td>@(order.user?.full_name ?? "N/A")</td>
+                                            <td class="text-muted" style="font-size:0.88rem;">
+                                                @(order.created_at?.ToString("HH:mm") ?? "--")
+                                            </td>
+                                            <td class="text-end fw-bold">
+                                                @order.total_amount.ToString("N0") ₫
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr style="background:#fff7f7;">
+                                        <td colspan="3" class="fw-bold text-end">Tổng cộng:</td>
+                                        <td class="text-end fw-bold text-danger">@totalRevenue.ToString("N0") ₫</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="pc-card">
+                        <div class="pc-card-head">
+                            <i class="fas fa-pills me-2"></i> Thuốc bán ra trong ngày
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle pc-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên thuốc</th>
+                                        <th class="text-center">SL</th>
+                                        <th class="text-end">Doanh thu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (medicineSales != null)
+                                    {
+                                        @foreach (var item in medicineSales)
+                                        {
+                                            <tr>
+                                                <td style="font-size:0.9rem;">@item.MedicineName</td>
+                                                <td class="text-center">
+                                                    <span class="pc-badge" style="background:#e0e7ff; color:#3730a3;">
+                                                        @item.TotalQuantity
+                                                    </span>
+                                                </td>
+                                                <td class="text-end fw-bold" style="font-size:0.9rem;">
+                                                    @((object)item.TotalAmount != null ? ((decimal)item.TotalAmount).ToString("N0") : "0") ₫
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>

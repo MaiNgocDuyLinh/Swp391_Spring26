@@ -141,7 +141,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="pc-label">Đơn giá (VNĐ) <span class="text-danger">*</span></div>
-                            <input asp-for="unit_price" type="number" min="1" step="1000" class="form-control pc-input" />
+                            <input asp-for="unit_price" type="number" min="1" step="1" class="form-control pc-input" value="@Model.unit_price.ToString("0")" />
                             <span asp-validation-for="unit_price" class="text-danger"></span>
                         </div>
                         <div class="col-md-6 mb-3">
