@@ -355,7 +355,8 @@
                                         <input class="form-control pc-equal-control"
                                                asp-for="Form.AppointmentDate"
                                                type="date"
-                                               value="@dateVal" />
+                                               value="@dateVal"
+                                               min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                                         <span class="text-danger" asp-validation-for="Form.AppointmentDate"></span>
                                     </div>
 
