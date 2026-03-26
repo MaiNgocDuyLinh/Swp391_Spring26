@@ -1,4 +1,6 @@
-﻿namespace Group3_SWP391_PetMedical.ViewModels.Appointment
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Group3_SWP391_PetMedical.ViewModels.Appointment
 {
     public class CusCancelAppointmentVM
     {
@@ -11,6 +13,8 @@
 
         // ===== Dữ liệu hủy =====
         public string? Description { get; set; }     // ghi chú cũ nếu cần
-        public string Reason { get; set; } = "";     // lý do hủy
+        [Required(ErrorMessage = "Vui lòng nhập lý do hủy.")]
+        public string Reason { get; set; } = "";
+
     }
 }
