@@ -55,7 +55,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
 
             var projected = q
-                     .OrderByDescending(a => a.status != null && a.status.Trim().ToLower() == "đã hủy")
+                     .OrderByDescending(a => a.status != null && a.status.Trim().ToLower() == "đã hủy" || a.status.Trim().ToLower() == "đã thanh toán"|| a.status.Trim().ToLower() == "không đến")
                      .ThenByDescending(a => EF.Property<DateTime?>(a, CREATED_AT_FIELD) != null)
                      .ThenByDescending(a => EF.Property<DateTime?>(a, CREATED_AT_FIELD))
                      .ThenByDescending(a => a.appointment_id)
