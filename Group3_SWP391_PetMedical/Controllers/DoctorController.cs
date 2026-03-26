@@ -59,8 +59,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             }
 
             ViewBag.Medicines = await _context.Medications.ToListAsync();
-            ViewBag.Services = await _context.Services.ToListAsync();
-
+            ViewBag.Services = await _context.Services.Where(s => s.status == true).ToListAsync();
             ViewBag.History = await _context.MedicalRecords
                 .Include(m => m.appointment)
                 .Where(m => m.appointment.pet_id == appointment.pet_id)

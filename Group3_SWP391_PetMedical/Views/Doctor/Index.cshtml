@@ -159,7 +159,7 @@
                                                 @(item.status == "Đã đến" ? "Tiếp nhận" : "Cập nhật")
                                             </a>
                                         }
-                                        else if (item.status == "Đã khám")
+                                        else if (item.status == "Đã khám" || item.status == "Đã thanh toán")
                                         {
                                             <a asp-action="ViewRecord" asp-route-id="@item.appointment_id" class="btn btn-pet-pink shadow-sm">
                                                 <i class="fas fa-eye mr-2"></i> Xem bệnh án
