@@ -1,4 +1,4 @@
-﻿
+
 
 
 using System;
@@ -31,6 +31,8 @@ public partial class Pet
     public DateTime? created_at { get; set; }
 
     public string? PetImg { get; set; }
+
+    public string status { get; set; } = "Active";
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 

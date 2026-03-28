@@ -355,7 +355,8 @@
                                         <input class="form-control pc-equal-control"
                                                asp-for="Form.AppointmentDate"
                                                type="date"
-                                               value="@dateVal" />
+                                               value="@dateVal"
+                                               min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                                         <span class="text-danger" asp-validation-for="Form.AppointmentDate"></span>
                                     </div>
 
@@ -392,6 +393,57 @@
                                             formaction="@Url.Action("Book", "CusAppointment")">
                                         Xem lịch bác sĩ
                                     </button>
+                                    <div id="rightDoctorBox" class="mt-3">
+                                <div class="pc-badge" style="margin-bottom:10px;">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span>Lịch khám / ca làm của bác sĩ</span>
+                                </div>
+
+                                <div class="pc-step" style="flex-direction:column; gap:10px;">
+                                    <div style="font-weight:800;">Các ca trong ngày đã chọn</div>
+
+                                    <div class="pc-services-box" style="max-height:260px; width:100%;">
+                                        <ul class="pc-cal-list">
+                                            @if (Model.Form.DoctorId.HasValue && Model.Form.AppointmentDate != default && Model.DoctorShifts.Any())
+                                            {
+                                                foreach (var s in Model.DoctorShifts)
+                                                {
+                                                    <li class="pc-cal-item">
+                                                        <span class="pc-cal-date">@s.Start.ToString("dd/MM/yyyy")</span>
+                                                        <span class="pc-cal-time">@s.Shift</span>
+                                                    </li>
+                                                }
+                                            }
+                                            else if (Model.Form.DoctorId.HasValue && Model.Form.AppointmentDate != default)
+                                            {
+                                                <li class="pc-cal-item">
+                                                    <span class="pc-cal-date">Không có ca làm cho ngày này.</span>
+                                                    <span class="pc-cal-time"></span>
+                                                </li>
+                                            }
+                                            else if (Model.Form.AppointmentDate == default)
+                                            {
+                                                <li class="pc-cal-item">
+                                                    <span class="pc-cal-date">Chưa chọn ngày khám.</span>
+                                                    <span class="pc-cal-time"></span>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="pc-cal-item">
+                                                    <span class="pc-cal-date">Chưa chọn bác sĩ.</span>
+                                                    <span class="pc-cal-time"></span>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+
+                                    <div class="pc-note">
+                                        Chọn ngày khám, sau đó chọn bác sĩ để xem ca sáng / chiều trong ngày đó. <br />
+                                        <span style="color:red;">* Mỗi ca làm của bác sĩ chỉ khám tối đa 5 lịch hẹn</span>
+                                    </div>
+                                </div>
+                            </div>
                                     @if (!string.IsNullOrWhiteSpace(Model.ShiftCapacityWarning))
                                     {
                                         <div class="mt-2"
@@ -553,57 +605,7 @@
                                 </div>
                             </div>
 
-                            <div id="rightDoctorBox" class="mt-3">
-                                <div class="pc-badge" style="margin-bottom:10px;">
-                                    <i class="far fa-calendar-alt"></i>
-                                    <span>Lịch khám / ca làm của bác sĩ</span>
-                                </div>
-
-                                <div class="pc-step" style="flex-direction:column; gap:10px;">
-                                    <div style="font-weight:800;">Các ca trong ngày đã chọn</div>
-
-                                    <div class="pc-services-box" style="max-height:260px; width:100%;">
-                                        <ul class="pc-cal-list">
-                                            @if (Model.Form.DoctorId.HasValue && Model.Form.AppointmentDate != default && Model.DoctorShifts.Any())
-                                            {
-                                                foreach (var s in Model.DoctorShifts)
-                                                {
-                                                    <li class="pc-cal-item">
-                                                        <span class="pc-cal-date">@s.Start.ToString("dd/MM/yyyy")</span>
-                                                        <span class="pc-cal-time">@s.Shift</span>
-                                                    </li>
-                                                }
-                                            }
-                                            else if (Model.Form.DoctorId.HasValue && Model.Form.AppointmentDate != default)
-                                            {
-                                                <li class="pc-cal-item">
-                                                    <span class="pc-cal-date">Không có ca làm cho ngày này.</span>
-                                                    <span class="pc-cal-time"></span>
-                                                </li>
-                                            }
-                                            else if (Model.Form.AppointmentDate == default)
-                                            {
-                                                <li class="pc-cal-item">
-                                                    <span class="pc-cal-date">Chưa chọn ngày khám.</span>
-                                                    <span class="pc-cal-time"></span>
-                                                </li>
-                                            }
-                                            else
-                                            {
-                                                <li class="pc-cal-item">
-                                                    <span class="pc-cal-date">Chưa chọn bác sĩ.</span>
-                                                    <span class="pc-cal-time"></span>
-                                                </li>
-                                            }
-                                        </ul>
-                                    </div>
-
-                                    <div class="pc-note">
-                                        Chọn ngày khám, sau đó chọn bác sĩ để xem ca sáng / chiều trong ngày đó. <br />
-                                        <span style="color:red;">* Mỗi ca làm của bác sĩ chỉ khám tối đa 5 lịch hẹn</span>
-                                    </div>
-                                </div>
-                            </div>
+                            
 
                         </div>
                     </div>

@@ -16,7 +16,7 @@ namespace Group3_SWP391_PetMedical.ViewModels.Appointment
         [MinLength(1, ErrorMessage = "Vui lòng chọn ít nhất 1 dịch vụ.")]
         public List<int> ServiceIds { get; set; } = new();
 
-        public int? DoctorId { get; set; } // null => Chưa phân công
+        public int? DoctorId { get; set; }  
         public string? Notes { get; set; }
         public bool IgnoreDoctorShiftCheck { get; set; } = false;
     }

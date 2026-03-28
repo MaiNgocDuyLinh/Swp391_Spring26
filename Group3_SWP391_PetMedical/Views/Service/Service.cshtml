@@ -1,5 +1,4 @@
-﻿@* @model IEnumerable<Group3_SWP391_PetMedical.Models.Service> *@
-@using Group3_SWP391_PetMedical.ViewModels.Common
+﻿@using Group3_SWP391_PetMedical.ViewModels.Common
 @using Group3_SWP391_PetMedical.Models.Common
 @model ListPageVM<Group3_SWP391_PetMedical.Models.Service>
 
@@ -161,7 +160,6 @@
             <div class="cl-xl-7 col-lg-8 col-md-10">
                 <div class="section-tittle text-center mb-70">
                     
-                        @* <span>Dịch vụ chuyên nghiệp của chúng tôi</span> *@
                         <h2 style="padding-top : 80px;">Dịch vụ chăm sóc thú cưng tốt nhất</h2>             
                 </div>
             </div>
@@ -193,7 +191,7 @@
 
 
         <div class="row">
-            @foreach (var s in Model.Data.Items)
+            @foreach (var s in Model.Data.Items )
             {
                 var iconClass = icons[i % icons.Length];
                 i++;

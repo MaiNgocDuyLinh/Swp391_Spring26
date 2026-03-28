@@ -15,14 +15,14 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             _retailOrderRepo = retailOrderRepo;
         }
 
-        public async Task<IEnumerable<RetailOrder>> GetOrdersByUserIdAsync(int userId)
+        public async Task<IEnumerable<RetailOrder>> GetOrdersByUserIdAsync(int userId, string? status = null)
         {
-            return await _retailOrderRepo.GetOrdersByUserIdAsync(userId);
+            return await _retailOrderRepo.GetOrdersByUserIdAsync(userId, status);
         }
 
-        public async Task<IEnumerable<RetailOrder>> GetAllOrdersAsync(DateTime? date, string? search, string? status)
+        public async Task<IEnumerable<RetailOrder>> GetAllOrdersAsync(DateTime? date, string? search, string? status, string? statusOrder)
         {
-            return await _retailOrderRepo.GetAllOrdersAsync(date, search, status);
+            return await _retailOrderRepo.GetAllOrdersAsync(date, search, status, statusOrder);
         }
 
         public async Task<RetailOrder?> GetOrderByIdAsync(int id)
@@ -40,15 +40,12 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             var order = await _retailOrderRepo.GetOrderByIdAsync(orderId);
             if (order == null || order.user_id != userId) return false;
 
-            // Only allow cancellation if the order is in "Đã tiếp nhận" status
+
             if (order.status_order != "Đã tiếp nhận") return false;
 
-            // Update status
-            await _retailOrderRepo.UpdateStatusOrderAsync(orderId, "Hủy/Hoàn trả");
+            // CancelAndReturnStockAsync will handle both status change and stock return
 
-            // Return stock is handled in the repository or here? 
-            // Better to have the repository handle the atomic transaction if possible.
-            // But for now, I will use a new method in the repository for cancellation and stock return.
+            
             return await _retailOrderRepo.CancelAndReturnStockAsync(orderId);
         }
     }

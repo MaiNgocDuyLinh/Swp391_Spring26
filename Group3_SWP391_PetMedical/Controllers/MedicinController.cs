@@ -30,6 +30,31 @@ namespace Group3_SWP391_PetMedical.Controllers
             var data = await _medicinService.GetMedicinListAsync(new PagingQuery
             {
                 Q = search,
+                Status = "active", // Chỉ lấy thuốc đang bán
+                Page = page,
+                PageSize = pageSize
+            });
+
+            ViewBag.Search = search;
+            ViewBag.CurrentPage = data.Page;
+            ViewBag.PageSize = data.PageSize;
+            ViewBag.TotalPages = Math.Max(data.TotalPages, 1);
+            ViewBag.TotalItems = data.TotalItems;
+
+            return View(data.Items);
+        }
+
+        [Authorize(Roles = "Doctor,Staff,Manager")]
+        public async Task<IActionResult> MedicinInactiveList(string? search, int page = 1, int pageSize = 10)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            // Lấy tất cả trừ active (inactive, discontinued, v.v.)
+            var data = await _medicinService.GetMedicinListAsync(new PagingQuery
+            {
+                Q = search,
+                Status = "inactive",
                 Page = page,
                 PageSize = pageSize
             });
@@ -55,6 +80,18 @@ namespace Group3_SWP391_PetMedical.Controllers
             return View(medicin);
         }
 
+        [Authorize(Roles = "Doctor,Staff,Manager")]
+        public async Task<IActionResult> MedicinInactiveDetails(int id)
+        {
+            var medicin = await _medicinService.GetByIdAsync(id);
+            if (medicin == null)
+            {
+                return NotFound();
+            }
+
+            return View(medicin);
+        }
+
         [Authorize(Roles = "Staff,Manager")]
         [HttpGet]
         public IActionResult MedicinAddForm()
@@ -69,6 +106,14 @@ namespace Group3_SWP391_PetMedical.Controllers
         {
             if (!ModelState.IsValid)
             {
+                return View(vm);
+            }
+
+            // Check duplicate name
+            var existing = await _medicinService.GetByNameAsync(vm.name.Trim());
+            if (existing != null && existing.status.ToLower() == "active")
+            {
+                ModelState.AddModelError("name", "Thuốc đã có và đang bán, vui lòng kiểm tra lại.");
                 return View(vm);
             }
 
@@ -112,6 +157,14 @@ namespace Group3_SWP391_PetMedical.Controllers
         {
             if (!ModelState.IsValid)
             {
+                return View(vm);
+            }
+
+            // Check duplicate name
+            var existing = await _medicinService.GetByNameAsync(vm.name.Trim());
+            if (existing != null && existing.medicine_id != vm.medicine_id && existing.status.ToLower() == "active")
+            {
+                ModelState.AddModelError("name", "Tên thuốc đã tồn tại và đang ở trạng thái kinh doanh.");
                 return View(vm);
             }
 

@@ -1,18 +1,25 @@
 ﻿@model Group3_SWP391_PetMedical.ViewModels.Appointment.CusCancelAppointmentVM
 
 @{
-    var isPopup = Context.Request.Query["popup"] == "1";
-    if (isPopup) { Layout = null; }
+    var isPopup = (ViewBag.IsPopup as bool?) == true;
+    if (isPopup)
+    {
+        Layout = null;
+    }
 
     ViewData["Title"] = "Hủy lịch hẹn";
 
-    var apptDateText =
-        Model.AppointmentDate > DateTime.MinValue
-            ? Model.AppointmentDate.ToString("HH:mm dd/MM/yyyy")
-            : "—";
+    var apptDateText = Model.AppointmentDate > DateTime.MinValue
+        ? Model.AppointmentDate.ToString(" dd/MM/yyyy")
+        : "—";
 
-    var petNameText = !string.IsNullOrWhiteSpace(Model.PetName) ? Model.PetName : "—";
-    var serviceNamesText = !string.IsNullOrWhiteSpace(Model.ServiceNames) ? Model.ServiceNames : "—";
+    var petNameText = !string.IsNullOrWhiteSpace(Model.PetName)
+        ? Model.PetName
+        : "—";
+
+    var serviceNamesText = !string.IsNullOrWhiteSpace(Model.ServiceNames)
+        ? Model.ServiceNames
+        : "—";
 }
 
 @if (isPopup)
@@ -192,6 +199,17 @@
             font-weight: 700;
             margin-top: 6px;
         }
+
+        .pc-success {
+            margin-top: 14px;
+            margin-bottom: 14px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #e8fff0;
+            border: 1px solid #b7ebc6;
+            color: #1f7a3d;
+            font-weight: 700;
+        }
     </style>
 }
 
@@ -199,6 +217,12 @@
     <div class="pc-card">
         <h3 class="pc-title">Hủy lịch hẹn</h3>
         <p class="pc-sub">Xác nhận hủy và nêu rõ lý do</p>
+        @if (ViewBag.SuccessMessage != null)
+        {
+            <div class="pc-success">
+                @ViewBag.SuccessMessage
+            </div>
+        }
 
         <!--  TÓM TẮT LỊCH HẸN NGẮN GỌN -->
         <div class="pc-box">

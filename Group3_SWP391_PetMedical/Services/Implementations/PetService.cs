@@ -1,4 +1,4 @@
-﻿using Group3_SWP391_PetMedical.Models;
+using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Models.Common;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
 using Group3_SWP391_PetMedical.Services.Interfaces;
@@ -28,6 +28,8 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
 
             var paged = await _repo.GetPetsByOwnerAsync(ownerId, normalizedQuery);
 
+            //GetInvoiceByAppointmentIdAsync
+           
             return new PagedResult<PetListItemVm>
             {
                 Page = paged.Page,
@@ -44,7 +46,8 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                     PetImg = p.PetImg,
                     PetGender = p.pet_gender,
                     PetBirthdate = p.pet_birthdate,
-                    RealAgeText = BuildRealAgeText(p.pet_birthdate)
+                    RealAgeText = BuildRealAgeText(p.pet_birthdate),
+                    Status = p.status
                 }).ToList()
             };
         }
@@ -60,7 +63,8 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                 age = vm.Age,
                 weight = vm.Weight.HasValue ? (double)vm.Weight.Value : (double?)null,
                 PetImg = null,
-                created_at = DateTime.Now
+                created_at = DateTime.Now,
+                status = "Active"
             };
 
             pet.pet_gender = NormalizeGender(vm.PetGender);
@@ -170,13 +174,13 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             var pet = await _repo.GetByIdAndOwnerAsync(petId, ownerId);
             if (pet == null) return false;
 
-            var hasAppointments = await _repo.HasAppointmentsAsync(petId);
-            if (hasAppointments)
-                throw new Exception("thú cưng đang có lịch khám");
+            // Kiểm tra lịch hẹn đang hoạt động
+            var hasActive = await _repo.HasActiveAppointmentsAsync(petId);
+            if (hasActive)
+                throw new Exception("Thú cưng đang có lịch khám");
 
-            DeleteOldPetImageIfAny(pet.PetImg);
-
-            await _repo.DeleteAsync(pet);
+            pet.status = "Inactive";
+            await _repo.UpdateAsync(pet);
             return true;
         }
 

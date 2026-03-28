@@ -87,9 +87,8 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
             }
 
             var selectedDate = pickupDate.Value.Date;
-            var minDate = DateTime.Today.AddDays(1);
 
-            if (selectedDate < minDate)
+            if (selectedDate <= DateTime.Today)
             {
                 throw new Exception("Ngày nhận phải từ ngày mai trở đi.");
             }

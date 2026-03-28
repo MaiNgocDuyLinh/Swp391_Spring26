@@ -71,8 +71,11 @@
                     <div class="pc-value">@(Model.user?.full_name ?? "Khách lẻ (Không có tài khoản)")</div>
                 </div>
                 <div class="col-md-6 col-lg-3">
-                    <div class="pc-label">Thời gian đặt</div>
-                    <div class="pc-value">@(Model.created_at?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+                    <div class="pc-label">Ngày lấy thuốc dự kiến</div>
+                    <div class="pc-value">
+                        @(Model.pickup_date?.ToString("dd/MM/yyyy") ?? "-") 
+                        <span class="text-muted small">(@(Model.pickup_slot ?? "Chưa chọn giờ lấy"))</span>
+                    </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="pc-label">Trạng thái TT</div>
@@ -106,27 +109,42 @@
                 </div>
             </div>
 
-            <div class="mt-4 p-4" style="background: #fffafa; border-radius: 20px; border: 2px solid #fcebeb; box-shadow: 0 8px 20px rgba(255, 59, 59, 0.03);">
-                <h6 style="font-weight: 800; margin-bottom: 20px; color: var(--pc-red-dark);"><i class="fas fa-edit me-2"></i> Cập nhật trạng thái đơn hàng</h6>
-                <form asp-action="StaffUpdateStatusOrder" method="post" class="row align-items-end g-3">
-                    <input type="hidden" name="id" value="@Model.id" />
-                    <div class="col-md-7">
-                        <div class="pc-label" style="text-transform: none; color: var(--pc-text); margin-bottom: 8px;">Trạng thái mới</div>
-                        <select name="status_order" class="form-select pc-input" style="height: 48px; border-color: #fcebeb; font-weight: 600;">
-                            <option value="Đã tiếp nhận" selected="@(Model.status_order == "Đã tiếp nhận")">🔵 Đã tiếp nhận</option>
-                            <option value="Đã soạn hàng" selected="@(Model.status_order == "Đã soạn hàng")">📦 Đã soạn hàng</option>
-                            <option value="Đã giao thuốc" selected="@(Model.status_order == "Đã giao thuốc")">✅ Đã giao thuốc</option>
-                            <option value="Hủy/Hoàn trả" selected="@(Model.status_order == "Hủy/Hoàn trả")">❌ Hủy/Hoàn trả</option>
-                            <option value="Không nhận" selected="@(Model.status_order == "Không nhận")">⚠️ Không nhận</option>
-                        </select>
+            @if (Model.status_order != "Đã giao thuốc" && Model.status_order != "Hủy/Hoàn trả")
+            {
+                <div class="mt-4 p-4" style="background: #fffafa; border-radius: 20px; border: 2px solid #fcebeb; box-shadow: 0 8px 20px rgba(255, 59, 59, 0.03);">
+                    <h6 style="font-weight: 800; margin-bottom: 20px; color: var(--pc-red-dark);"><i class="fas fa-edit me-2"></i> Cập nhật trạng thái đơn hàng</h6>
+                    <form asp-action="StaffUpdateStatusOrder" method="post" class="row align-items-end g-3">
+                        <input type="hidden" name="id" value="@Model.id" />
+                        <div class="col-md-7">
+                            <div class="pc-label" style="text-transform: none; color: var(--pc-text); margin-bottom: 8px;">Trạng thái đơn hàng mới</div>
+                            <select name="status_order" class="form-select pc-input" style="height: 48px; border-color: #fcebeb; font-weight: 600;">
+                                <option value="Đã tiếp nhận" selected="@(Model.status_order == "Đã tiếp nhận")">🔵 Đã tiếp nhận</option>
+                                <option value="Đã soạn hàng" selected="@(Model.status_order == "Đã soạn hàng")">📦 Đã soạn hàng</option>
+                                <option value="Đã giao thuốc" selected="@(Model.status_order == "Đã giao thuốc")">✅ Đã giao thuốc</option>
+                                <option value="Hủy/Hoàn trả" selected="@(Model.status_order == "Hủy/Hoàn trả")">❌ Hủy/Hoàn trả</option>
+                                <option value="Không nhận" selected="@(Model.status_order == "Không nhận")">⚠️ Không nhận</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <button type="submit" class="pc-btn pc-btn--primary w-100" style="height: 48px; border-radius: 12px;">
+                                <i class="fas fa-save me-2"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-secondary mt-4 d-flex align-items-center" style="border-radius: 20px; border: 2px solid #e5e7eb; background: #f9fafb;">
+                    <div class="me-3" style="font-size: 1.5rem; color: #6b7280;">
+                        <i class="fas fa-lock"></i>
                     </div>
-                    <div class="col-md-5">
-                        <button type="submit" class="pc-btn pc-btn--primary w-100" style="height: 48px; border-radius: 12px;">
-                            <i class="fas fa-save me-2"></i> Lưu thay đổi
-                        </button>
+                    <div>
+                        <div class="fw-bold" style="color: #374151;">Đơn hàng đã hoàn tất</div>
+                        <div class="small text-muted">Trạng thái hiện tại là <strong>@Model.status_order</strong>. Không thể thay đổi thêm.</div>
                     </div>
-                </form>
-            </div>
+                </div>
+            }
 
             <hr style="border-color: var(--pc-border); margin: 24px 0;" />
             <h5 style="font-weight: 800; margin-bottom: 0;">Danh sách thuốc</h5>

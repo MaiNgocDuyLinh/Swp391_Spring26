@@ -153,7 +153,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             if (vm.Form.DoctorId.HasValue && vm.Form.AppointmentDate != default)
             {
                 var day = vm.Form.AppointmentDate.Date;
-                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day, day);
+                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day);
 
                 if (!string.IsNullOrWhiteSpace(vm.Form.Shift))
                 {
@@ -240,7 +240,7 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             targetDay = targetDay.Date;
 
-            var shifts = await _cusAppointmentService.GetDoctorShiftsAsync(doctorId, targetDay, targetDay);
+            var shifts = await _cusAppointmentService.GetDoctorShiftsAsync(doctorId, targetDay);
 
             return Json(shifts.Select(x => new
             {
@@ -514,35 +514,57 @@ namespace Group3_SWP391_PetMedical.Controllers
                 ModelState.AddModelError("", "Không được hủy lịch khám trước dưới 8 giờ.");
             }
 
+            if (detail.Status != "Đặt lịch thành công")
+            {
+                ModelState.AddModelError("", "Chỉ được hủy lịch khi trạng thái là 'Đặt lịch thành công'.");
+            }
+
             if (string.IsNullOrWhiteSpace(vm.Reason))
             {
                 ModelState.AddModelError(nameof(vm.Reason), "Vui lòng nhập lý do hủy.");
             }
 
+            // gán lại dữ liệu để nếu lỗi thì popup vẫn render được đầy đủ
+            vm.AppointmentDate = detail.AppointmentDate;
+            vm.PetName = detail.PetName;
+            vm.ServiceNames = detail.Services != null ? string.Join(", ", detail.Services) : "";
+
+            // nếu validate lỗi -> ở lại popup Cancel
             if (!ModelState.IsValid)
             {
-                vm.AppointmentDate = detail.AppointmentDate;
-                vm.PetName = detail.PetName;
-                vm.ServiceNames = detail.Services != null ? string.Join(", ", detail.Services) : "";
-
                 if (popup == 1) ViewBag.IsPopup = true;
                 return View("~/Views/Appointment/CusCancelAppointment.cshtml", vm);
             }
 
-            var ok = await _cusAppointmentService.CancelCusAppointmentAsync(customerId, vm.AppointmentId, vm.Reason);
-            if (!ok) return NotFound();
-
-            TempData["msg"] = "Đã hủy lịch hẹn thành công!";
-
-            if (popup == 1)
+            try
             {
-                ViewBag.GoBackUrl = Url.Action(nameof(AppointmentHistory), "CusAppointment");
-                return View("~/Views/Appointment/_PopupRedirectParent.cshtml");
+                var ok = await _cusAppointmentService.CancelCusAppointmentAsync(customerId, vm.AppointmentId, vm.Reason);
+                if (!ok) return NotFound();
+
+                TempData["msg"] = $"Đã hủy lịch hẹn. Lý do: {vm.Reason}";
+
+                // nếu đang mở bằng popup thì đóng popup và redirect parent về lịch sử
+                if (popup == 1)
+                {
+                    return Content(
+                        "<script>" +
+                        "window.parent.location.href='/CusAppointment/AppointmentHistory';" +
+                        "</script>",
+                        "text/html"
+                    );
+                }
+
+                // nếu không phải popup thì redirect bình thường
+                return RedirectToAction(nameof(AppointmentHistory));
             }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
 
-            return RedirectToAction(nameof(AppointmentHistory));
+                if (popup == 1) ViewBag.IsPopup = true;
+                return View("~/Views/Appointment/CusCancelAppointment.cshtml", vm);
+            }
         }
-
         // helper: reload options for Book view
         private async Task ReloadBookOptions(int customerId, CusCreateAppointmentVM vm)
         {
@@ -583,7 +605,7 @@ namespace Group3_SWP391_PetMedical.Controllers
             if (vm.Form.DoctorId.HasValue && vm.Form.AppointmentDate != default)
             {
                 var day = vm.Form.AppointmentDate.Date;
-                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day, day);
+                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day);
             }
             vm.ShiftCapacityWarning = null;
 
@@ -592,7 +614,7 @@ namespace Group3_SWP391_PetMedical.Controllers
                 && !string.IsNullOrWhiteSpace(vm.Form.Shift))
             {
                 var day = vm.Form.AppointmentDate.Date;
-                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day, day);
+                vm.DoctorShifts = await _cusAppointmentService.GetDoctorShiftsAsync(vm.Form.DoctorId.Value, day);
 
                 var isFull = await IsDoctorShiftFullAsync(
                     vm.Form.DoctorId.Value,
@@ -636,3 +658,4 @@ namespace Group3_SWP391_PetMedical.Controllers
         }
     }
 }
+

@@ -15,7 +15,7 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         }
 
         public Task<PagedResult<Medication>> GetMedicinListAsync(PagingQuery query)
-            => _repo.GetPagedAsync(query.Q, query.Page, query.PageSize);
+            => _repo.GetPagedAsync(query.Q, query.Page, query.PageSize, query.Status);
 
         public Task<Medication?> GetByIdAsync(int id)
             => _repo.GetByIdAsync(id);
@@ -25,5 +25,8 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
 
         public Task<bool> UpdateAsync(int id, string name, decimal unitPrice, int stockQuantity, string? description, string status)
             => _repo.UpdateAsync(id, name, unitPrice, stockQuantity, description, status);
+
+        public Task<Medication?> GetByNameAsync(string name)
+            => _repo.GetByNameAsync(name);
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
 namespace Group3_SWP391_PetMedical.ViewModels.Pet
@@ -38,5 +38,7 @@ namespace Group3_SWP391_PetMedical.ViewModels.Pet
         public string? RealAgeText { get; set; }
 
         public IFormFile? NewPetImage { get; set; }
+
+        public string Status { get; set; } = "Active";
     }
 }

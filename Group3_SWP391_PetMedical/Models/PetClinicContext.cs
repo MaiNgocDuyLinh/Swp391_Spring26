@@ -189,6 +189,9 @@ public partial class PetClinicContext : DbContext
 
                   entity.Property(ro => ro.status_order)
                     .HasMaxLength(50);
+
+                  entity.Property(ro => ro.pickup_date)
+                    .HasColumnType("date");
             });
 
             modelBuilder.Entity<OrderDetail>(entity =>
@@ -286,6 +289,10 @@ public partial class PetClinicContext : DbContext
                     .WithMany(u => u.Pets)
                     .HasForeignKey(p => p.owner_id)
                     .OnDelete(DeleteBehavior.ClientSetNull);
+
+                  entity.Property(p => p.status)
+                    .HasMaxLength(20)
+                    .HasDefaultValue("Active");
             });
 
             // User ↔ Role
