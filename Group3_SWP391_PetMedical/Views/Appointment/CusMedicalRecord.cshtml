@@ -1,4 +1,4 @@
-﻿@using System.Linq
+@using System.Linq
 @model Group3_SWP391_PetMedical.ViewModels.Appointment.CusMedicalRecordVM
 
 @{
@@ -607,8 +607,6 @@
                                         <th>Tên thuốc</th>
                                         <th style="width:120px;">Số lượng</th>
                                         <th>Liều dùng</th>
-                                        <th class="mr-text-right" style="width:140px;">Đơn giá</th>
-                                        <th class="mr-text-right" style="width:160px;">Thành tiền</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -618,17 +616,9 @@
                                             <td><i class="fas fa-capsules" style="color:#ff5a5a; margin-right:6px;"></i>@p.MedicineName</td>
                                             <td>@p.Quantity</td>
                                             <td>@(string.IsNullOrWhiteSpace(p.Dosage) ? "--" : p.Dosage)</td>
-                                            <td class="mr-text-right">@p.UnitPrice.ToString("N0")</td>
-                                            <td class="mr-text-right mr-money">@p.LineTotal.ToString("N0")</td>
                                         </tr>
                                     }
                                 </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <th colspan="4" class="mr-text-right">Tổng tiền thuốc</th>
-                                        <th class="mr-text-right" style="color:#ef4444;">@Model.TotalMedicineAmount.ToString("N0")</th>
-                                    </tr>
-                                </tfoot>
                             </table>
                         </div>
                     }

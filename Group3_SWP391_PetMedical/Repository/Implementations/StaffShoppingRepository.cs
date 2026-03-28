@@ -1,4 +1,4 @@
-﻿using Group3_SWP391_PetMedical.Models;
+using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Models.Common;
 using Group3_SWP391_PetMedical.Models.TempShopModels;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
@@ -79,7 +79,9 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     Name = p.Name,
                     SKU = p.Sku,
                     Price = p.Price,
-                    StockQuantity = p.StockQuantity,
+                    StockQuantity = _context.ProductVariants.Any(v => v.ProductId == p.ProductId) 
+                        ? _context.ProductVariants.Where(v => v.ProductId == p.ProductId).Sum(v => v.StockQuantity)
+                        : p.StockQuantity,
                     Status = p.Status,
                     ImageUrl = p.ImageUrl,
                     VariantCount = _context.ProductVariants.Count(v => v.ProductId == p.ProductId),
@@ -168,8 +170,11 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
 
         public async Task<int> CreateProductAsync(StaffShoppingUpsertVM vm)
         {
+            if (await _context.Products.AnyAsync(x => x.Name == vm.Name.Trim()))
+                throw new Exception("Name##Tên sản phẩm đã tồn tại.");
+
             if (await _context.Products.AnyAsync(x => x.Sku == vm.SKU))
-                throw new Exception("Mã sản phẩm đã tồn tại.");
+                throw new Exception("SKU##Mã sản phẩm đã tồn tại.");
 
             var entity = new Product
             {
@@ -205,11 +210,17 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (entity == null)
                 throw new Exception("Sản phẩm không tồn tại.");
 
+            var duplicateName = await _context.Products
+                .AnyAsync(x => x.ProductId != entity.ProductId && x.Name == vm.Name.Trim());
+
+            if (duplicateName)
+                throw new Exception("Name##Tên sản phẩm đã tồn tại.");
+
             var duplicateSku = await _context.Products
                 .AnyAsync(x => x.ProductId != entity.ProductId && x.Sku == vm.SKU);
 
             if (duplicateSku)
-                throw new Exception("SKU sản phẩm đã tồn tại.");
+                throw new Exception("SKU##Mã sản phẩm đã tồn tại.");
 
             entity.CategoryId = vm.CategoryId;
             entity.Name = vm.Name.Trim();
@@ -420,6 +431,11 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             if (currentDisplayOrderStatus == "Đã nhận hàng" && currentDisplayPaymentStatus == "Đã thanh toán")
                 throw new Exception("Đơn hàng đã hoàn tất (đã nhận hàng và đã thanh toán), không thể cập nhật thêm.");
 
+            if (newDisplayOrderStatus == "Đã nhận hàng" && newDisplayPaymentStatus != "Đã thanh toán")
+            {
+                throw new Exception("Không thể hoàn thành đơn hàng khi chưa thanh toán.");
+            }
+
             if (currentDisplayOrderStatus == "Đã nhận hàng" && newDisplayOrderStatus == "Đặt hàng thành công")
                 throw new Exception("Đơn hàng đã nhận hàng, không thể chuyển về trạng thái trước đó.");
 
@@ -582,7 +598,7 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                         (!item.VariantId.HasValue || x.VariantId != item.VariantId.Value));
 
                     if (duplicated)
-                        throw new Exception($"SKU biến thể '{item.SKU}' đã tồn tại.");
+                        throw new Exception($"Variants[{variants.IndexOf(item)}].SKU##SKU biến thể '{item.SKU}' đã tồn tại.");
                 }
 
                 if (item.VariantId.HasValue)

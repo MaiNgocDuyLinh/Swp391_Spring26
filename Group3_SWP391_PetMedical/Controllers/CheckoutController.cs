@@ -115,6 +115,19 @@ namespace Group3_SWP391_PetMedical.Controllers
             if (form.SelectedMedicineIds == null || form.SelectedMedicineIds.Length == 0)
                 return RedirectToAction("Index", "Cart");
 
+            // Kiểm tra thời gian: nếu sau 18h thì không được chọn ngày hôm nay
+            var now = DateTime.Now;
+            if (now.Hour >= 18 && form.PickupDate.HasValue && form.PickupDate.Value.Date <= now.Date)
+            {
+                return Content("Đã sau 18h, vui lòng chọn ngày nhận thuốc từ ngày mai trở đi.");
+            }
+            
+            // Nếu chọn ngày trong quá khứ
+            if (form.PickupDate.HasValue && form.PickupDate.Value.Date < now.Date)
+            {
+                return Content("Ngày nhận thuốc không được ở quá khứ.");
+            }
+
             var cart = await _context.CartsMedicin
                 .Include(c => c.CartItemsMedicin).ThenInclude(ci => ci.medicine)
                 .FirstOrDefaultAsync(c => c.user_id == userId.Value && c.status == "ACTIVE");

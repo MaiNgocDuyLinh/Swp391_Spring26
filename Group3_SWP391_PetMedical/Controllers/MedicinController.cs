@@ -111,9 +111,9 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             // Check duplicate name
             var existing = await _medicinService.GetByNameAsync(vm.name.Trim());
-            if (existing != null && existing.status.ToLower() == "active")
+            if (existing != null)
             {
-                ModelState.AddModelError("name", "Thuốc đã có và đang bán, vui lòng kiểm tra lại.");
+                ModelState.AddModelError("name", "Tên thuốc này đã tồn tại trong hệ thống (đang bán hoặc đã ngừng bán). Vui lòng chọn tên khác.");
                 return View(vm);
             }
 
@@ -162,9 +162,9 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             // Check duplicate name
             var existing = await _medicinService.GetByNameAsync(vm.name.Trim());
-            if (existing != null && existing.medicine_id != vm.medicine_id && existing.status.ToLower() == "active")
+            if (existing != null && existing.medicine_id != vm.medicine_id)
             {
-                ModelState.AddModelError("name", "Tên thuốc đã tồn tại và đang ở trạng thái kinh doanh.");
+                ModelState.AddModelError("name", "Tên thuốc này đã tồn tại trong hệ thống.");
                 return View(vm);
             }
 

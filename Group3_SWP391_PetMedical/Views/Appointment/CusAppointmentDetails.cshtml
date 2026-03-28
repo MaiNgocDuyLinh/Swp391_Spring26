@@ -1,4 +1,4 @@
-﻿@using Group3_SWP391_PetMedical.Services.Interfaces
+@using Group3_SWP391_PetMedical.Services.Interfaces
 @model Group3_SWP391_PetMedical.ViewModels.Appointment.CusAppointmentDetailVM
 @inject IServiceService ServiceService
 
@@ -332,20 +332,5 @@
             </div>
         </div>
 
-        <!-- ACTIONS -->
-        <div class="pc-actions">
-            <a class="pc-btn"
-               href="@Url.Action("Cancel", "CusAppointment", new { id = Model.AppointmentId, popup = 1 })">
-                Hủy lịch hẹn
-            </a>
-
-            <a class="pc-btn pc-btn--primary"
-               asp-controller="CusAppointment"
-               asp-action="Edit"
-               asp-route-id="@Model.AppointmentId"
-               target="_top">
-                Chỉnh sửa lịch hẹn
-            </a>
-        </div>
     </div>
 </div>

@@ -98,11 +98,16 @@
                             <input type="hidden" name="SelectedMedicineIds[@i]" value="@Model.SelectedMedicineIds[i]" />
                         }
 
+                        @{
+                            var now = DateTime.Now;
+                            var minDate = now.Hour >= 18 ? now.AddDays(1) : now;
+                            var minDateStr = minDate.ToString("yyyy-MM-dd");
+                        }
                         <div class="mb-3">
                             <label for="PickupDate" class="form-label" style="font-weight:700; font-size:0.9rem;">Ngày dự kiến đến lấy</label>
                             <input type="date" asp-for="PickupDate" class="form-control pc-input" 
-                                   min="@DateTime.Now.ToString("yyyy-MM-dd")" 
-                                   value="@(Model.PickupDate?.ToString("yyyy-MM-dd") ?? DateTime.Now.ToString("yyyy-MM-dd"))" />
+                                   min="@minDateStr" 
+                                   value="@(Model.PickupDate?.ToString("yyyy-MM-dd") ?? minDateStr)" />
                         </div>
 
                         <div class="mb-3">

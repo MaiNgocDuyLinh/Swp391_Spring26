@@ -1,4 +1,4 @@
-﻿using Group3_SWP391_PetMedical.Models;
+using Group3_SWP391_PetMedical.Models;
 using Group3_SWP391_PetMedical.Models.Common;
 using Group3_SWP391_PetMedical.Models.TempShopModels;
 using Group3_SWP391_PetMedical.Repository.Interfaces;
@@ -62,7 +62,9 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
                     Name = p.Name,
                     CategoryName = c.CategoryName,
                     Price = p.Price,
-                    StockQuantity = p.StockQuantity,
+                    StockQuantity = _context.ProductVariants.Any(v => v.ProductId == p.ProductId)
+                        ? _context.ProductVariants.Where(v => v.ProductId == p.ProductId).Sum(v => v.StockQuantity)
+                        : p.StockQuantity,
                     Status = p.Status,
                     ImageUrl = p.ImageUrl
                 };

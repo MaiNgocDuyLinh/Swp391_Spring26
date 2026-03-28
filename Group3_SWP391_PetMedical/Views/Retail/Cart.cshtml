@@ -28,8 +28,31 @@
         tbody.pc-record:hover tr { background:#fff3f3 !important; }
         
         .cart-qty { display: inline-flex; align-items: center; gap: 8px; }
-        .cart-qty-btn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.10); background: #fff; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
-        .cart-qty-btn:disabled { opacity: 0.45; pointer-events: none; }
+        .cart-qty-btn { 
+            width: 36px; 
+            height: 36px; 
+            border-radius: 10px; 
+            border: 2px solid #000; 
+            background: #fff; 
+            color: #000; 
+            font-weight: 900; 
+            font-size: 1.2rem;
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .cart-qty-btn:hover { 
+            background: #000; 
+            color: #fff; 
+        }
+        .cart-qty-btn:disabled { 
+            opacity: 0.3; 
+            pointer-events: none; 
+            border-color: #ccc;
+            color: #ccc;
+        }
         .cart-qty-value { min-width: 42px; text-align: center; font-weight: 800; }
         
         .cart-sidebar { position: sticky; top: 110px; }

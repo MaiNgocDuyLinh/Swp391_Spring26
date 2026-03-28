@@ -634,39 +634,27 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
 
-                                        @if (item.Status == "Đặt lịch thành công")
+                                        @if (NormalizeStatus(item.Status) == "đặt lịch thành công")
                                         {
                                             <a class="pc-ico edit-check"
                                                title="Chỉnh sửa"
                                                data-created="@item.CreatedAt.ToString("o")"
-                                               data-status="@item.Status"
+                                               data-status="@NormalizeStatus(item.Status)"
                                                href="@Url.Action("Edit", "CusAppointment", new { id = item.AppointmentId })">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                         }
-                                        else
-                                        {
-                                            <span class="pc-ico" style="opacity:.35; cursor:not-allowed;">
-                                                <i class="fas fa-edit"></i>
-                                            </span>
-                                        }
 
-                                        @if (item.Status == "Đặt lịch thành công")
+                                        @if (NormalizeStatus(item.Status) == "đặt lịch thành công")
                                         {
                                             <a class="pc-ico cancel-check"
                                                title="Hủy lịch"
                                                data-appointment="@item.AppointmentDate.ToString("o")"
-                                               data-status="@item.Status"
+                                               data-status="@NormalizeStatus(item.Status)"
                                                href="javascript:void(0)"
                                                onclick="return handleCancelClick(this, @item.AppointmentId)">
                                                 <i class="fas fa-times"></i>
                                             </a>
-                                        }
-                                        else
-                                        {
-                                            <span class="pc-ico" style="opacity:.35; cursor:not-allowed;">
-                                                <i class="fas fa-times"></i>
-                                            </span>
                                         }
 
                                         @if (CanViewMedicalRecord(item.Status))
@@ -791,7 +779,7 @@
 
             const diffHours = (appointmentDate - now) / (1000 * 60 * 60);
 
-            if (status !== "Đặt lịch thành công") {
+            if (status.trim().toLowerCase() !== "đặt lịch thành công") {
                 alert("Chỉ được hủy lịch khi trạng thái là 'Đặt lịch thành công'.");
                 return false;
             }
@@ -819,7 +807,7 @@
 
                 const diffHours = (now - created) / (1000 * 60 * 60);
 
-                if (status !== "Đặt lịch thành công") {
+                if (status.trim().toLowerCase() !== "đặt lịch thành công") {
                     e.preventDefault();
                     alert("Chỉ được chỉnh sửa lịch khi trạng thái là 'Đặt lịch thành công'.");
                     return false;

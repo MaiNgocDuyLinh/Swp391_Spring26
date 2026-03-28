@@ -26,7 +26,8 @@ namespace Group3_SWP391_PetMedical.Controllers
             {
                 Q = search,
                 Page = page,
-                PageSize = pageSize
+                PageSize = pageSize,
+                Status = "active"
             });
 
             ViewBag.Search = search;

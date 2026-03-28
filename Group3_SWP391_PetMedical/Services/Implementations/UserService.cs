@@ -79,7 +79,7 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                 password = model.Password,
                 full_name = model.Name.Trim(),
                 role_id = defaultRole.role_id,
-                status = "Unactive",
+                status = "Active",
                 created_at = DateTime.Now
             };
 
