@@ -36,8 +36,12 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
                     _logger.LogError(ex, "Error occurred executing AutoCancelAppointmentService.");
                 }
 
-                // Chờ 1 giờ trước khi kiểm tra lại (có thể chỉnh thành 1 phút để test)
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                // Tính thời gian chờ đến 00:05 ngày mai rồi mới quét lại
+                var now = DateTime.Now;
+                var nextRun = now.Date.AddDays(1).AddMinutes(5); // 00:05 ngày mai
+                var delay = nextRun - now;
+                _logger.LogInformation($"Next auto-cancel scan scheduled at {nextRun:dd/MM/yyyy HH:mm}. Waiting {delay.TotalHours:F1} hours.");
+                await Task.Delay(delay, stoppingToken);
             }
 
             _logger.LogInformation("AutoCancelAppointmentService is stopping.");

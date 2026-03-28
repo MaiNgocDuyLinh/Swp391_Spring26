@@ -40,6 +40,9 @@ namespace Group3_SWP391_PetMedical.Services.Implementations
         public Task<bool> DeleteServiceAsync(int id)
             => _serviceRepo.DeleteAsync(id);
 
+        public Task<bool> ServiceNameExistsAsync(string name, int? excludeId = null)
+            => _serviceRepo.ExistsByNameAsync(name, excludeId);
+
         // ========== Appointments ==========
         public Task<PagedResult<Appointment>> GetAllAppointmentsPagedAsync(string? search, string? statusFilter, int page, int pageSize)
             => _appointmentRepo.GetAllAppointmentsPagedAsync(search, statusFilter, page, pageSize);

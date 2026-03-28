@@ -561,7 +561,7 @@
                         <tbody class="pc-record">
                             <tr>
                                 <td>
-                                    @item.AppointmentDate.ToString("HH:mm dd/MM/yyyy")
+                                    @item.AppointmentDate.ToString("dd/MM/yyyy") (@(item.AppointmentDate.Hour < 12 ? "Ca Sáng" : "Ca Chiều"))
                                     @if (!string.IsNullOrWhiteSpace(item.Notes))
                                     {
                                         <div class="pc-note-inline">

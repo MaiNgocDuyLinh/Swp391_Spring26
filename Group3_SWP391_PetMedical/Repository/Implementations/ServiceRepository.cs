@@ -108,5 +108,15 @@ namespace Group3_SWP391_PetMedical.Repository.Implementations
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> ExistsByNameAsync(string name, int? excludeId = null)
+        {
+            var query = _context.Services.AsNoTracking().AsQueryable();
+            if (excludeId.HasValue)
+            {
+                query = query.Where(s => s.service_id != excludeId.Value);
+            }
+            return await query.AnyAsync(s => s.service_name.ToLower() == name.ToLower());
+        }
     }
 }

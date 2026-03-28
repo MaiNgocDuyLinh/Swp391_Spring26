@@ -175,6 +175,7 @@ namespace Group3_SWP391_PetMedical.Controllers
 
             var model = new Group3_SWP391_PetMedical.ViewModels.Staff.StaffCreateGuestBookingVM
             {
+                AppointmentDate = DateTime.Today,
                 ServiceOptions = services.Items
                     .Where(s => s.status == true)
                     .Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem

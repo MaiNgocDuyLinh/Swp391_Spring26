@@ -22,5 +22,8 @@ namespace Group3_SWP391_PetMedical.Repository.Interfaces
 
         // Xóa dịch vụ (Manager only)
         Task<bool> DeleteAsync(int id);
+
+        // Kiểm tra trùng tên (Manager only)
+        Task<bool> ExistsByNameAsync(string name, int? excludeId = null);
     }
 }

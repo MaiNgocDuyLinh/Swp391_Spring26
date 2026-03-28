@@ -327,7 +327,11 @@
                                 <div class="row g-3">
                                     <div class="col-md-6 pc-field">
                                         <label asp-for="AppointmentDate">Ngày khám *</label>
-                                        <input asp-for="AppointmentDate" type="date" class="pc-equal-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                        <input asp-for="AppointmentDate" type="date" class="pc-equal-control" 
+                                               value="@DateTime.Today.ToString("yyyy-MM-dd")" 
+                                               min="@DateTime.Today.ToString("yyyy-MM-dd")" 
+                                               max="@DateTime.Today.ToString("yyyy-MM-dd")" 
+                                               readonly />
                                         <span asp-validation-for="AppointmentDate" class="text-danger"></span>
                                     </div>
                                     <div class="col-md-6 pc-field">

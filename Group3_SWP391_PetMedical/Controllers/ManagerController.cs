@@ -38,12 +38,40 @@ namespace Group3_SWP391_PetMedical.Controllers
         public async Task<IActionResult> EditService(int id, string service_name, decimal base_price,
             string? description, int? duration, bool is_home_service, bool status)
         {
+            bool hasError = false;
             if (string.IsNullOrWhiteSpace(service_name))
             {
                 ModelState.AddModelError("service_name", "Tên dịch vụ không được để trống.");
+                hasError = true;
+            }
+            else if (await _managerService.ServiceNameExistsAsync(service_name, id))
+            {
+                ModelState.AddModelError("service_name", "Tên dịch vụ này đã tồn tại.");
+                hasError = true;
+            }
+
+            if (!duration.HasValue || duration <= 0)
+            {
+                ModelState.AddModelError("duration", "Thời gian thực hiện không được để trống và phải lớn hơn 0.");
+                hasError = true;
+            }
+
+            if (hasError)
+            {
                 var svc = await _managerService.GetServiceByIdAsync(id);
+                // Cập nhật lại các giá trị user vừa nhập để họ không phải nhập lại (ngoại trừ những cái sai)
+                if (svc != null)
+                {
+                    svc.service_name = service_name;
+                    svc.base_price = base_price;
+                    svc.description = description;
+                    svc.duration = duration;
+                    svc.is_home_service = is_home_service;
+                    svc.status = status;
+                }
                 return View(svc);
             }
+
             var success = await _managerService.UpdateServiceAsync(id, service_name, base_price, description, duration, is_home_service, status);
             if (!success) return NotFound();
             TempData["SuccessMessage"] = "Cập nhật dịch vụ thành công!";
@@ -60,11 +88,34 @@ namespace Group3_SWP391_PetMedical.Controllers
         public async Task<IActionResult> AddService(string service_name, decimal base_price,
             string? description, int? duration, bool is_home_service)
         {
+            bool hasError = false;
             if (string.IsNullOrWhiteSpace(service_name))
             {
                 ModelState.AddModelError("service_name", "Tên dịch vụ không được để trống.");
+                hasError = true;
+            }
+            else if (await _managerService.ServiceNameExistsAsync(service_name))
+            {
+                ModelState.AddModelError("service_name", "Tên dịch vụ này đã tồn tại.");
+                hasError = true;
+            }
+
+            if (!duration.HasValue || duration <= 0)
+            {
+                ModelState.AddModelError("duration", "Thời gian thực hiện không được để trống và phải lớn hơn 0.");
+                hasError = true;
+            }
+
+            if (hasError)
+            {
+                ViewBag.service_name = service_name;
+                ViewBag.base_price = base_price;
+                ViewBag.description = description;
+                ViewBag.duration = duration;
+                ViewBag.is_home_service = is_home_service;
                 return View();
             }
+
             await _managerService.CreateServiceAsync(service_name, base_price, description, duration, is_home_service);
             TempData["SuccessMessage"] = "Thêm dịch vụ thành công!";
             return RedirectToAction("ListServices");

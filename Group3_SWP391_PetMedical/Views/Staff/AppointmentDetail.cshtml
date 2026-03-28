@@ -84,7 +84,7 @@
                 <h3 class="pc-title">Chi tiết Lịch hẹn #@Model.appointment_id</h3>
                 <p class="pc-sub">Xem và quản lý thông tin lịch hẹn</p>
             </div>
-            <a class="pc-btn pc-btn--ghost" href="@Url.Action("AllAppointments", "Staff")">
+            <a class="pc-btn pc-btn--ghost" href="javascript:history.back()">
                 <i class="fas fa-arrow-left"></i> Quay lại
             </a>
         </div>
@@ -117,7 +117,13 @@
                                     </span>
                                 </span>
                             </div>
-                            <div class="pc-readonly-row"><span class="pc-readonly-label">Ngày giờ:</span><span class="pc-readonly-val">@Model.appointment_date.ToString("dd/MM/yyyy HH:mm")</span></div>
+                            <div class="pc-readonly-row">
+                                <span class="pc-readonly-label">Ngày khám:</span>
+                                <span class="pc-readonly-val">
+                                    @Model.appointment_date.ToString("dd/MM/yyyy") 
+                                    (@(Model.appointment_date.Hour < 12 ? "Ca Sáng" : "Ca Chiều"))
+                                </span>
+                            </div>
                             <div class="pc-readonly-row"><span class="pc-readonly-label">Khách hàng:</span><span class="pc-readonly-val">@(Model.customer?.full_name ?? "N/A") <small class="text-muted">@(Model.customer?.phone ?? "")</small></span></div>
                             <div class="pc-readonly-row"><span class="pc-readonly-label">Thú cưng:</span><span class="pc-readonly-val">@(Model.pet?.name ?? "N/A") <small class="text-muted">(@(Model.pet?.species ?? ""))</small></span></div>
                             <div class="pc-readonly-row"><span class="pc-readonly-label">Bác sĩ:</span><span class="pc-readonly-val">@(Model.doctor?.full_name ?? "Chưa phân công")</span></div>

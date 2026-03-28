@@ -150,7 +150,7 @@
                                     <tr style="border-bottom: 1px solid var(--pc-border);">
                                         <td style="padding-left: 20px;">
                                             <div style="font-weight:700;">@appt.appointment_date.ToString("dd/MM/yyyy")</div>
-                                            <small class="text-muted">@appt.appointment_date.ToString("HH:mm")</small>
+                                            <small class="text-muted">(@(appt.appointment_date.Hour < 12 ? "Ca Sáng" : "Ca Chiều"))</small>
                                         </td>
                                         <td><strong>@appt.pet?.name</strong></td>
                                         <td>@(appt.doctor?.full_name ?? "N/A")</td>
